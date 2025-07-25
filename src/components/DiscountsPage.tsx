@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Gift, Copy, CheckCircle, ExternalLink, Percent, Star, Clock, Users, Search, Filter, ChevronDown, SortAsc } from 'lucide-react';
-import { Desconto } from '../lib/database';
+import { Desconto, discountService } from '../lib/database';
 
 const DiscountsPage: React.FC = () => {
   const [expandedCards, setExpandedCards] = useState<Set<string>>(new Set());
