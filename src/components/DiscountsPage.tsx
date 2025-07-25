@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Gift, Copy, CheckCircle, ExternalLink, Percent, Star, Clock, Users, Search, Filter, ChevronDown, SortAsc } from 'lucide-react';
-import { Desconto, discountService } from '../lib/database';
+import { Coupon, couponService } from '../lib/database';
 
 const DiscountsPage: React.FC = () => {
   const [expandedCards, setExpandedCards] = useState<Set<string>>(new Set());
@@ -11,23 +11,23 @@ const DiscountsPage: React.FC = () => {
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
   const [showSortDropdown, setShowSortDropdown] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [discounts, setDiscounts] = useState<Desconto[]>([]);
+  const [coupons, setCoupons] = useState<Coupon[]>([]);
 
   // Load discounts on component mount
   React.useEffect(() => {
-    const loadDiscounts = async () => {
+    const loadCoupons = async () => {
       setLoading(true);
       try {
-        const data = await discountService.getDiscounts();
-        setDiscounts(data);
+        const data = await couponService.getCoupons();
+        setCoupons(data);
       } catch (error) {
-        console.error('Error loading discounts:', error);
+        console.error('Error loading coupons:', error);
       } finally {
         setLoading(false);
       }
     };
 
-    loadDiscounts();
+    loadCoupons();
   }, []);
   const categories = ['all', 'Design', 'Desenvolvimento', 'IA', 'Marketing', 'Produtividade'];
   const sortOptions = [
@@ -38,21 +38,21 @@ const DiscountsPage: React.FC = () => {
   ];
 
   // Filter and sort discounts
-  const filteredAndSortedDiscounts = React.useMemo(() => {
-    let filtered = discounts;
+  const filteredAndSortedCoupons = React.useMemo(() => {
+    let filtered = coupons;
 
     // Apply category filter
     if (selectedCategory !== 'all') {
-      filtered = filtered.filter(discount => discount.categoria === selectedCategory);
+      filtered = filtered.filter(coupon => coupon.categoria === selectedCategory);
     }
 
     // Apply search filter
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(discount =>
-        discount.nome.toLowerCase().includes(query) ||
-        discount.descricao.toLowerCase().includes(query) ||
-        discount.categoria.toLowerCase().includes(query)
+      filtered = filtered.filter(coupon =>
+        coupon.nome.toLowerCase().includes(query) ||
+        coupon.descricao.toLowerCase().includes(query) ||
+        coupon.categoria.toLowerCase().includes(query)
       );
     }
 
@@ -76,7 +76,7 @@ const DiscountsPage: React.FC = () => {
     });
 
     return sorted;
-  }, [discounts, selectedCategory, searchQuery, sortBy]);
+  }, [coupons, selectedCategory, searchQuery, sortBy]);
 
   const handleToggleCard = (cardId: string) => {
     setExpandedCards(prev => {
@@ -125,9 +125,9 @@ const DiscountsPage: React.FC = () => {
     });
   };
 
-  const DiscountCardComponent: React.FC<{ discount: Desconto }> = ({ discount }) => {
-    const isExpanded = expandedCards.has(discount.id);
-    const isCopied = copiedCoupons.has(discount.id);
+  const CouponCardComponent: React.FC<{ coupon: Coupon }> = ({ coupon }) => {
+    const isExpanded = expandedCards.has(coupon.id);
+    const isCopied = copiedCoupons.has(coupon.id);
 
     return (
       <div className="bg-slate-700/30 border border-slate-600/30 rounded-xl overflow-hidden hover:bg-slate-600/20 transition-all duration-300 group">
@@ -136,13 +136,13 @@ const DiscountsPage: React.FC = () => {
           <div className="flex items-start justify-between mb-4">
             <div className="flex items-center space-x-3">
               <div className="w-12 h-12 bg-slate-600/30 rounded-lg flex items-center justify-center text-2xl">
-                {discount.logo}
+                {coupon.logo}
               </div>
               <div>
-                <h3 className="text-white font-semibold text-lg">{discount.nome}</h3>
+                <h3 className="text-white font-semibold text-lg">{coupon.nome}</h3>
                 <div className="flex items-center space-x-2 mt-1">
                   <span className="text-xs px-2 py-1 bg-slate-600/30 text-slate-300 rounded">
-                    {discount.categoria}
+                    {coupon.categoria}
                   </span>
                 </div>
               </div>
@@ -150,19 +150,19 @@ const DiscountsPage: React.FC = () => {
             
             <div className="text-right">
               <div className="border-2 border-[#ff7551] text-[#ff7551] px-3 py-1 rounded-lg font-bold text-sm bg-transparent">
-                {discount.desconto}
+                {coupon.desconto}
               </div>
             </div>
           </div>
 
           <p className="text-slate-300 text-base leading-relaxed mb-4">
-            {discount.descricao}
+            {coupon.descricao}
           </p>
 
           {/* Action Buttons */}
           <div className="flex space-x-3 mt-4">
             <button
-              onClick={() => handleToggleCard(discount.id)}
+              onClick={() => handleToggleCard(coupon.id)}
               className={`flex-1 flex items-center justify-center space-x-2 py-3 px-4 rounded-lg font-medium transition-all duration-200 ${
                 isExpanded
                   ? 'bg-slate-600/30 text-slate-300 hover:bg-slate-500/30'
@@ -181,7 +181,7 @@ const DiscountsPage: React.FC = () => {
             </button>
             
             <a
-              href={discount.link}
+              href={coupon.link}
               target="_blank"
               rel="noopener noreferrer"
               className="p-3 bg-slate-600/30 hover:bg-slate-500/30 text-slate-300 hover:text-white rounded-lg transition-all duration-200 transform hover:scale-105"
@@ -200,12 +200,12 @@ const DiscountsPage: React.FC = () => {
               <div className="relative">
                 <div className="bg-slate-900/50 border-2 border-dashed border-[#ff7551]/50 rounded-lg p-4 mb-4">
                   <div className="font-mono text-xl font-bold text-[#ff7551] tracking-wider">
-                    {discount.codigo_cupom}
+                    {coupon.codigo_cupom}
                   </div>
                 </div>
                 
                 <button
-                  onClick={() => handleCopyCoupon(discount.codigo_cupom, discount.id)}
+                  onClick={() => handleCopyCoupon(coupon.codigo_cupom, coupon.id)}
                   className={`w-full flex items-center justify-center space-x-2 py-3 px-4 rounded-lg font-medium transition-all duration-200 ${
                     isCopied
                       ? 'bg-green-500 text-white'
@@ -395,7 +395,7 @@ const DiscountsPage: React.FC = () => {
       {/* Results Count */}
       <div className="flex items-center justify-between text-sm text-slate-400">
         <span>
-          {filteredAndSortedDiscounts.length} ferramenta{filteredAndSortedDiscounts.length !== 1 ? 's' : ''} encontrada{filteredAndSortedDiscounts.length !== 1 ? 's' : ''}
+          {filteredAndSortedCoupons.length} ferramenta{filteredAndSortedCoupons.length !== 1 ? 's' : ''} encontrada{filteredAndSortedCoupons.length !== 1 ? 's' : ''}
         </span>
         {(searchQuery || selectedCategory !== 'all') && (
           <button
@@ -412,19 +412,19 @@ const DiscountsPage: React.FC = () => {
 
       {/* Discounts Grid */}
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredAndSortedDiscounts.map((discount, index) => (
+        {filteredAndSortedCoupons.map((coupon, index) => (
           <div
-            key={discount.id}
+            key={coupon.id}
             className="animate-fade-in"
             style={{ animationDelay: `${index * 100}ms` }}
           >
-            <DiscountCardComponent discount={discount} />
+            <CouponCardComponent coupon={coupon} />
           </div>
         ))}
       </div>
 
       {/* Empty State */}
-      {filteredAndSortedDiscounts.length === 0 && (
+      {filteredAndSortedCoupons.length === 0 && (
         <div className="text-center py-20">
           <div className="w-16 h-16 bg-slate-700/30 rounded-full flex items-center justify-center mx-auto mb-4">
             <Gift className="w-8 h-8 text-slate-500" />
