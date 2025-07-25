@@ -313,9 +313,9 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video, onBack }) => {
               <button
                 onClick={handleToggleLike}
                 disabled={!user || likeLoading}
-                className={`group flex items-center rounded-lg transition-all duration-300 overflow-hidden ${
+                className={`group flex items-center justify-center hover:justify-start rounded-lg transition-all duration-300 overflow-hidden ${
                   liked ? 'bg-[#ff7551] text-white shadow-lg' : 'bg-slate-700 text-slate-300 hover:bg-slate-600 disabled:opacity-50'
-                } ${likeLoading ? 'animate-pulse' : ''} w-12 h-12 hover:w-auto hover:px-4 justify-center hover:justify-start hover:pl-4 hover:pr-4`}
+                } ${likeLoading ? 'animate-pulse' : ''} w-12 h-12 hover:w-auto hover:pl-4 hover:pr-4`}
               >
                 <ThumbsUp className="w-5 h-5 flex-shrink-0" />
                 <span className="ml-2 text-sm font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300 max-w-0 group-hover:max-w-xs overflow-hidden">
@@ -327,9 +327,9 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video, onBack }) => {
               <button 
                 onClick={handleToggleSave}
                 disabled={!user || bookmarkLoading}
-                className={`group flex items-center rounded-lg transition-all duration-300 overflow-hidden ${
+                className={`group flex items-center justify-center hover:justify-start rounded-lg transition-all duration-300 overflow-hidden ${
                   saved ? 'bg-white text-black shadow-lg' : 'bg-slate-700 text-slate-300 hover:bg-slate-600 disabled:opacity-50'
-                } ${bookmarkLoading ? 'animate-pulse' : ''} w-12 h-12 hover:w-auto hover:px-4 justify-center hover:justify-start hover:pl-4 hover:pr-4`}
+                } ${bookmarkLoading ? 'animate-pulse' : ''} w-12 h-12 hover:w-auto hover:pl-4 hover:pr-4`}
               >
                 <Bookmark className="w-5 h-5 flex-shrink-0" fill={saved ? 'currentColor' : 'none'} />
                 <span className="ml-2 text-sm font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300 max-w-0 group-hover:max-w-xs overflow-hidden">
