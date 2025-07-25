@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Heart, Bookmark, ThumbsUp, Users, Send, Download, ExternalLink, FileText, MessageCircle, Phone, Instagram, BarChart3, Clock } from 'lucide-react';
 import { videoService, type Video } from '../lib/database';
 import { useAuth } from '../contexts/AuthContext';
+import CustomVideoPlayer from './CustomVideoPlayer';
 
 // Component for suggested videos
 const SuggestedVideos: React.FC<{ currentVideo: Video }> = ({ currentVideo }) => {
@@ -247,13 +248,18 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video, onBack }) => {
 
         {/* Video Player */}
         <div className="relative bg-black rounded-lg overflow-hidden mb-8 aspect-video">
-          <iframe
-            src={currentVideo.video_url || "https://player.vimeo.com/video/76979871?h=8272103f6e&autoplay=1&loop=1&title=0&byline=0&portrait=0"}
-            className="w-full h-full"
-            frameBorder="0"
-            allow="autoplay; fullscreen; picture-in-picture"
-            allowFullScreen
-            title="Video Player"
+          <CustomVideoPlayer
+            src={currentVideo.video_url || ""}
+            poster={currentVideo.thumbnail_url}
+            title={currentVideo.title}
+            onTimeUpdate={(currentTime, duration) => {
+              // Track video progress if needed
+              console.log('Video progress:', { currentTime, duration });
+            }}
+            onEnded={() => {
+              // Handle video end if needed
+              console.log('Video ended');
+            }}
           />
         </div>
 
