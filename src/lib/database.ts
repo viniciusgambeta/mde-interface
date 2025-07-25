@@ -579,3 +579,4 @@ export const couponService = {
 
     return data as Coupon[];
   }
+}
