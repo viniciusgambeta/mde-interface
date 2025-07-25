@@ -188,15 +188,12 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video, onBack }) => {
     setBookmarkLoading(true);
     
     try {
-      console.log('Toggling bookmark for video player:', videoData.id, 'Current status:', saved);
-      
-      const success = await videoService.toggleBookmark(videoData.id, user.id);
-      if (success) {
-        const newSavedStatus = !saved;
-        setSaved(newSavedStatus);
-        console.log('Updated video player bookmark status to:', newSavedStatus);
+      const result = await videoService.toggleBookmarkOptimized(videoData.id, user.id);
+      if (result.success) {
+        setSaved(result.isBookmarked);
+        console.log('Updated video player bookmark status to:', result.isBookmarked);
       } else {
-        console.error('Failed to toggle bookmark in video player');
+        console.error('Failed to toggle bookmark in video player:', result);
       }
     } catch (error) {
       console.error('Error toggling bookmark:', error);
@@ -313,42 +310,32 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video, onBack }) => {
               </div>
               
               {/* Like Button */}
-              <div className="relative group">
-                <button
-                  onClick={handleToggleLike}
-                  disabled={!user || likeLoading}
-                  className={`w-12 h-12 flex items-center justify-center rounded-full transition-all duration-200 ${
-                    liked ? 'bg-[#ff7551] text-white shadow-lg' : 'bg-slate-700 text-slate-300 hover:bg-slate-600 disabled:opacity-50'
-                  } ${likeLoading ? 'animate-pulse' : ''}`}
-                >
-                  <ThumbsUp className="w-5 h-5" />
-                </button>
-                
-                {/* Hover Tooltip */}
-                <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-slate-800 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
+              <button
+                onClick={handleToggleLike}
+                disabled={!user || likeLoading}
+                className={`group flex items-center justify-center rounded-lg transition-all duration-300 overflow-hidden ${
+                  liked ? 'bg-[#ff7551] text-white shadow-lg' : 'bg-slate-700 text-slate-300 hover:bg-slate-600 disabled:opacity-50'
+                } ${likeLoading ? 'animate-pulse' : ''} w-12 h-12 hover:w-auto hover:px-4`}
+              >
+                <ThumbsUp className="w-5 h-5 flex-shrink-0" />
+                <span className="ml-2 text-sm font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300 max-w-0 group-hover:max-w-xs overflow-hidden">
                   {liked ? 'Curtido' : 'Curtir'}
-                  <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-[5px] border-r-[5px] border-t-[5px] border-transparent border-t-slate-800" />
-                </div>
-              </div>
+                </span>
+              </button>
               
               {/* Save Button */}
-              <div className="relative group">
-                <button 
-                  onClick={handleToggleSave}
-                  disabled={!user || bookmarkLoading}
-                  className={`w-12 h-12 flex items-center justify-center rounded-full transition-all duration-200 ${
-                    saved ? 'bg-white text-black shadow-lg' : 'bg-slate-700 text-slate-300 hover:bg-slate-600 disabled:opacity-50'
-                  } ${bookmarkLoading ? 'animate-pulse' : ''}`}
-                >
-                  <Bookmark className="w-5 h-5" fill={saved ? 'currentColor' : 'none'} />
-                </button>
-                
-                {/* Hover Tooltip */}
-                <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-slate-800 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
+              <button 
+                onClick={handleToggleSave}
+                disabled={!user || bookmarkLoading}
+                className={`group flex items-center justify-center rounded-lg transition-all duration-300 overflow-hidden ${
+                  saved ? 'bg-white text-black shadow-lg' : 'bg-slate-700 text-slate-300 hover:bg-slate-600 disabled:opacity-50'
+                } ${bookmarkLoading ? 'animate-pulse' : ''} w-12 h-12 hover:w-auto hover:px-4`}
+              >
+                <Bookmark className="w-5 h-5 flex-shrink-0" fill={saved ? 'currentColor' : 'none'} />
+                <span className="ml-2 text-sm font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300 max-w-0 group-hover:max-w-xs overflow-hidden">
                   {saved ? 'Salvo' : 'Salvar'}
-                  <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-[5px] border-r-[5px] border-t-[5px] border-transparent border-t-slate-800" />
-                </div>
-              </div>
+                </span>
+              </button>
             </div>
           </div>
 
