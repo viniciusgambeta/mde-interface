@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Search, User, LogOut, ChevronDown, Menu, UserPlus, X, Play, Clock, Home } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { useVideo } from '../contexts/VideoContext';
 import { videoService, type Video } from '../lib/database';
 import LoginModal from './auth/LoginModal';
 import RegisterModal from './auth/RegisterModal';
@@ -16,6 +17,7 @@ interface HeaderProps {
 
 const Header: React.FC<HeaderProps> = ({ sidebarCollapsed, onSidebarToggle, onViewChange, onVideoSelect }) => {
   const navigate = useNavigate();
+  const { currentVideo, isPiPActive, returnToVideo } = useVideo();
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showRegisterModal, setShowRegisterModal] = useState(false);
@@ -152,6 +154,22 @@ const Header: React.FC<HeaderProps> = ({ sidebarCollapsed, onSidebarToggle, onVi
   return (
     <>
       <header className="relative z-40 w-full bg-[#1f1d2b]/90 backdrop-blur-sm border-b border-slate-700/30">
+        {/* Picture-in-Picture Indicator */}
+        {isPiPActive && currentVideo && (
+          <div className="bg-[#ff7551] text-white px-4 py-2 text-sm flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
+              <span>Reproduzindo em Picture-in-Picture: {currentVideo.title}</span>
+            </div>
+            <button
+              onClick={returnToVideo}
+              className="text-white hover:text-black transition-colors font-medium"
+            >
+              Voltar ao vídeo →
+            </button>
+          </div>
+        )}
+        
         <div className="flex items-center justify-between px-8 py-4">
           {/* Left Section - Logo and Mobile Menu */}
           <div className="flex items-center space-x-6">

@@ -252,6 +252,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video, onBack }) => {
             src={currentVideo.video_url || ""}
             poster={currentVideo.thumbnail_url}
             title={currentVideo.title}
+            video={currentVideo}
             onTimeUpdate={(currentTime, duration) => {
               // Track video progress if needed
               console.log('Video progress:', { currentTime, duration });
