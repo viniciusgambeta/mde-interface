@@ -8,6 +8,7 @@ import VideoPlayer from './components/VideoPlayer';
 import PromptViewer from './components/PromptViewer';
 import Footer from './components/Footer';
 import { AuthProvider } from './contexts/AuthContext';
+import { VideoProvider } from './contexts/VideoContext';
 import { videoService } from './lib/database';
 
 // Video Detail Page Component
@@ -217,22 +218,24 @@ const AppLayout: React.FC = () => {
 function App() {
   return (
     <AuthProvider>
-      <Routes>
-        {/* All routes now use the same layout structure */}
-        <Route path="/" element={<AppLayout />} />
-        <Route path="/trending" element={<AppLayout />} />
-        <Route path="/categories" element={<AppLayout />} />
-        <Route path="/bookmark" element={<AppLayout />} />
-        <Route path="/discounts" element={<AppLayout />} />
-        <Route path="/profile" element={<AppLayout />} />
-        <Route path="/request-lesson" element={<AppLayout />} />
-        <Route path="/help" element={<AppLayout />} />
-        <Route path="/video/:slug" element={<AppLayout />} />
-        <Route path="/prompt/:slug" element={<AppLayout />} />
-        
-        {/* Catch all route - redirect to home */}
-        <Route path="*" element={<AppLayout />} />
-      </Routes>
+      <VideoProvider>
+        <Routes>
+          {/* All routes now use the same layout structure */}
+          <Route path="/" element={<AppLayout />} />
+          <Route path="/trending" element={<AppLayout />} />
+          <Route path="/categories" element={<AppLayout />} />
+          <Route path="/bookmark" element={<AppLayout />} />
+          <Route path="/discounts" element={<AppLayout />} />
+          <Route path="/profile" element={<AppLayout />} />
+          <Route path="/request-lesson" element={<AppLayout />} />
+          <Route path="/help" element={<AppLayout />} />
+          <Route path="/video/:slug" element={<AppLayout />} />
+          <Route path="/prompt/:slug" element={<AppLayout />} />
+          
+          {/* Catch all route - redirect to home */}
+          <Route path="*" element={<AppLayout />} />
+        </Routes>
+      </VideoProvider>
     </AuthProvider>
   );
 }
