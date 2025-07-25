@@ -1,10 +1,14 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Play, Pause, Volume2, VolumeX, Maximize, RotateCcw, SkipBack, SkipForward, Settings } from 'lucide-react';
+import { Play, Pause, Volume2, VolumeX, Maximize, RotateCcw, SkipBack, SkipForward, Settings, PictureInPicture2 } from 'lucide-react';
+import { useVideo } from '../contexts/VideoContext';
+import { useLocation } from 'react-router-dom';
+import type { Video } from '../lib/database';
 
 interface CustomVideoPlayerProps {
   src: string;
   poster?: string;
   title?: string;
+  video?: Video;
   onTimeUpdate?: (currentTime: number, duration: number) => void;
   onEnded?: () => void;
 }
@@ -13,9 +17,12 @@ const CustomVideoPlayer: React.FC<CustomVideoPlayerProps> = ({
   src,
   poster,
   title,
+  video,
   onTimeUpdate,
   onEnded
 }) => {
+  const location = useLocation();
+  const { setCurrentVideo, setVideoRef, enterPiP, isPiPActive } = useVideo();
   const videoRef = useRef<HTMLVideoElement>(null);
   const progressRef = useRef<HTMLDivElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -30,6 +37,35 @@ const CustomVideoPlayer: React.FC<CustomVideoPlayerProps> = ({
   const [showSettings, setShowSettings] = useState(false);
 
   const controlsTimeoutRef = useRef<NodeJS.Timeout>();
+
+  // Set up video context when component mounts
+  useEffect(() => {
+    if (video) {
+      setCurrentVideo(video);
+    }
+    setVideoRef(videoRef);
+    
+    return () => {
+      // Don't clear current video on unmount if PiP is active
+      if (!isPiPActive) {
+        setCurrentVideo(null);
+      }
+    };
+  }, [video, setCurrentVideo, setVideoRef, isPiPActive]);
+
+  // Auto-enter PiP when navigating away from video page
+  useEffect(() => {
+    const isVideoPage = location.pathname.startsWith('/video/') || location.pathname.startsWith('/prompt/');
+    
+    if (!isVideoPage && isPlaying && videoRef.current && !isPiPActive) {
+      // Small delay to ensure navigation is complete
+      const timer = setTimeout(() => {
+        enterPiP();
+      }, 100);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [location.pathname, isPlaying, enterPiP, isPiPActive]);
 
   // Handle video events
   useEffect(() => {
@@ -184,6 +220,18 @@ const CustomVideoPlayer: React.FC<CustomVideoPlayerProps> = ({
     setShowSettings(false);
   };
 
+  const handlePiPToggle = () => {
+    if (isPiPActive) {
+      // PiP is active, this will exit it
+      if (document.pictureInPictureElement) {
+        document.exitPictureInPicture();
+      }
+    } else {
+      // Enter PiP mode
+      enterPiP();
+    }
+  };
+
   const formatTime = (time: number) => {
     const hours = Math.floor(time / 3600);
     const minutes = Math.floor((time % 3600) / 60);
@@ -329,6 +377,21 @@ const CustomVideoPlayer: React.FC<CustomVideoPlayerProps> = ({
                 </div>
               )}
             </div>
+
+            {/* Picture-in-Picture */}
+            {document.pictureInPictureEnabled && (
+              <button
+                onClick={handlePiPToggle}
+                className={`transition-colors ${
+                  isPiPActive 
+                    ? 'text-[#ff7551]' 
+                    : 'text-white hover:text-[#ff7551]'
+                }`}
+                title={isPiPActive ? 'Sair do Picture-in-Picture' : 'Picture-in-Picture'}
+              >
+                <PictureInPicture2 className="w-5 h-5" />
+              </button>
+            )}
 
             {/* Fullscreen */}
             <button
