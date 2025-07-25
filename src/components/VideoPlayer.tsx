@@ -355,15 +355,17 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video, onBack }) => {
               </h4>
               
               {/* Action Buttons */}
-              <div className="flex items-center space-x-3 mt-3">
-                <button className="flex items-center space-x-2 px-6 py-3 bg-transparent border-2 border-white hover:bg-white hover:text-slate-800 text-white rounded-xl font-medium transition-all duration-200 transform hover:scale-105">
+              <div className="flex flex-col sm:flex-row gap-3 mt-4">
+                <button className="flex items-center justify-center space-x-3 px-6 py-3.5 bg-gradient-to-r from-[#ff7551] to-[#ff7551]/80 hover:from-[#ff7551]/90 hover:to-[#ff7551]/70 text-white rounded-lg font-medium transition-all duration-200 transform hover:scale-[1.02] shadow-lg hover:shadow-xl group">
                   <MessageCircle className="w-4 h-4" />
                   <span>Perguntar para IA</span>
+                  <div className="w-2 h-2 bg-white/30 rounded-full group-hover:bg-white/50 transition-colors"></div>
                 </button>
                 
-                <button className="flex items-center space-x-2 px-6 py-3 bg-transparent border-2 border-white hover:bg-white hover:text-slate-800 text-white rounded-xl font-medium transition-all duration-200 transform hover:scale-105">
-                  <Phone className="w-4 h-4" />
+                <button className="flex items-center justify-center space-x-3 px-6 py-3.5 bg-slate-700/40 hover:bg-green-600 border border-slate-600/30 hover:border-green-600 text-slate-300 hover:text-white rounded-lg font-medium transition-all duration-200 transform hover:scale-[1.02] shadow-lg hover:shadow-xl group">
+                  <Phone className="w-4 h-4 group-hover:animate-pulse" />
                   <span>Perguntar no WhatsApp</span>
+                  <div className="w-2 h-2 bg-slate-500 group-hover:bg-green-400 rounded-full transition-colors"></div>
                 </button>
               </div>
             </div>
