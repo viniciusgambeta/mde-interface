@@ -561,4 +561,74 @@ export const featuredContentService = {
 
     return data as FeaturedContent | null;
   }
+};
+
+// Discount service
+export const discountService = {
+  async getDiscounts(): Promise<Desconto[]> {
+    // Since the Supabase table doesn't exist yet, return dummy data
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        resolve([
+          {
+            id: '1',
+            nome: 'Adobe Creative Cloud',
+            logo: 'https://images.pexels.com/photos/267350/pexels-photo-267350.jpeg?auto=compress&cs=tinysrgb&w=400',
+            descricao: 'Acesso completo a todos os aplicativos da Adobe',
+            desconto: '50%',
+            codigo_cupom: 'ADOBE50',
+            categoria: 'Design',
+            link: 'https://adobe.com',
+            preco_original: 'R$ 89,90',
+            preco_desconto: 'R$ 44,95',
+            valido_ate: '2024-12-31',
+            usado_por: 1250,
+            avaliacao: 4.8,
+            visibilidade: true,
+            ordem: 1,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          },
+          {
+            id: '2',
+            nome: 'Figma Pro',
+            logo: 'https://images.pexels.com/photos/196644/pexels-photo-196644.jpeg?auto=compress&cs=tinysrgb&w=400',
+            descricao: 'Ferramenta de design colaborativo',
+            desconto: '30%',
+            codigo_cupom: 'FIGMA30',
+            categoria: 'Design',
+            link: 'https://figma.com',
+            preco_original: 'R$ 45,00',
+            preco_desconto: 'R$ 31,50',
+            valido_ate: '2024-11-30',
+            usado_por: 890,
+            avaliacao: 4.9,
+            visibilidade: true,
+            ordem: 2,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          },
+          {
+            id: '3',
+            nome: 'Notion Pro',
+            logo: 'https://images.pexels.com/photos/590016/pexels-photo-590016.jpg?auto=compress&cs=tinysrgb&w=400',
+            descricao: 'Workspace tudo-em-um para produtividade',
+            desconto: '40%',
+            codigo_cupom: 'NOTION40',
+            categoria: 'Produtividade',
+            link: 'https://notion.so',
+            preco_original: 'R$ 32,00',
+            preco_desconto: 'R$ 19,20',
+            valido_ate: '2024-10-15',
+            usado_por: 2100,
+            avaliacao: 4.7,
+            visibilidade: true,
+            ordem: 3,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          }
+        ]);
+      }, 500);
+    });
+  }
 }
