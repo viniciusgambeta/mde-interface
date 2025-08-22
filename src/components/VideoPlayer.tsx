@@ -511,9 +511,6 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video, onBack }) => {
                   {currentVideo.materials
                     .sort((a, b) => a.order_index - b.order_index)
                     .map((material) => {
-                      const IconComponent = material.icon === 'Download' ? Download : 
-                                          material.icon === 'ExternalLink' ? ExternalLink : FileText;
-                      
                       return (
                         <a
                           key={material.id}
@@ -522,7 +519,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video, onBack }) => {
                           rel="noopener noreferrer"
                           className="flex items-center space-x-3 p-3 bg-slate-700/30 rounded-lg hover:bg-slate-600/30 transition-colors cursor-pointer"
                         >
-                          <IconComponent className="w-5 h-5 text-slate-400" />
+                          <Download className="w-5 h-5 text-slate-400" />
                           <div className="flex-1">
                             <div className="text-white font-medium text-sm">{material.title}</div>
                             {material.description && (
@@ -550,18 +547,6 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video, onBack }) => {
                {currentVideo.ferramentas && currentVideo.ferramentas.length > 0 ? (
                  <div className="space-y-4">
                    {currentVideo.ferramentas.map((ferramenta) => {
-                     // Get icon component based on icon name
-                     const getIconComponent = (iconName: string) => {
-                       switch (iconName) {
-                         case 'ExternalLink':
-                           return ExternalLink;
-                         default:
-                           return ExternalLink;
-                       }
-                     };
-                     
-                     const IconComponent = getIconComponent(ferramenta.icone);
-                     
                      return (
                        <a
                          key={ferramenta.id}
@@ -570,7 +555,19 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video, onBack }) => {
                          rel="noopener noreferrer"
                          className="flex items-center space-x-3 p-3 bg-slate-700/30 rounded-lg hover:bg-slate-600/30 transition-colors cursor-pointer"
                        >
-                         <IconComponent className="w-5 h-5 text-slate-400" />
+                         <img 
+                           src={ferramenta.icone} 
+                           alt={ferramenta.nome}
+                           className="w-5 h-5 object-contain"
+                           onError={(e) => {
+                             // Fallback to ExternalLink icon if image fails to load
+                             const target = e.target as HTMLImageElement;
+                             target.style.display = 'none';
+                             const fallbackIcon = target.nextElementSibling as HTMLElement;
+                             if (fallbackIcon) fallbackIcon.style.display = 'block';
+                           }}
+                         />
+                         <ExternalLink className="w-5 h-5 text-slate-400 hidden" />
                          <div className="flex-1">
                            <div className="text-white font-medium text-sm">{ferramenta.nome}</div>
                          </div>
