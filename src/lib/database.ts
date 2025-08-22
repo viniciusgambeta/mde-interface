@@ -109,9 +109,7 @@ export interface Video {
   updated_at: string;
   tipo: 'video' | 'prompt';
   prompt_content?: string;
-  parent_video_id?: string;
-  version_name?: string;
-  version_order: number;
+  status: string;
   
   // Joined data
   instructor?: Instructor;
@@ -122,6 +120,15 @@ export interface Video {
   versions?: Video[];
   is_bookmarked?: boolean;
   is_upvoted?: boolean;
+}
+
+export interface VideoVersion {
+  id: string;
+  main_video_id: string;
+  version_video_id: string;
+  version_name: string;
+  version_order: number;
+  created_at: string;
 }
 
 // Database functions
@@ -287,33 +294,37 @@ export const videoService = {
   },
 
   // Get all versions of a video
-  async getVideoVersions(videoId: string, userId?: string): Promise<Video[]> {
+  async getVideoVersions(videoId: string, userId?: string): Promise<{ versions: Video[], currentIsMain: boolean }> {
     if (!videoId) {
       console.log('getVideoVersions: No videoId provided');
-      return [];
+      return { versions: [], currentIsMain: false };
     }
 
     console.log('getVideoVersions: Called for videoId:', videoId);
 
     try {
-      // Use the database function to get all versions
-      const { data: versions, error: versionsError } = await supabase
-        .rpc('get_video_versions', { input_video_id: videoId });
+      // Use the new database function to get all versions
+      const { data: versionData, error: versionsError } = await supabase
+        .rpc('get_all_video_versions', { input_video_id: videoId });
 
       if (versionsError) {
         console.error('getVideoVersions: Error calling RPC function:', versionsError);
-        return [];
+        return { versions: [], currentIsMain: false };
       }
 
-      if (!versions || versions.length === 0) {
+      if (!versionData || versionData.length === 0) {
         console.log('getVideoVersions: No versions found for videoId:', videoId);
-        return [];
+        return { versions: [], currentIsMain: false };
       }
 
-      console.log('getVideoVersions: Found versions:', versions.length);
+      console.log('getVideoVersions: Found versions:', versionData.length);
+
+      // Check if current video is the main video
+      const currentIsMain = versionData.some(v => v.id === videoId && v.is_main);
+      console.log('getVideoVersions: Current video is main:', currentIsMain);
 
       // Get additional data for each version (instructor, category, etc.)
-      const versionIds = versions.map(v => v.id);
+      const versionIds = versionData.map(v => v.id);
       
       const { data: fullVersions, error: fullVersionsError } = await supabase
         .from('videos')
@@ -329,39 +340,65 @@ export const videoService = {
         `)
         .in('id', versionIds)
         .eq('status', 'published')
-        .order('version_order', { ascending: true });
+        .order('created_at', { ascending: false });
 
       if (fullVersionsError) {
         console.error('getVideoVersions: Error fetching full version data:', fullVersionsError);
-        return [];
+        return { versions: [], currentIsMain: false };
       }
 
       const videoVersions = fullVersions as Video[];
 
+      // Sort versions according to the order from the RPC function
+      const sortedVersions = videoVersions.sort((a, b) => {
+        const aData = versionData.find(v => v.id === a.id);
+        const bData = versionData.find(v => v.id === b.id);
+        
+        if (!aData || !bData) return 0;
+        
+        // Main video first (version_order = 0), then by version_order
+        return aData.version_order - bData.version_order;
+      });
+
+      // Add version metadata to each video
+      sortedVersions.forEach(video => {
+        const versionInfo = versionData.find(v => v.id === video.id);
+        if (versionInfo) {
+          (video as any).version_name = versionInfo.version_name;
+          (video as any).is_main_version = versionInfo.is_main;
+        }
+      });
+
       // Transform ferramentas data structure
-      videoVersions.forEach(video => {
+      sortedVersions.forEach(video => {
         if (video.ferramentas) {
           video.ferramentas = (video.ferramentas as any[]).map((item: any) => item.ferramenta).filter(Boolean);
         }
       });
 
       // If user is provided, check bookmark status for each version
-      if (userId && videoVersions.length > 0) {
+      if (userId && sortedVersions.length > 0) {
         const bookmarkStatuses = await this.getBookmarkStatuses(
-          videoVersions.map(v => v.id), 
+          sortedVersions.map(v => v.id), 
           userId
         );
         
-        videoVersions.forEach(video => {
+        sortedVersions.forEach(video => {
           video.is_bookmarked = bookmarkStatuses[video.id] || false;
         });
       }
 
-      console.log('getVideoVersions: Returning versions:', videoVersions.map(v => ({ id: v.id, title: v.title, version_name: v.version_name })));
-      return videoVersions;
+      console.log('getVideoVersions: Returning versions:', sortedVersions.map(v => ({ 
+        id: v.id, 
+        title: v.title, 
+        version_name: (v as any).version_name,
+        is_main: (v as any).is_main_version
+      })));
+      
+      return { versions: sortedVersions, currentIsMain };
     } catch (error) {
       console.error('getVideoVersions: Exception:', error);
-      return [];
+      return { versions: [], currentIsMain: false };
     }
   },
 

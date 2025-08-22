@@ -162,11 +162,11 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video, onBack }) => {
       
       // Load versions for this video
       console.log('VideoPlayer: Loading versions for video ID:', currentVideoData.id);
-      const versions = await videoService.getVideoVersions(currentVideoData.id, user?.id);
-      console.log('VideoPlayer: Received versions from service:', versions.length, 'versions');
+      const versionResult = await videoService.getVideoVersions(currentVideoData.id, user?.id);
+      console.log('VideoPlayer: Received versions from service:', versionResult.versions.length, 'versions');
       
       // Update video data with versions
-      const updatedVideoData = { ...currentVideoData, versions };
+      const updatedVideoData = { ...currentVideoData, versions: versionResult.versions };
       setVideoData(updatedVideoData);
       console.log('VideoPlayer: Updated videoData with versions:', updatedVideoData.versions?.length || 0);
       
@@ -508,7 +508,14 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video, onBack }) => {
                           rel="noopener noreferrer"
                           className="flex items-center space-x-3 p-3 bg-slate-700/30 rounded-lg hover:bg-slate-600/30 transition-colors cursor-pointer"
                         >
-                          <IconComponent className="w-5 h-5 text-[#ff7551]" />
+                          <div className="font-medium">
+                            {(version as any).version_name || version.title}
+                            {(version as any).is_main_version && (
+                              <span className="ml-2 text-xs bg-[#ff7551] text-white px-2 py-0.5 rounded">
+                                Original
+                              </span>
+                            )}
+                          </div>
                           <div className="flex-1">
                             <div className="text-white font-medium text-sm">{material.title}</div>
                           </div>

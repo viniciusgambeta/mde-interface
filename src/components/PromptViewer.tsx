@@ -144,11 +144,11 @@ const PromptViewer: React.FC<PromptViewerProps> = ({ prompt, onBack }) => {
       
       // Load versions for this prompt
       console.log('PromptViewer: Loading versions for prompt ID:', currentPromptData.id);
-      const versions = await videoService.getVideoVersions(currentPromptData.id, user?.id);
-      console.log('PromptViewer: Received versions from service:', versions.length, 'versions');
+      const versionResult = await videoService.getVideoVersions(currentPromptData.id, user?.id);
+      console.log('PromptViewer: Received versions from service:', versionResult.versions.length, 'versions');
       
       // Update prompt data with versions
-      const updatedPromptData = { ...currentPromptData, versions };
+      const updatedPromptData = { ...currentPromptData, versions: versionResult.versions };
       setPromptData(updatedPromptData);
       console.log('PromptViewer: Updated promptData with versions:', updatedPromptData.versions?.length || 0);
       
@@ -362,7 +362,14 @@ const PromptViewer: React.FC<PromptViewerProps> = ({ prompt, onBack }) => {
                             }`}
                           >
                             <div className="font-medium">{version.version_name}</div>
-                            <div className="text-xs opacity-75 mt-1">
+                          <div className="font-medium">
+                            {(version as any).version_name || version.title}
+                            {(version as any).is_main_version && (
+                              <span className="ml-2 text-xs bg-[#ff7551] text-white px-2 py-0.5 rounded">
+                                Original
+                              </span>
+                            )}
+                          </div>
                               {version.tipo} • {formatViews(version.view_count)} views
                             </div>
                           </button>
