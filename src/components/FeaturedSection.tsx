@@ -220,7 +220,7 @@ const FeaturedSection: React.FC<FeaturedSectionProps> = ({ onVideoSelect }) => {
                     </h1>
 
                     {/* Description */}
-                    <p className="text-slate-200 text-sm sm:text-base leading-relaxed mb-4 sm:mb-5 max-w-md line-clamp-2">
+                    <p className="text-slate-200 text-sm sm:text-base leading-relaxed mb-4 sm:mb-5 max-w-md line-clamp-3">
                       {content.descricao}
                     </p>
 
@@ -242,14 +242,14 @@ const FeaturedSection: React.FC<FeaturedSectionProps> = ({ onVideoSelect }) => {
             <>
               <button
                 onClick={goToPrevious}
-                className="absolute left-4 top-1/2 transform -translate-y-1/2 p-3 bg-black/50 hover:bg-black/70 text-white flex items-center justify-center transition-all duration-200 z-20"
+                className="absolute left-4 top-1/2 transform -translate-y-1/2 p-3 text-white hover:text-[#ff7551] flex items-center justify-center transition-all duration-200 z-20"
               >
                 <ChevronLeft className="w-5 h-5" />
               </button>
               
               <button
                 onClick={goToNext}
-                className="absolute right-4 top-1/2 transform -translate-y-1/2 p-3 bg-black/50 hover:bg-black/70 text-white flex items-center justify-center transition-all duration-200 z-20"
+                className="absolute right-4 top-1/2 transform -translate-y-1/2 p-3 text-white hover:text-[#ff7551] flex items-center justify-center transition-all duration-200 z-20"
               >
                 <ChevronRight className="w-5 h-5" />
               </button>
