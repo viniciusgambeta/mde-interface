@@ -735,6 +735,21 @@ export const featuredContentService = {
     }
 
     return data as FeaturedContent | null;
+  },
+
+  async getAllActiveFeaturedContent(): Promise<FeaturedContent[]> {
+    const { data, error } = await supabase
+      .from('featured_content')
+      .select('*')
+      .eq('status', true)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching all featured content:', error);
+      return [];
+    }
+
+    return data as FeaturedContent[];
   }
 };
 
