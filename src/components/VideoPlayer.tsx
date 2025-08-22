@@ -314,6 +314,9 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video, onBack }) => {
             {currentVideo.title}
           </h1>
 
+          {/* Separator */}
+          <div className="w-full h-px bg-slate-600/30"></div>
+
           {/* Creator Info & Actions */}
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3 pl-[5px]">
@@ -452,7 +455,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video, onBack }) => {
               
               {/* Action Buttons */}
               <div className="flex flex-col sm:flex-row gap-3 mt-4">
-                <button className="flex items-center justify-center space-x-3 px-6 py-3.5 bg-gradient-to-r from-[#ff7551] to-[#ff7551]/80 hover:from-[#ff7551]/90 hover:to-[#ff7551]/70 text-white rounded-lg font-medium transition-all duration-200 transform hover:scale-[1.02] shadow-lg hover:shadow-xl">
+                <button className="flex items-center justify-center space-x-3 px-6 py-3.5 bg-slate-700/40 hover:bg-slate-600/50 border border-slate-600/30 hover:border-slate-500/50 text-slate-300 hover:text-white rounded-lg font-medium transition-all duration-200 transform hover:scale-[1.02] shadow-lg hover:shadow-xl">
                   <MessageCircle className="w-4 h-4" />
                   <span>Perguntar para IA</span>
                 </button>

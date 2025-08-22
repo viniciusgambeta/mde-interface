@@ -304,6 +304,9 @@ const PromptViewer: React.FC<PromptViewerProps> = ({ prompt, onBack }) => {
             {currentPrompt.title}
           </h1>
 
+          {/* Separator */}
+          <div className="w-full h-px bg-slate-600/30"></div>
+
           {/* Creator Info & Actions */}
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3 pl-[5px]">
