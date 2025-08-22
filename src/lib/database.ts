@@ -288,26 +288,34 @@ export const videoService = {
 
   // Get all versions of a video
   async getVideoVersions(videoId: string, userId?: string): Promise<Video[]> {
-    if (!videoId) return [];
+    if (!videoId) {
+      console.log('getVideoVersions: No videoId provided');
+      return [];
+    }
+
+    console.log('getVideoVersions: Called for videoId:', videoId);
 
     try {
-      // First, get the current video to determine the parent
-      const { data: currentVideo, error: currentError } = await supabase
-        .from('videos')
-        .select('parent_video_id')
-        .eq('id', videoId)
-        .single();
+      // Use the database function to get all versions
+      const { data: versions, error: versionsError } = await supabase
+        .rpc('get_video_versions', { input_video_id: videoId });
 
-      if (currentError) {
-        console.error('Error fetching current video:', currentError);
+      if (versionsError) {
+        console.error('getVideoVersions: Error calling RPC function:', versionsError);
         return [];
       }
 
-      // Determine the parent video ID
-      const parentVideoId = currentVideo.parent_video_id || videoId;
+      if (!versions || versions.length === 0) {
+        console.log('getVideoVersions: No versions found for videoId:', videoId);
+        return [];
+      }
 
-      // Get all versions (including the parent)
-      const { data: versions, error: versionsError } = await supabase
+      console.log('getVideoVersions: Found versions:', versions.length);
+
+      // Get additional data for each version (instructor, category, etc.)
+      const versionIds = versions.map(v => v.id);
+      
+      const { data: fullVersions, error: fullVersionsError } = await supabase
         .from('videos')
         .select(`
           *,
@@ -319,16 +327,16 @@ export const videoService = {
             ferramenta:ferramentas_links(*)
           )
         `)
-        .or(`id.eq.${parentVideoId},parent_video_id.eq.${parentVideoId}`)
+        .in('id', versionIds)
         .eq('status', 'published')
         .order('version_order', { ascending: true });
 
-      if (versionsError) {
-        console.error('Error fetching video versions:', versionsError);
+      if (fullVersionsError) {
+        console.error('getVideoVersions: Error fetching full version data:', fullVersionsError);
         return [];
       }
 
-      const videoVersions = versions as Video[];
+      const videoVersions = fullVersions as Video[];
 
       // Transform ferramentas data structure
       videoVersions.forEach(video => {
@@ -349,9 +357,10 @@ export const videoService = {
         });
       }
 
+      console.log('getVideoVersions: Returning versions:', videoVersions.map(v => ({ id: v.id, title: v.title, version_name: v.version_name })));
       return videoVersions;
     } catch (error) {
-      console.error('Error in getVideoVersions:', error);
+      console.error('getVideoVersions: Exception:', error);
       return [];
     }
   },

@@ -139,53 +139,54 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video, onBack }) => {
 
   useEffect(() => {
     const loadVideoData = async () => {
-      console.log('Loading video data for:', video.title, 'Slug:', video.slug);
+      console.log('VideoPlayer: Starting loadVideoData for video:', video.title, 'ID:', video.id, 'Slug:', video.slug);
       
+      let currentVideoData = video;
+      
+      // Try to load full video data if we have a slug
       if (video.slug && video.slug.trim() !== '') {
+        console.log('VideoPlayer: Loading full video data by slug');
         const fullVideo = await videoService.getVideoBySlug(video.slug, user?.id);
-        console.log('Loaded full video data:', fullVideo);
         if (fullVideo) {
-          setVideoData(fullVideo);
-          
-          setLiked(fullVideo.is_upvoted || false);
-          setSaved(fullVideo.is_bookmarked || false);
+          console.log('VideoPlayer: Successfully loaded full video data');
+          currentVideoData = fullVideo;
         } else {
-          console.log('No video found for slug, using passed video data');
-          setVideoData(video);
+          console.log('VideoPlayer: No video found for slug, using passed video data');
         }
       } else {
-        console.log('No slug provided, using passed video data');
-        setVideoData(video);
+        console.log('VideoPlayer: No slug provided, using passed video data');
       }
       
-      // Always load versions after setting initial video data
-      const currentVideoData = videoData || video;
-      if (currentVideoData?.id) {
-        console.log('Loading versions for video ID:', currentVideoData.id);
-        const versions = await videoService.getVideoVersions(currentVideoData.id, user?.id);
-        console.log('Loaded versions:', versions);
-        setVideoData(prev => {
-          const baseData = prev || video;
-          return { ...baseData, versions };
-        });
-      }
+      // Set initial video data
+      setVideoData(currentVideoData);
       
-      // Check bookmark and like status
-      const finalVideoData = videoData || video;
-      if (user && finalVideoData?.id) {
+      // Load versions for this video
+      console.log('VideoPlayer: Loading versions for video ID:', currentVideoData.id);
+      const versions = await videoService.getVideoVersions(currentVideoData.id, user?.id);
+      console.log('VideoPlayer: Received versions from service:', versions.length, 'versions');
+      
+      // Update video data with versions
+      const updatedVideoData = { ...currentVideoData, versions };
+      setVideoData(updatedVideoData);
+      console.log('VideoPlayer: Updated videoData with versions:', updatedVideoData.versions?.length || 0);
+      
+      // Set bookmark and like status
+      if (user) {
         const [isBookmarked, isUpvoted] = await Promise.all([
-          videoService.isBookmarked(finalVideoData.id, user.id),
-          videoService.isUpvoted(finalVideoData.id, user.id)
+          videoService.isBookmarked(currentVideoData.id, user.id),
+          videoService.isUpvoted(currentVideoData.id, user.id)
         ]);
         setSaved(isBookmarked);
         setLiked(isUpvoted);
+        console.log('VideoPlayer: Set bookmark/like status - saved:', isBookmarked, 'liked:', isUpvoted);
       }
       
       setLoading(false);
+      console.log('VideoPlayer: Finished loading video data');
     };
 
     loadVideoData();
-  }, [video.id, video.timestamp, user?.id]);
+  }, [video.id, user?.id]);
 
   const handleToggleLike = async () => {
     if (!user || !currentVideo || likeLoading) return;
@@ -263,9 +264,14 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video, onBack }) => {
   const currentVideo = selectedVersion || videoData || video;
   
   // Check if video has versions - use videoData (the full loaded data) to check for versions
-  const hasVersions = (videoData?.versions && videoData.versions.length > 1) || 
-                     (videoData?.parent_video_id !== null) ||
-                     (video?.parent_video_id !== null);
+  const hasVersions = videoData?.versions && videoData.versions.length > 1;
+  
+  console.log('VideoPlayer: hasVersions check:', {
+    hasVersions,
+    versionsCount: videoData?.versions?.length || 0,
+    videoDataId: videoData?.id,
+    currentVideoId: currentVideo?.id
+  });
 
   return (
     <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">

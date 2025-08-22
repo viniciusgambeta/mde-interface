@@ -121,53 +121,54 @@ const PromptViewer: React.FC<PromptViewerProps> = ({ prompt, onBack }) => {
 
   useEffect(() => {
     const loadPromptData = async () => {
-      console.log('Loading prompt data for:', prompt.title, 'Slug:', prompt.slug);
+      console.log('PromptViewer: Starting loadPromptData for prompt:', prompt.title, 'ID:', prompt.id, 'Slug:', prompt.slug);
       
+      let currentPromptData = prompt;
+      
+      // Try to load full prompt data if we have a slug
       if (prompt.slug && prompt.slug.trim() !== '') {
+        console.log('PromptViewer: Loading full prompt data by slug');
         const fullPrompt = await videoService.getVideoBySlug(prompt.slug, user?.id);
-        console.log('Loaded full prompt data:', fullPrompt);
         if (fullPrompt) {
-          setPromptData(fullPrompt);
-          
-          setLiked(fullPrompt.is_upvoted || false);
-          setSaved(fullPrompt.is_bookmarked || false);
+          console.log('PromptViewer: Successfully loaded full prompt data');
+          currentPromptData = fullPrompt;
         } else {
-          console.log('No prompt found for slug, using passed prompt data');
-          setPromptData(prompt);
+          console.log('PromptViewer: No prompt found for slug, using passed prompt data');
         }
       } else {
-        console.log('No slug provided, using passed prompt data');
-        setPromptData(prompt);
+        console.log('PromptViewer: No slug provided, using passed prompt data');
       }
       
-      // Always load versions after setting initial prompt data
-      const currentPromptData = promptData || prompt;
-      if (currentPromptData?.id) {
-        console.log('Loading versions for prompt ID:', currentPromptData.id);
-        const versions = await videoService.getVideoVersions(currentPromptData.id, user?.id);
-        console.log('Loaded versions:', versions);
-        setPromptData(prev => {
-          const baseData = prev || prompt;
-          return { ...baseData, versions };
-        });
-      }
+      // Set initial prompt data
+      setPromptData(currentPromptData);
       
-      // Check bookmark and like status
-      const finalPromptData = promptData || prompt;
-      if (user && finalPromptData?.id) {
+      // Load versions for this prompt
+      console.log('PromptViewer: Loading versions for prompt ID:', currentPromptData.id);
+      const versions = await videoService.getVideoVersions(currentPromptData.id, user?.id);
+      console.log('PromptViewer: Received versions from service:', versions.length, 'versions');
+      
+      // Update prompt data with versions
+      const updatedPromptData = { ...currentPromptData, versions };
+      setPromptData(updatedPromptData);
+      console.log('PromptViewer: Updated promptData with versions:', updatedPromptData.versions?.length || 0);
+      
+      // Set bookmark and like status
+      if (user) {
         const [isBookmarked, isUpvoted] = await Promise.all([
-          videoService.isBookmarked(finalPromptData.id, user.id),
-          videoService.isUpvoted(finalPromptData.id, user.id)
+          videoService.isBookmarked(currentPromptData.id, user.id),
+          videoService.isUpvoted(currentPromptData.id, user.id)
         ]);
         setSaved(isBookmarked);
         setLiked(isUpvoted);
+        console.log('PromptViewer: Set bookmark/like status - saved:', isBookmarked, 'liked:', isUpvoted);
       }
       
       setLoading(false);
+      console.log('PromptViewer: Finished loading prompt data');
     };
 
     loadPromptData();
-  }, [prompt.id, prompt.timestamp, user?.id]);
+  }, [prompt.id, user?.id]);
 
   const handleToggleLike = async () => {
     if (!user || !currentPrompt || likeLoading) return;
@@ -267,9 +268,14 @@ const PromptViewer: React.FC<PromptViewerProps> = ({ prompt, onBack }) => {
   const currentPrompt = selectedVersion || promptData || prompt;
   
   // Check if prompt has versions - use promptData (the full loaded data) to check for versions
-  const hasVersions = (promptData?.versions && promptData.versions.length > 1) || 
-                     (promptData?.parent_video_id !== null) ||
-                     (prompt?.parent_video_id !== null);
+  const hasVersions = promptData?.versions && promptData.versions.length > 1;
+  
+  console.log('PromptViewer: hasVersions check:', {
+    hasVersions,
+    versionsCount: promptData?.versions?.length || 0,
+    promptDataId: promptData?.id,
+    currentPromptId: currentPrompt?.id
+  });
 
   return (
     <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
