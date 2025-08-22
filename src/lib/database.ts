@@ -303,7 +303,7 @@ export const videoService = {
     console.log('getVideoVersions: Called for videoId:', videoId);
 
     try {
-      // Get all related video IDs (both as main and as version)
+      // Get ALL relations where this video appears (as main_video_id OR version_video_id)
       const { data: relatedVersions, error: versionsError } = await supabase
         .from('video_versions')
         .select('main_video_id, version_video_id, version_name, version_order')
@@ -319,10 +319,12 @@ export const videoService = {
         return { versions: [], currentIsMain: false };
       }
 
-      // Collect all unique video IDs related to this video
+      // Now we need to get ALL videos that are related to ANY of these relations
+      // This means we need to find all videos that share the same "group"
       const allRelatedVideoIds = new Set<string>();
       let currentIsMain = false;
 
+      // First, collect all main_video_ids and version_video_ids from the initial relations
       relatedVersions.forEach(relation => {
         allRelatedVideoIds.add(relation.main_video_id);
         allRelatedVideoIds.add(relation.version_video_id);
@@ -332,6 +334,24 @@ export const videoService = {
           currentIsMain = true;
         }
       });
+
+      // Now get ALL relations for ALL these video IDs to ensure we have the complete group
+      const allVideoIds = Array.from(allRelatedVideoIds);
+      const { data: completeRelations, error: completeError } = await supabase
+        .from('video_versions')
+        .select('main_video_id, version_video_id, version_name, version_order')
+        .or(`main_video_id.in.(${allVideoIds.join(',')}),version_video_id.in.(${allVideoIds.join(',')})`);
+
+      if (completeError) {
+        console.error('getVideoVersions: Error fetching complete relations:', completeError);
+        // Fall back to original relations
+      } else if (completeRelations) {
+        // Add any additional video IDs we found
+        completeRelations.forEach(relation => {
+          allRelatedVideoIds.add(relation.main_video_id);
+          allRelatedVideoIds.add(relation.version_video_id);
+        });
+      }
 
       // Remove the current video from the list (we don't want to show it in its own versions)
       allRelatedVideoIds.delete(videoId);
@@ -368,10 +388,11 @@ export const videoService = {
 
       const videoVersions = fullVersions as Video[];
 
-      // Add version metadata to each video and sort
+      // Add version metadata to each video using the complete relations
+      const allRelations = completeRelations || relatedVersions;
       const sortedVersions = videoVersions.map(video => {
-        // Find the relation that defines this video's version info
-        const relation = relatedVersions.find(r => 
+        // Find the relation that defines this video's version info  
+        const relation = allRelations.find(r => 
           r.version_video_id === video.id || r.main_video_id === video.id
         );
         
