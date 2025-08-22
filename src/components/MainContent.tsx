@@ -49,7 +49,7 @@ const MainContent: React.FC<MainContentProps> = ({ currentView, onVideoSelect })
   };
 
   return (
-    <main className="flex-1 overflow-y-auto px-4 sm:px-6 lg:px-8 pt-4 pb-8 transition-all duration-300 ease-in-out w-full">
+    <main className="flex-1 overflow-y-auto pr-4 sm:pr-6 lg:pr-8 pt-4 pb-8 transition-all duration-300 ease-in-out w-full">
       <div className="w-full max-w-none">
         {/* Page Title - Only show for non-discover pages */}
         {currentView !== 'discover' && getTitle() && (
