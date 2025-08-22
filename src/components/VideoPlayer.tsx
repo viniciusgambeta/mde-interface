@@ -503,7 +503,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video, onBack }) => {
         <div className="flex-1 overflow-y-auto p-6">
           {activeTab === 'materials' ? (
             <div className="space-y-6">
-              <h3 className="text-white font-semibold mb-6">Materiais e links</h3>
+             <h3 className="text-white font-semibold mb-6">Links</h3>
               
               {/* Downloads */}
               {currentVideo.materials && currentVideo.materials.length > 0 ? (
@@ -539,9 +539,52 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video, onBack }) => {
               ) : (
                 <div className="text-center py-8">
                   <FileText className="w-12 h-12 text-slate-600 mx-auto mb-4" />
-                  <p className="text-slate-400">Nenhum material disponível para este vídeo.</p>
+                 <p className="text-slate-400">Nenhum link disponível para este vídeo.</p>
                 </div>
               )}
+             
+             {/* Ferramentas Section */}
+             <div className="mt-8">
+               <h3 className="text-white font-semibold mb-6">Ferramentas</h3>
+               
+               {currentVideo.ferramentas && currentVideo.ferramentas.length > 0 ? (
+                 <div className="space-y-4">
+                   {currentVideo.ferramentas.map((ferramenta) => {
+                     // Get icon component based on icon name
+                     const getIconComponent = (iconName: string) => {
+                       switch (iconName) {
+                         case 'ExternalLink':
+                           return ExternalLink;
+                         default:
+                           return ExternalLink;
+                       }
+                     };
+                     
+                     const IconComponent = getIconComponent(ferramenta.icone);
+                     
+                     return (
+                       <a
+                         key={ferramenta.id}
+                         href={ferramenta.link}
+                         target="_blank"
+                         rel="noopener noreferrer"
+                         className="flex items-center space-x-3 p-3 bg-slate-700/30 rounded-lg hover:bg-slate-600/30 transition-colors cursor-pointer"
+                       >
+                         <IconComponent className="w-5 h-5 text-slate-400" />
+                         <div className="flex-1">
+                           <div className="text-white font-medium text-sm">{ferramenta.nome}</div>
+                         </div>
+                       </a>
+                     );
+                   })}
+                 </div>
+               ) : (
+                 <div className="text-center py-8">
+                   <ExternalLink className="w-12 h-12 text-slate-600 mx-auto mb-4" />
+                   <p className="text-slate-400">Nenhuma ferramenta disponível para este vídeo.</p>
+                 </div>
+               )}
+             </div>
             </div>
           ) : (
             <div className="space-y-6" key={currentVideo.id}>
