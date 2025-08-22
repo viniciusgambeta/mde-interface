@@ -195,6 +195,11 @@ body {
   outline-offset: 2px;
 }
 
+/* Custom Padding */
+.p-3 {
+  padding: 0.5rem;
+}
+
 /* Button Variants */
 .btn-primary {
   @apply bg-gradient-to-r from-[#ff7551] to-[#ff7551]/80 hover:from-[#ff7551]/80 hover:to-[#ff7551]/60 text-white font-medium px-6 py-2.5 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl;
