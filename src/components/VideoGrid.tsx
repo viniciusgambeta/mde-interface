@@ -632,7 +632,7 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
 
           {/* Video Info */}
           <div className="space-y-3 px-1">
-            <h3 className="text-white font-medium line-clamp-2 leading-snug group-hover:text-[#ff7551] transition-colors text-base">
+            <h3 className="text-white font-medium line-clamp-2 leading-snug group-hover:text-[#ff7551] transition-colors text-lg">
               {video.title}
             </h3>
           </div>
@@ -688,7 +688,7 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
             {rowVideos.map((video, index) => (
               <div 
                 key={video.id} 
-                className="flex-shrink-0 w-72"
+                className="flex-shrink-0 w-64"
               >
                 <VideoCard video={video} delay={0} />
               </div>
