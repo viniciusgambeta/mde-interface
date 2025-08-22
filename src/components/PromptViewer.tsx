@@ -300,13 +300,13 @@ const PromptViewer: React.FC<PromptViewerProps> = ({ prompt, onBack }) => {
         {/* Prompt Header */}
         {/* Prompt Info */}
         <div className="space-y-6">
-          <h1 className="text-2xl font-bold text-white leading-tight">
+          <h1 className="text-3xl font-bold text-white leading-tight">
             {currentPrompt.title}
           </h1>
 
           {/* Creator Info & Actions */}
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-3 pl-[5px]">
               <img
                 src={currentPrompt.instructor?.avatar_url || '/src/images/avatar.jpg'}
                 alt={currentPrompt.instructor?.name || 'Instrutor'}
@@ -316,7 +316,7 @@ const PromptViewer: React.FC<PromptViewerProps> = ({ prompt, onBack }) => {
                 <div className="flex items-center space-x-1">
                   <span className="text-white font-semibold text-lg">{currentPrompt.instructor?.name || 'Instrutor'}</span>
                 </div>
-                <div className="flex items-center mt-0.5">
+                <div className="flex items-center mt-0.5 pl-[3px]">
                   {currentPrompt.instructor?.social_instagram && (
                     <a 
                       href={`https://instagram.com/${currentPrompt.instructor.social_instagram}`} 

@@ -310,13 +310,13 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video, onBack }) => {
 
         {/* Video Info */}
         <div className="space-y-6">
-          <h1 className="text-2xl font-bold text-white leading-tight">
+          <h1 className="text-3xl font-bold text-white leading-tight">
             {currentVideo.title}
           </h1>
 
           {/* Creator Info & Actions */}
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-3 pl-[5px]">
               <img
                 src={currentVideo.instructor?.avatar_url || '/src/images/avatar.jpg'}
                 alt={currentVideo.instructor?.name || 'Instrutor'}
@@ -326,7 +326,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video, onBack }) => {
                 <div className="flex items-center space-x-1">
                   <span className="text-white font-semibold text-lg">{currentVideo.instructor?.name || 'Instrutor'}</span>
                 </div>
-                <div className="flex items-center mt-0.5 -ml-1">
+                <div className="flex items-center mt-0.5 pl-[3px]">
                   {currentVideo.instructor?.social_instagram && (
                     <a 
                       href={`https://instagram.com/${currentVideo.instructor.social_instagram}`} 
