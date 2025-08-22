@@ -361,15 +361,15 @@ const PromptViewer: React.FC<PromptViewerProps> = ({ prompt, onBack }) => {
                                 : 'text-slate-300 hover:bg-slate-700/30'
                             }`}
                           >
-                            <div className="font-medium">{version.version_name}</div>
-                          <div className="font-medium">
-                            {(version as any).version_name || version.title}
-                            {(version as any).is_main_version && (
-                              <span className="ml-2 text-xs bg-[#ff7551] text-white px-2 py-0.5 rounded">
-                                Original
-                              </span>
-                            )}
-                          </div>
+                            <div className="font-medium">
+                              {(version as any).version_name || version.title}
+                              {(version as any).is_main_version && (
+                                <span className="ml-2 text-xs bg-[#ff7551] text-white px-2 py-0.5 rounded">
+                                  Original
+                                </span>
+                              )}
+                            </div>
+                            <div className="text-xs text-slate-400 mt-1">
                               {version.tipo} • {formatViews(version.view_count)} views
                             </div>
                           </button>
