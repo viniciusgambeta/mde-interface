@@ -163,6 +163,26 @@ const PromptViewer: React.FC<PromptViewerProps> = ({ prompt, onBack }) => {
         console.log('PromptViewer: Set bookmark/like status - saved:', isBookmarked, 'liked:', isUpvoted);
       }
       
+      // Record prompt view when prompt is loaded
+      if (currentPromptData.id) {
+        console.log('PromptViewer: Recording view for prompt:', currentPromptData.id);
+        const viewRecorded = await videoService.recordView(currentPromptData.id, user?.id);
+        
+        if (viewRecorded) {
+          // Get fresh counts from database after recording view
+          setTimeout(async () => {
+            const freshCounts = await videoService.refreshVideoCounts(currentPromptData.id);
+            if (freshCounts) {
+              setPromptData(prev => prev ? {
+                ...prev,
+                view_count: freshCounts.view_count,
+                upvote_count: freshCounts.upvote_count
+              } : null);
+            }
+          }, 500); // Small delay to ensure trigger has executed
+        }
+      }
+      
       setLoading(false);
       console.log('PromptViewer: Finished loading prompt data');
     };
@@ -178,18 +198,25 @@ const PromptViewer: React.FC<PromptViewerProps> = ({ prompt, onBack }) => {
     try {
       const success = await videoService.toggleUpvote(currentPrompt.id, user.id);
       if (success) {
-        setLiked(!liked);
-        // Update local count
-        const updateCount = (prev: Video | null) => prev ? {
-          ...prev,
-          upvote_count: liked ? prev.upvote_count - 1 : prev.upvote_count + 1
-        } : null;
+        const newLikedState = !liked;
+        setLiked(newLikedState);
         
-        setPromptData(updateCount);
-        if (selectedVersion) {
-          setSelectedVersion(updateCount);
+        // Get fresh counts from database after toggle
+        setTimeout(async () => {
+          const freshCounts = await videoService.refreshVideoCounts(currentPrompt.id);
+          if (freshCounts) {
+            const updateCount = (prev: Video | null) => prev ? {
+              ...prev,
+              upvote_count: freshCounts.upvote_count
+            } : null;
+            
+            setPromptData(updateCount);
+            if (selectedVersion) {
+              setSelectedVersion(updateCount);
+            }
+          }
+        }, 300); // Small delay to ensure trigger has executed
         }
-      }
     } catch (error) {
       console.error('Error toggling like:', error);
     } finally {

@@ -184,6 +184,26 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video, onBack }) => {
         console.log('VideoPlayer: Set bookmark/like status - saved:', isBookmarked, 'liked:', isUpvoted);
       }
       
+      // Record video view when video is loaded
+      if (currentVideoData.id) {
+        console.log('VideoPlayer: Recording view for video:', currentVideoData.id);
+        const viewRecorded = await videoService.recordView(currentVideoData.id, user?.id);
+        
+        if (viewRecorded) {
+          // Get fresh counts from database after recording view
+          setTimeout(async () => {
+            const freshCounts = await videoService.refreshVideoCounts(currentVideoData.id);
+            if (freshCounts) {
+              setVideoData(prev => prev ? {
+                ...prev,
+                view_count: freshCounts.view_count,
+                upvote_count: freshCounts.upvote_count
+              } : null);
+            }
+          }, 500); // Small delay to ensure trigger has executed
+        }
+      }
+      
       setLoading(false);
       console.log('VideoPlayer: Finished loading video data');
     };
@@ -199,18 +219,25 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video, onBack }) => {
     try {
       const success = await videoService.toggleUpvote(currentVideo.id, user.id);
       if (success) {
-        setLiked(!liked);
-        // Update local count
-        const updateCount = (prev: Video | null) => prev ? {
-          ...prev,
-          upvote_count: liked ? prev.upvote_count - 1 : prev.upvote_count + 1
-        } : null;
+        const newLikedState = !liked;
+        setLiked(newLikedState);
         
-        setVideoData(updateCount);
-        if (selectedVersion) {
-          setSelectedVersion(updateCount);
+        // Get fresh counts from database after toggle
+        setTimeout(async () => {
+          const freshCounts = await videoService.refreshVideoCounts(currentVideo.id);
+          if (freshCounts) {
+            const updateCount = (prev: Video | null) => prev ? {
+              ...prev,
+              upvote_count: freshCounts.upvote_count
+            } : null;
+            
+            setVideoData(updateCount);
+            if (selectedVersion) {
+              setSelectedVersion(updateCount);
+            }
+          }
+        }, 300); // Small delay to ensure trigger has executed
         }
-      }
     } catch (error) {
       console.error('Error toggling like:', error);
     } finally {

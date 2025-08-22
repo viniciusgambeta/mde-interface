@@ -670,17 +670,85 @@ export const videoService = {
   },
 
   // Record video view
-  async recordView(videoId: string, userId?: string, watchDuration = 0) {
-    const { error } = await supabase
-      .from('video_views')
-      .insert({
-        video_id: videoId,
-        user_id: userId,
-        watch_duration_seconds: watchDuration,
-        completed: watchDuration > 0
-      });
+  async recordView(videoId: string, userId?: string, watchDuration = 0): Promise<boolean> {
+    if (!videoId) {
+      console.error('recordView: videoId is required');
+      return false;
+    }
 
-    return !error;
+    console.log('recordView: Recording view for video:', videoId, 'user:', userId);
+
+    try {
+      const { error } = await supabase
+        .from('video_views')
+        .insert({
+          video_id: videoId,
+          user_id: userId,
+          watch_duration_seconds: watchDuration,
+          completed: watchDuration > 0
+        });
+
+      if (error) {
+        console.error('recordView: Error inserting view:', error);
+        return false;
+      }
+
+      console.log('recordView: Successfully recorded view');
+      return true;
+    } catch (error) {
+      console.error('recordView: Exception:', error);
+      return false;
+    }
+  },
+
+  // Get updated video with fresh counts
+  async getVideoWithFreshCounts(videoId: string, userId?: string): Promise<Video | null> {
+    if (!videoId) return null;
+
+    const { error } = await supabase
+      .from('videos')
+      .select(`
+        *,
+        instructor:instructors(*),
+        category:categories(*),
+        difficulty_level:difficulty_levels(*),
+        materials:video_materials(*),
+        ferramentas:video_ferramentas(
+          ferramenta:ferramentas_links(*)
+        )
+      `)
+      .eq('id', videoId)
+      .single();
+
+    if (error) {
+      console.error('Error fetching video with fresh counts:', error);
+      return null;
+    }
+
+    return data as Video;
+  },
+
+  // Refresh video counts from database
+  async refreshVideoCounts(videoId: string): Promise<{ view_count: number; upvote_count: number } | null> {
+    if (!videoId) return null;
+
+    try {
+      const { data, error } = await supabase
+        .from('videos')
+        .select('view_count, upvote_count')
+        .eq('id', videoId)
+        .single();
+
+      if (error) {
+        console.error('Error refreshing video counts:', error);
+        return null;
+      }
+
+      return data;
+    } catch (error) {
+      console.error('Exception refreshing video counts:', error);
+      return null;
+    }
   }
 };
 
