@@ -508,16 +508,15 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video, onBack }) => {
                           rel="noopener noreferrer"
                           className="flex items-center space-x-3 p-3 bg-slate-700/30 rounded-lg hover:bg-slate-600/30 transition-colors cursor-pointer"
                         >
-                          <div className="font-medium">
-                            {(version as any).version_name || version.title}
-                            {(version as any).is_main_version && (
-                              <span className="ml-2 text-xs bg-[#ff7551] text-white px-2 py-0.5 rounded">
-                                Original
-                              </span>
-                            )}
-                          </div>
+                          <IconComponent className="w-5 h-5 text-slate-400" />
                           <div className="flex-1">
                             <div className="text-white font-medium text-sm">{material.title}</div>
+                            {material.description && (
+                              <div className="text-slate-400 text-xs mt-1">{material.description}</div>
+                            )}
+                            {material.file_size_mb && (
+                              <div className="text-slate-500 text-xs mt-1">{material.file_size_mb}MB</div>
+                            )}
                           </div>
                         </a>
                       );
