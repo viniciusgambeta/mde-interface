@@ -405,7 +405,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video, onBack }) => {
               <button
                 onClick={handleToggleLike}
                 disabled={!user || likeLoading}
-                className={`group flex items-center justify-center hover:justify-start rounded-lg transition-all duration-300 overflow-hidden cursor-pointer disabled:cursor-not-allowed -mr-1.5 hover:mr-0 ${
+                className={`group flex items-center justify-center hover:justify-start rounded-lg transition-all duration-300 overflow-hidden cursor-pointer disabled:cursor-not-allowed mr-1 hover:mr-0 ${
                   liked ? 'bg-[#ff7551] text-white shadow-lg' : 'bg-slate-700 text-slate-300 hover:bg-slate-600 disabled:opacity-50'
                 } ${likeLoading ? 'animate-pulse' : ''} w-12 h-12 hover:w-auto hover:pl-4 hover:pr-4`}
               >
@@ -419,7 +419,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video, onBack }) => {
               <button 
                 onClick={handleToggleSave}
                 disabled={!user || bookmarkLoading}
-                className={`group flex items-center justify-center hover:justify-start rounded-lg transition-all duration-300 overflow-hidden cursor-pointer disabled:cursor-not-allowed -mr-1.5 hover:mr-0 ${
+                className={`group flex items-center justify-center hover:justify-start rounded-lg transition-all duration-300 overflow-hidden cursor-pointer disabled:cursor-not-allowed mr-1 hover:mr-0 ${
                   saved ? 'bg-white text-black shadow-lg' : 'bg-slate-700 text-slate-300 hover:bg-slate-600 disabled:opacity-50'
                 } ${bookmarkLoading ? 'animate-pulse' : ''} w-12 h-12 hover:w-auto hover:pl-4 hover:pr-4`}
               >
