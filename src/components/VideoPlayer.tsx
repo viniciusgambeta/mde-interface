@@ -138,15 +138,18 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video, onBack }) => {
   };
 
   useEffect(() => {
+    const currentVideoId = selectedVersion?.id || video.id;
+    const currentVideoSlug = selectedVersion?.slug || video.slug;
+
     const loadVideoData = async () => {
       console.log('VideoPlayer: Starting loadVideoData for video:', video.title, 'ID:', video.id, 'Slug:', video.slug);
       
       let currentVideoData = video;
       
       // Try to load full video data if we have a slug
-      if (video.slug && video.slug.trim() !== '') {
-        console.log('VideoPlayer: Loading full video data by slug');
-        const fullVideo = await videoService.getVideoBySlug(video.slug, user?.id);
+      if (currentVideoSlug && currentVideoSlug.trim() !== '') {
+        console.log('VideoPlayer: Loading full video data by slug:', currentVideoSlug);
+        const fullVideo = await videoService.getVideoBySlug(currentVideoSlug, user?.id);
         if (fullVideo) {
           console.log('VideoPlayer: Successfully loaded full video data');
           currentVideoData = fullVideo;
@@ -161,7 +164,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video, onBack }) => {
       setVideoData(currentVideoData);
       
       // Load versions for this video
-      console.log('VideoPlayer: Loading versions for video ID:', currentVideoData.id);
+      console.log('VideoPlayer: Loading versions for video ID:', currentVideoData.id, 'and slug:', currentVideoData.slug);
       const versionResult = await videoService.getVideoVersions(currentVideoData.id, user?.id);
       console.log('VideoPlayer: Received versions from service:', versionResult.versions.length, 'versions');
       
@@ -186,7 +189,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video, onBack }) => {
     };
 
     loadVideoData();
-  }, [video.id, user?.id]);
+  }, [selectedVersion, video.id, video.slug, user?.id, onBack]);
 
   const handleToggleLike = async () => {
     if (!user || !currentVideo || likeLoading) return;

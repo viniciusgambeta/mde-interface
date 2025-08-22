@@ -126,9 +126,9 @@ const PromptViewer: React.FC<PromptViewerProps> = ({ prompt, onBack }) => {
       let currentPromptData = prompt;
       
       // Try to load full prompt data if we have a slug
-      if (prompt.slug && prompt.slug.trim() !== '') {
-        console.log('PromptViewer: Loading full prompt data by slug');
-        const fullPrompt = await videoService.getVideoBySlug(prompt.slug, user?.id);
+      if (currentPrompt.slug && currentPrompt.slug.trim() !== '') {
+        console.log('PromptViewer: Loading full prompt data by slug:', currentPrompt.slug);
+        const fullPrompt = await videoService.getVideoBySlug(currentPrompt.slug, user?.id);
         if (fullPrompt) {
           console.log('PromptViewer: Successfully loaded full prompt data');
           currentPromptData = fullPrompt;
@@ -143,7 +143,7 @@ const PromptViewer: React.FC<PromptViewerProps> = ({ prompt, onBack }) => {
       setPromptData(currentPromptData);
       
       // Load versions for this prompt
-      console.log('PromptViewer: Loading versions for prompt ID:', currentPromptData.id);
+      console.log('PromptViewer: Loading versions for prompt ID:', currentPromptData.id, 'and slug:', currentPromptData.slug);
       const versionResult = await videoService.getVideoVersions(currentPromptData.id, user?.id);
       console.log('PromptViewer: Received versions from service:', versionResult.versions.length, 'versions');
       
@@ -168,7 +168,7 @@ const PromptViewer: React.FC<PromptViewerProps> = ({ prompt, onBack }) => {
     };
 
     loadPromptData();
-  }, [prompt.id, user?.id]);
+  }, [selectedVersion, prompt.id, prompt.slug, user?.id, onBack]);
 
   const handleToggleLike = async () => {
     if (!user || !currentPrompt || likeLoading) return;
