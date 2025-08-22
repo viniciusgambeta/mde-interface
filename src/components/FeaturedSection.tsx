@@ -241,8 +241,8 @@ const FeaturedSection: React.FC<FeaturedSectionProps> = ({ onVideoSelect }) => {
                   <TrendingUp className="w-5 h-5 text-[#ff7551]" />
                 </div>
                 <div>
-                  <h3 className="text-white font-medium">Mais Assistida da Semana</h3>
-                  <p className="text-slate-400 text-sm">React Hooks Avançados - 2.4K views</p>
+                  <h3 className="text-white font-medium">React Hooks Avançados - 2.4K views</h3>
+                  <p className="text-slate-400 text-sm">Mais Assistida da Semana</p>
                 </div>
               </div>
             </div>
@@ -250,12 +250,12 @@ const FeaturedSection: React.FC<FeaturedSectionProps> = ({ onVideoSelect }) => {
             {/* Latest Discount */}
             <div className="bg-[#1f1d2b]/90 backdrop-blur-sm border border-slate-700/30 rounded-xl p-4 hover:bg-slate-700/20 transition-all duration-200 animate-fade-in" style={{ animationDelay: '100ms' }}>
               <div className="flex items-center space-x-3 mb-2">
-                <div className="w-10 h-10 bg-green-500/20 rounded-full flex items-center justify-center">
-                  <Gift className="w-5 h-5 text-green-400" />
+                <div className="w-10 h-10 bg-[#ff7551]/20 rounded-full flex items-center justify-center">
+                  <Gift className="w-5 h-5 text-[#ff7551]" />
                 </div>
                 <div>
-                  <h3 className="text-white font-medium">Último Desconto</h3>
-                  <p className="text-slate-400 text-sm">Figma Pro - 50% OFF até 31/01</p>
+                  <h3 className="text-white font-medium">Figma Pro - 50% OFF até 31/01</h3>
+                  <p className="text-slate-400 text-sm">Último Desconto</p>
                 </div>
               </div>
             </div>
@@ -263,12 +263,12 @@ const FeaturedSection: React.FC<FeaturedSectionProps> = ({ onVideoSelect }) => {
             {/* Next Live Event */}
             <div className="bg-[#1f1d2b]/90 backdrop-blur-sm border border-slate-700/30 rounded-xl p-4 hover:bg-slate-700/20 transition-all duration-200 animate-fade-in" style={{ animationDelay: '200ms' }}>
               <div className="flex items-center space-x-3 mb-2">
-                <div className="w-10 h-10 bg-red-500/20 rounded-full flex items-center justify-center">
+                <div className="w-10 h-10 bg-[#ff7551]/20 rounded-full flex items-center justify-center">
                   <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
                 </div>
                 <div>
-                  <h3 className="text-white font-medium">Próximo Evento ao Vivo</h3>
-                  <p className="text-slate-400 text-sm">TypeScript na Prática - Amanhã às 20h</p>
+                  <h3 className="text-white font-medium">TypeScript na Prática - Amanhã às 20h</h3>
+                  <p className="text-slate-400 text-sm">Próximo Evento ao Vivo</p>
                 </div>
               </div>
             </div>
@@ -276,12 +276,12 @@ const FeaturedSection: React.FC<FeaturedSectionProps> = ({ onVideoSelect }) => {
             {/* Most Voted Suggestion */}
             <div className="bg-[#1f1d2b]/90 backdrop-blur-sm border border-slate-700/30 rounded-xl p-4 hover:bg-slate-700/20 transition-all duration-200 animate-fade-in" style={{ animationDelay: '300ms' }}>
               <div className="flex items-center space-x-3 mb-2">
-                <div className="w-10 h-10 bg-blue-500/20 rounded-full flex items-center justify-center">
-                  <ThumbsUp className="w-5 h-5 text-blue-400" />
+                <div className="w-10 h-10 bg-[#ff7551]/20 rounded-full flex items-center justify-center">
+                  <ThumbsUp className="w-5 h-5 text-[#ff7551]" />
                 </div>
                 <div>
-                  <h3 className="text-white font-medium">Sugestão Mais Votada</h3>
-                  <p className="text-slate-400 text-sm">Next.js 14 App Router - 47 votos</p>
+                  <h3 className="text-white font-medium">Next.js 14 App Router - 47 votos</h3>
+                  <p className="text-slate-400 text-sm">Sugestão Mais Votada</p>
                 </div>
               </div>
             </div>
