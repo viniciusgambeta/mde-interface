@@ -256,7 +256,8 @@ const PromptViewer: React.FC<PromptViewerProps> = ({ prompt, onBack }) => {
   }
 
   const currentPrompt = selectedVersion || promptData || prompt;
-  const hasVersions = promptData?.versions && promptData.versions.length > 1;
+  const hasVersions = (promptData?.versions && promptData.versions.length > 1) || 
+                     (promptData?.parent_video_id !== null);
 
   return (
     <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
@@ -321,9 +322,11 @@ const PromptViewer: React.FC<PromptViewerProps> = ({ prompt, onBack }) => {
                 <div className="relative">
                   <button
                     onClick={() => setShowVersionDropdown(!showVersionDropdown)}
-                    className="flex items-center space-x-2 px-4 py-2.5 bg-slate-700/30 hover:bg-slate-600/30 text-slate-300 hover:text-white rounded-lg transition-colors border border-slate-600/30"
+                    className="flex items-center space-x-2 px-4 py-3 bg-slate-700/30 hover:bg-slate-600/30 text-slate-300 hover:text-white rounded-lg transition-colors border border-slate-600/30 h-12"
                   >
-                    <span className="text-sm font-medium">{currentPrompt.version_name}</span>
+                    <span className="text-sm font-medium">
+                      {selectedVersion?.version_name || 'Outras versões'}
+                    </span>
                     <ChevronDown className={`w-4 h-4 transition-transform ${showVersionDropdown ? 'rotate-180' : ''}`} />
                   </button>
 

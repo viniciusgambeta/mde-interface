@@ -120,7 +120,8 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video, onBack }) => {
   const [showVersionDropdown, setShowVersionDropdown] = useState(false);
 
   // Check if video has versions
-  const hasVersions = videoData?.versions && videoData.versions.length > 1;
+  const hasVersions = (videoData?.versions && videoData.versions.length > 1) || 
+                     (videoData?.parent_video_id !== null);
 
   const handleVersionChange = async (version: Video) => {
     setSelectedVersion(version);
@@ -340,9 +341,11 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video, onBack }) => {
                 <div className="relative">
                   <button
                     onClick={() => setShowVersionDropdown(!showVersionDropdown)}
-                    className="flex items-center space-x-2 px-4 py-2.5 bg-slate-700/30 hover:bg-slate-600/30 text-slate-300 hover:text-white rounded-lg transition-colors border border-slate-600/30"
+                    className="flex items-center space-x-2 px-4 py-3 bg-slate-700/30 hover:bg-slate-600/30 text-slate-300 hover:text-white rounded-lg transition-colors border border-slate-600/30 h-12"
                   >
-                    <span className="text-sm font-medium">{currentVideo.version_name}</span>
+                    <span className="text-sm font-medium">
+                      {selectedVersion?.version_name || 'Outras versões'}
+                    </span>
                     <ChevronDown className={`w-4 h-4 transition-transform ${showVersionDropdown ? 'rotate-180' : ''}`} />
                   </button>
 
