@@ -282,7 +282,8 @@ const PromptViewer: React.FC<PromptViewerProps> = ({ prompt, onBack }) => {
   
   // Check if prompt has versions - use promptData (the full loaded data) to check for versions
   const hasVersions = (promptData?.versions && promptData.versions.length > 1) || 
-                     (promptData?.parent_video_id !== null);
+                     (promptData?.parent_video_id !== null) ||
+                     (prompt?.parent_video_id !== null);
 
   return (
     <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">

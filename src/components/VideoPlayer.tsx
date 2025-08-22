@@ -278,7 +278,8 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video, onBack }) => {
   
   // Check if video has versions - use videoData (the full loaded data) to check for versions
   const hasVersions = (videoData?.versions && videoData.versions.length > 1) || 
-                     (videoData?.parent_video_id !== null);
+                     (videoData?.parent_video_id !== null) ||
+                     (video?.parent_video_id !== null);
 
   return (
     <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
