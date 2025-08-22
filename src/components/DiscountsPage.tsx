@@ -184,7 +184,7 @@ const DiscountsPage: React.FC = () => {
               href={coupon.link}
               target="_blank"
               rel="noopener noreferrer"
-              className="p-3 bg-slate-600/30 hover:bg-slate-500/30 text-slate-300 hover:text-white rounded-lg transition-all duration-200 transform hover:scale-105"
+              className="w-12 h-12 bg-slate-600/30 hover:bg-slate-500/30 text-slate-300 hover:text-white rounded-lg transition-all duration-200 transform hover:scale-105 flex items-center justify-center"
             >
               <ExternalLink className="w-4 h-4" />
             </a>
