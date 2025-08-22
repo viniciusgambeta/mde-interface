@@ -5,9 +5,9 @@ import { featuredContentService, type FeaturedContent } from '../lib/database';
 
 interface FeaturedSectionProps {
   onVideoSelect: (video: any) => void;
+  onViewChange?: (view: string) => void;
 }
 
-const FeaturedSection: React.FC<FeaturedSectionProps> = ({ onVideoSelect }) => {
   const navigate = useNavigate();
   const [featuredContent, setFeaturedContent] = React.useState<FeaturedContent[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -235,7 +235,19 @@ const FeaturedSection: React.FC<FeaturedSectionProps> = ({ onVideoSelect }) => {
         <div className="w-full lg:w-[35%] h-[280px] sm:h-[320px] lg:h-[380px]">
           <div className="grid grid-cols-1 gap-4 h-full">
             {/* Most Watched Video of the Week */}
-            <div className="bg-[#1f1d2b]/90 backdrop-blur-sm border border-slate-700/30 rounded-xl p-4 hover:bg-slate-700/20 transition-all duration-200 animate-fade-in">
+            <button
+              onClick={() => {
+                // Navigate to a specific popular video - you can replace this with actual video data
+                const mockVideo = {
+                  id: 'mock-react-hooks',
+                  title: 'React Hooks Avançados',
+                  slug: 'react-hooks-avancados',
+                  tipo: 'video'
+                };
+                onVideoSelect(mockVideo);
+              }}
+              className="bg-[#1f1d2b]/90 backdrop-blur-sm border border-slate-700/30 rounded-xl p-3 hover:bg-slate-700/20 transition-all duration-200 animate-fade-in text-left w-full"
+            >
               <div className="flex items-center space-x-3 mb-2">
                 <div className="w-10 h-10 bg-[#ff7551]/20 rounded-full flex items-center justify-center">
                   <TrendingUp className="w-5 h-5 text-[#ff7551]" />
@@ -245,10 +257,14 @@ const FeaturedSection: React.FC<FeaturedSectionProps> = ({ onVideoSelect }) => {
                   <p className="text-slate-400 text-sm">Mais Assistida da Semana</p>
                 </div>
               </div>
-            </div>
+            </button>
 
             {/* Latest Discount */}
-            <div className="bg-[#1f1d2b]/90 backdrop-blur-sm border border-slate-700/30 rounded-xl p-4 hover:bg-slate-700/20 transition-all duration-200 animate-fade-in" style={{ animationDelay: '100ms' }}>
+            <button
+              onClick={() => onViewChange('discounts')}
+              className="bg-[#1f1d2b]/90 backdrop-blur-sm border border-slate-700/30 rounded-xl p-3 hover:bg-slate-700/20 transition-all duration-200 animate-fade-in text-left w-full"
+              style={{ animationDelay: '100ms' }}
+            >
               <div className="flex items-center space-x-3 mb-2">
                 <div className="w-10 h-10 bg-[#ff7551]/20 rounded-full flex items-center justify-center">
                   <Gift className="w-5 h-5 text-[#ff7551]" />
@@ -258,10 +274,10 @@ const FeaturedSection: React.FC<FeaturedSectionProps> = ({ onVideoSelect }) => {
                   <p className="text-slate-400 text-sm">Último Desconto</p>
                 </div>
               </div>
-            </div>
+            </button>
 
             {/* Next Live Event */}
-            <div className="bg-[#1f1d2b]/90 backdrop-blur-sm border border-slate-700/30 rounded-xl p-4 hover:bg-slate-700/20 transition-all duration-200 animate-fade-in" style={{ animationDelay: '200ms' }}>
+            <div className="bg-[#1f1d2b]/90 backdrop-blur-sm border border-slate-700/30 rounded-xl p-3 hover:bg-slate-700/20 transition-all duration-200 animate-fade-in" style={{ animationDelay: '200ms' }}>
               <div className="flex items-center space-x-3 mb-2">
                 <div className="w-10 h-10 bg-[#ff7551]/20 rounded-full flex items-center justify-center">
                   <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
@@ -274,7 +290,11 @@ const FeaturedSection: React.FC<FeaturedSectionProps> = ({ onVideoSelect }) => {
             </div>
 
             {/* Most Voted Suggestion */}
-            <div className="bg-[#1f1d2b]/90 backdrop-blur-sm border border-slate-700/30 rounded-xl p-4 hover:bg-slate-700/20 transition-all duration-200 animate-fade-in" style={{ animationDelay: '300ms' }}>
+            <button
+              onClick={() => onViewChange('request-lesson')}
+              className="bg-[#1f1d2b]/90 backdrop-blur-sm border border-slate-700/30 rounded-xl p-3 hover:bg-slate-700/20 transition-all duration-200 animate-fade-in text-left w-full"
+              style={{ animationDelay: '300ms' }}
+            >
               <div className="flex items-center space-x-3 mb-2">
                 <div className="w-10 h-10 bg-[#ff7551]/20 rounded-full flex items-center justify-center">
                   <ThumbsUp className="w-5 h-5 text-[#ff7551]" />
@@ -284,7 +304,7 @@ const FeaturedSection: React.FC<FeaturedSectionProps> = ({ onVideoSelect }) => {
                   <p className="text-slate-400 text-sm">Sugestão Mais Votada</p>
                 </div>
               </div>
-            </div>
+            </button>
           </div>
         </div>
       </div>

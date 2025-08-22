@@ -12,11 +12,12 @@ import DiscountsPage from './DiscountsPage';
 interface MainContentProps {
   currentView: string;
   onVideoSelect: (video: any) => void;
+  onViewChange?: (view: string) => void;
   selectedContent?: any;
   onBack?: () => void;
 }
 
-const MainContent: React.FC<MainContentProps> = ({ currentView, onVideoSelect }) => {
+const MainContent: React.FC<MainContentProps> = ({ currentView, onVideoSelect, onViewChange }) => {
   const handleVideoSelect = (video: any) => {
     console.log(`📺 MainContent.handleVideoSelect called with ${video.tipo || 'video'}:`, {
       title: video.title,
@@ -61,7 +62,7 @@ const MainContent: React.FC<MainContentProps> = ({ currentView, onVideoSelect })
         {/* Featured Section - Only show on discover page */}
         {currentView === 'discover' && (
           <div className="w-full">
-            <FeaturedSection onVideoSelect={handleVideoSelect} />
+            <FeaturedSection onVideoSelect={handleVideoSelect} onViewChange={onViewChange} />
           </div>
         )}
 

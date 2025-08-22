@@ -205,6 +205,7 @@ const AppLayout: React.FC = () => {
             <MainContent 
               currentView={currentView}
               onVideoSelect={handleVideoSelect}
+              onViewChange={handleViewChange}
             />
           </div>
           
