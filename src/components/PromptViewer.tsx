@@ -128,11 +128,25 @@ const PromptViewer: React.FC<PromptViewerProps> = ({ prompt, onBack }) => {
         console.log('Loaded full prompt data:', fullPrompt);
         if (fullPrompt) {
           setPromptData(fullPrompt);
+          
+          // Load versions for this prompt
+          if (fullPrompt.id) {
+            const versions = await videoService.getVideoVersions(fullPrompt.id, user?.id);
+            setPromptData(prev => prev ? { ...prev, versions } : null);
+          }
+          
           setLiked(fullPrompt.is_upvoted || false);
           setSaved(fullPrompt.is_bookmarked || false);
         } else {
           console.log('No prompt found for slug, using passed prompt data');
           setPromptData(prompt);
+          
+          // Load versions for the passed prompt
+          if (prompt.id) {
+            const versions = await videoService.getVideoVersions(prompt.id, user?.id);
+            setPromptData(prev => prev ? { ...prev, versions } : { ...prompt, versions });
+          }
+          
           // Check bookmark and like status for the passed prompt
           if (user) {
             const [isBookmarked, isUpvoted] = await Promise.all([
@@ -146,6 +160,13 @@ const PromptViewer: React.FC<PromptViewerProps> = ({ prompt, onBack }) => {
       } else {
         console.log('No slug provided, using passed prompt data');
         setPromptData(prompt);
+        
+        // Load versions for the passed prompt
+        if (prompt.id) {
+          const versions = await videoService.getVideoVersions(prompt.id, user?.id);
+          setPromptData(prev => prev ? { ...prev, versions } : { ...prompt, versions });
+        }
+        
         // Check bookmark and like status for the passed prompt
         if (user) {
           const [isBookmarked, isUpvoted] = await Promise.all([

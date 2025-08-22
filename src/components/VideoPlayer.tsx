@@ -146,11 +146,25 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video, onBack }) => {
         console.log('Loaded full video data:', fullVideo);
         if (fullVideo) {
           setVideoData(fullVideo);
+          
+          // Load versions for this video
+          if (fullVideo.id) {
+            const versions = await videoService.getVideoVersions(fullVideo.id, user?.id);
+            setVideoData(prev => prev ? { ...prev, versions } : null);
+          }
+          
           setLiked(fullVideo.is_upvoted || false);
           setSaved(fullVideo.is_bookmarked || false);
         } else {
           console.log('No video found for slug, using passed video data');
           setVideoData(video);
+          
+          // Load versions for the passed video
+          if (video.id) {
+            const versions = await videoService.getVideoVersions(video.id, user?.id);
+            setVideoData(prev => prev ? { ...prev, versions } : { ...video, versions });
+          }
+          
           // Check bookmark and like status for the passed video
           if (user) {
             const [isBookmarked, isUpvoted] = await Promise.all([
@@ -164,6 +178,13 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video, onBack }) => {
       } else {
         console.log('No slug provided, using passed video data');
         setVideoData(video);
+        
+        // Load versions for the passed video
+        if (video.id) {
+          const versions = await videoService.getVideoVersions(video.id, user?.id);
+          setVideoData(prev => prev ? { ...prev, versions } : { ...video, versions });
+        }
+        
         // Check bookmark and like status for the passed video
         if (user) {
           const [isBookmarked, isUpvoted] = await Promise.all([
