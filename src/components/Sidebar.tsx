@@ -36,7 +36,7 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggle, currentView, onV
       onClick={() => onViewChange(item.id)}
       className={`group relative flex items-center w-full transition-all duration-200 ${
         collapsed 
-          ? 'w-12 h-12 justify-center rounded-lg mx-auto flex-shrink-0' 
+          ? 'w-12 h-12 justify-center rounded-lg mx-auto' 
           : 'p-4 rounded-xl'
       } ${
         currentView === item.id
@@ -46,9 +46,9 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggle, currentView, onV
     >
       {/* Icon */}
       <div className={`flex items-center justify-center transition-all duration-200 ${
-        collapsed ? 'w-6 h-6' : 'mr-4 w-6 h-6'
+        collapsed ? 'w-full h-full' : 'mr-4'
       }`}>
-        <item.icon className="w-full h-full transition-all duration-200" />
+        <item.icon className={`transition-all duration-200 ${collapsed ? 'w-5 h-5' : 'w-6 h-6'}`} />
       </div>
       
       {/* Label */}
