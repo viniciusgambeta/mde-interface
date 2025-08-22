@@ -8,6 +8,7 @@ interface FeaturedSectionProps {
   onViewChange?: (view: string) => void;
 }
 
+const FeaturedSection: React.FC<FeaturedSectionProps> = ({ onVideoSelect, onViewChange = () => {} }) => {
   const navigate = useNavigate();
   const [featuredContent, setFeaturedContent] = React.useState<FeaturedContent[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
