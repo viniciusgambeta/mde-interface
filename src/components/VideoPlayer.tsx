@@ -420,10 +420,10 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video, onBack }) => {
                 onClick={handleToggleSave}
                 disabled={!user || bookmarkLoading}
                 className={`group flex items-center justify-center hover:justify-start rounded-lg transition-all duration-300 overflow-hidden cursor-pointer disabled:cursor-not-allowed mr-1 hover:mr-0 ${
-                  saved ? 'bg-white text-black shadow-lg' : 'bg-slate-700 text-slate-300 hover:bg-slate-600 disabled:opacity-50'
+                  saved ? 'bg-[#ff7551] text-white shadow-lg' : 'bg-slate-700 text-slate-300 hover:bg-slate-600 disabled:opacity-50'
                 } ${bookmarkLoading ? 'animate-pulse' : ''} w-12 h-12 hover:w-auto hover:pl-4 hover:pr-4`}
               >
-                <Bookmark className="w-5 h-5 flex-shrink-0 group-hover:ml-0 mt-0 ml-0" fill={saved ? 'currentColor' : 'none'} />
+                <Bookmark className="w-5 h-5 flex-shrink-0 group-hover:ml-0 mt-0 ml-0" fill="none" stroke="currentColor" />
                 <span className="ml-2 text-sm font-medium whitespace-nowrap hidden group-hover:block">
                   {saved ? 'Salvo' : 'Salvar'}
                 </span>

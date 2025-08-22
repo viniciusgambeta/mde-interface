@@ -408,10 +408,10 @@ const PromptViewer: React.FC<PromptViewerProps> = ({ prompt, onBack }) => {
                 onClick={handleToggleSave}
                 disabled={!user || bookmarkLoading}
                 className={`flex items-center space-x-2 px-4 py-2.5 rounded-full transition-colors cursor-pointer disabled:cursor-not-allowed mr-1 ${
-                  saved ? 'bg-white text-black shadow-lg' : 'bg-slate-700 text-slate-300 hover:bg-slate-600 disabled:opacity-50'
+                  saved ? 'bg-[#ff7551] text-white shadow-lg' : 'bg-slate-700 text-slate-300 hover:bg-slate-600 disabled:opacity-50'
                 } ${bookmarkLoading ? 'animate-pulse' : ''}`}
               >
-                <Bookmark className="w-4 h-4" fill={saved ? 'currentColor' : 'none'} />
+                <Bookmark className="w-4 h-4" fill="none" stroke="currentColor" />
                 <span>{saved ? 'Salvo' : 'Salvar'}</span>
               </button>
             </div>
