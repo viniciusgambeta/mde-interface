@@ -197,7 +197,7 @@ const Header: React.FC<HeaderProps> = ({ sidebarCollapsed, onSidebarToggle, onVi
                   value={searchQuery}
                   onChange={handleSearchInputChange}
                   onFocus={() => searchQuery.length >= 2 && setShowSearchResults(true)}
-                  className="w-64 md:w-80 focus:w-96 md:focus:w-[32rem] pl-12 pr-12 py-3 text-base bg-slate-700/30 border border-slate-600/30 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#ff7551]/50 focus:border-transparent transition-all duration-300"
+                  className="w-80 md:w-96 focus:w-[28rem] md:focus:w-[40rem] pl-12 pr-12 py-3 text-base bg-slate-700/30 border border-slate-600/30 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#ff7551]/50 focus:border-transparent transition-all duration-300"
                 />
                 {searchQuery && (
                   <button
@@ -211,7 +211,7 @@ const Header: React.FC<HeaderProps> = ({ sidebarCollapsed, onSidebarToggle, onVi
 
               {/* Search Results Dropdown */}
               {showSearchResults && (
-                <div className="absolute top-full left-0 mt-2 w-96 md:w-[32rem] bg-[#1f1d2b] border border-slate-700/30 rounded-lg shadow-xl z-[99999] max-h-[28rem] overflow-y-auto">
+                <div className="absolute top-full left-0 mt-2 w-[28rem] md:w-[40rem] bg-[#1f1d2b] border border-slate-700/30 rounded-lg shadow-xl z-[99999] max-h-[28rem] overflow-y-auto">
                   {isSearching ? (
                     <div className="p-6 text-center">
                       <div className="text-slate-400 text-base">Procurando...</div>
