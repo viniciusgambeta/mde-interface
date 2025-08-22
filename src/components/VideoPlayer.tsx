@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, Heart, Bookmark, ThumbsUp, Users, Send, Download, ExternalLink, FileText, MessageCircle, Phone, Instagram, BarChart3, Clock } from 'lucide-react';
+import { ArrowLeft, Heart, Bookmark, ThumbsUp, Users, Send, Download, ExternalLink, FileText, MessageCircle, Phone, Instagram, BarChart3, Clock, ChevronDown } from 'lucide-react';
 import { videoService, type Video } from '../lib/database';
 import { useAuth } from '../contexts/AuthContext';
 import CustomVideoPlayer from './CustomVideoPlayer';
@@ -116,6 +116,29 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video, onBack }) => {
   const [loading, setLoading] = useState(true);
   const [bookmarkLoading, setBookmarkLoading] = useState(false);
   const [likeLoading, setLikeLoading] = useState(false);
+  const [selectedVersion, setSelectedVersion] = useState<Video | null>(null);
+  const [showVersionDropdown, setShowVersionDropdown] = useState(false);
+
+  // Check if video has versions
+  const hasVersions = videoData?.versions && videoData.versions.length > 1;
+
+  const handleVersionChange = async (version: Video) => {
+    setSelectedVersion(version);
+    setShowVersionDropdown(false);
+    
+    // Update video data with selected version
+    setVideoData(version);
+    
+    // Update bookmark and like status for the selected version
+    if (user) {
+      const [isBookmarked, isUpvoted] = await Promise.all([
+        videoService.isBookmarked(version.id, user.id),
+        videoService.isUpvoted(version.id, user.id)
+      ]);
+      setSaved(isBookmarked);
+      setLiked(isUpvoted);
+    }
+  };
 
   useEffect(() => {
     const loadVideoData = async () => {
@@ -126,11 +149,13 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video, onBack }) => {
         console.log('Loaded full video data:', fullVideo);
         if (fullVideo) {
           setVideoData(fullVideo);
+          setSelectedVersion(fullVideo);
           setLiked(fullVideo.is_upvoted || false);
           setSaved(fullVideo.is_bookmarked || false);
         } else {
           console.log('No video found for slug, using passed video data');
           setVideoData(video);
+          setSelectedVersion(video);
           // Check bookmark and like status for the passed video
           if (user) {
             const [isBookmarked, isUpvoted] = await Promise.all([
@@ -144,6 +169,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video, onBack }) => {
       } else {
         console.log('No slug provided, using passed video data');
         setVideoData(video);
+        setSelectedVersion(video);
         // Check bookmark and like status for the passed video
         if (user) {
           const [isBookmarked, isUpvoted] = await Promise.all([
