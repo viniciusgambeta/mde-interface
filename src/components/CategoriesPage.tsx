@@ -435,8 +435,8 @@ const VideoCard: React.FC<{
           disabled={bookmarkLoading}
           className={`absolute top-3 left-3 z-20 p-2 rounded-full backdrop-blur-sm transition-all duration-200 group-hover:opacity-100 ${
             isBookmarked 
-              ? 'opacity-100 scale-100 bg-[#ff7551] text-white shadow-lg' 
-              : 'opacity-0 scale-75 group-hover:scale-100 bg-black/60 text-white hover:bg-[#ff7551]/80'
+              ? 'bg-[#ff7551] text-white shadow-lg' 
+              : 'bg-black/60 text-white hover:bg-[#ff7551]/80'
           } ${bookmarkLoading ? 'animate-pulse scale-110' : ''}`}
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

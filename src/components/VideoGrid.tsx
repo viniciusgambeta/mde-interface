@@ -560,8 +560,8 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
             disabled={isBookmarkLoading}
             className={`absolute top-3 left-3 z-20 p-2 rounded-full backdrop-blur-sm transition-all duration-200 group-hover:opacity-100 ${
               isBookmarked 
-                ? 'opacity-100 scale-110 bg-[#ff7551] text-white shadow-lg transform' 
-                : 'opacity-0 scale-75 group-hover:scale-110 bg-black/60 text-white hover:bg-[#ff7551]/80'
+                ? 'bg-[#ff7551] text-white shadow-lg' 
+                : 'bg-black/60 text-white hover:bg-[#ff7551]/80'
             } ${isBookmarkLoading ? 'animate-pulse scale-110' : ''} disabled:cursor-not-allowed`}
           >
             <Bookmark 
