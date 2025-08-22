@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ExternalLink, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ExternalLink, ChevronLeft, ChevronRight, TrendingUp, Gift, ThumbsUp, Users } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { featuredContentService, type FeaturedContent } from '../lib/database';
 
@@ -80,49 +80,6 @@ const FeaturedSection: React.FC<FeaturedSectionProps> = ({ onVideoSelect }) => {
   const goToNext = () => {
     const newIndex = (currentIndex + 1) % featuredContent.length;
     goToSlide(newIndex);
-  };
-
-  // Mock news data
-  const newsItems = [
-    {
-      id: 1,
-      title: "Nova funcionalidade de IA para recomendações personalizadas",
-      date: "2024-01-15"
-    },
-    {
-      id: 2,
-      title: "Parceria com grandes empresas de tecnologia",
-      date: "2024-01-12"
-    },
-    {
-      id: 3,
-      title: "Lançamento de cursos avançados de Machine Learning",
-      date: "2024-01-10"
-    },
-    {
-      id: 4,
-      title: "Atualização da plataforma com melhor performance",
-      date: "2024-01-08"
-    },
-    {
-      id: 5,
-      title: "Novos instrutores especialistas se juntam à equipe",
-      date: "2024-01-05"
-    },
-    {
-      id: 6,
-      title: "Certificações oficiais agora disponíveis",
-      date: "2024-01-03"
-    }
-  ];
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('pt-BR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric'
-    });
   };
 
   if (loading) {
@@ -274,37 +231,94 @@ const FeaturedSection: React.FC<FeaturedSectionProps> = ({ onVideoSelect }) => {
           )}
         </div>
 
-        {/* News Section - Right Side */}
+        {/* Platform Indicators - Right Side */}
         <div className="w-full lg:w-[35%] h-[280px] sm:h-[320px] lg:h-[380px] bg-[#1f1d2b]/90 backdrop-blur-sm border border-slate-700/30 rounded-xl p-6 sm:p-8 flex flex-col">
           <div className="mb-6">
-            <h2 className="text-xl sm:text-2xl font-semibold text-white mb-3">Últimas Notícias</h2>
+            <h2 className="text-xl sm:text-2xl font-semibold text-white mb-3">Destaques da Plataforma</h2>
             <div className="w-16 h-1.5 bg-[#ff7551] rounded-full"></div>
           </div>
 
           <div className="flex-1 space-y-4 overflow-y-auto scrollbar-hide">
-            {newsItems.map((news, index) => (
-              <div 
-                key={news.id} 
-                className="group cursor-pointer p-3 sm:p-4 rounded-lg hover:bg-slate-700/20 transition-all duration-200 animate-fade-in"
-                style={{ animationDelay: `${index * 100}ms` }}
-              >
-                <h3 className="text-white text-sm sm:text-base font-medium leading-snug mb-2 group-hover:text-[#ff7551] transition-colors line-clamp-2">
-                  {news.title}
-                </h3>
-                <div className="flex items-center justify-between">
-                  <span className="text-slate-400 text-xs sm:text-sm">
-                    {formatDate(news.date)}
-                  </span>
-                  <div className="w-2 h-2 sm:w-2.5 sm:h-2.5 bg-[#ff7551] rounded-full opacity-0 group-hover:opacity-100 transition-opacity"></div>
+            {/* Most Watched Video of the Week */}
+            <div className="group cursor-pointer p-3 sm:p-4 rounded-lg hover:bg-slate-700/20 transition-all duration-200 animate-fade-in">
+              <div className="flex items-center space-x-3 mb-2">
+                <div className="w-8 h-8 bg-[#ff7551]/20 rounded-full flex items-center justify-center">
+                  <TrendingUp className="w-4 h-4 text-[#ff7551]" />
                 </div>
+                <h3 className="text-white text-sm sm:text-base font-medium group-hover:text-[#ff7551] transition-colors">
+                  Mais Assistida da Semana
+                </h3>
               </div>
-            ))}
+              <p className="text-slate-400 text-xs sm:text-sm line-clamp-2 ml-11">
+                React Hooks Avançados - 2.4K visualizações
+              </p>
+            </div>
+
+            {/* Latest Discount */}
+            <div className="group cursor-pointer p-3 sm:p-4 rounded-lg hover:bg-slate-700/20 transition-all duration-200 animate-fade-in" style={{ animationDelay: '100ms' }}>
+              <div className="flex items-center space-x-3 mb-2">
+                <div className="w-8 h-8 bg-green-500/20 rounded-full flex items-center justify-center">
+                  <Gift className="w-4 h-4 text-green-400" />
+                </div>
+                <h3 className="text-white text-sm sm:text-base font-medium group-hover:text-[#ff7551] transition-colors">
+                  Último Desconto
+                </h3>
+              </div>
+              <p className="text-slate-400 text-xs sm:text-sm line-clamp-2 ml-11">
+                Figma Pro - 50% OFF até 31/01
+              </p>
+            </div>
+
+            {/* Next Live Event */}
+            <div className="group cursor-pointer p-3 sm:p-4 rounded-lg hover:bg-slate-700/20 transition-all duration-200 animate-fade-in" style={{ animationDelay: '200ms' }}>
+              <div className="flex items-center space-x-3 mb-2">
+                <div className="w-8 h-8 bg-red-500/20 rounded-full flex items-center justify-center">
+                  <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+                </div>
+                <h3 className="text-white text-sm sm:text-base font-medium group-hover:text-[#ff7551] transition-colors">
+                  Próximo Evento ao Vivo
+                </h3>
+              </div>
+              <p className="text-slate-400 text-xs sm:text-sm line-clamp-2 ml-11">
+                TypeScript na Prática - Amanhã às 20h
+              </p>
+            </div>
+
+            {/* Most Voted Suggestion */}
+            <div className="group cursor-pointer p-3 sm:p-4 rounded-lg hover:bg-slate-700/20 transition-all duration-200 animate-fade-in" style={{ animationDelay: '300ms' }}>
+              <div className="flex items-center space-x-3 mb-2">
+                <div className="w-8 h-8 bg-blue-500/20 rounded-full flex items-center justify-center">
+                  <ThumbsUp className="w-4 h-4 text-blue-400" />
+                </div>
+                <h3 className="text-white text-sm sm:text-base font-medium group-hover:text-[#ff7551] transition-colors">
+                  Sugestão Mais Votada
+                </h3>
+              </div>
+              <p className="text-slate-400 text-xs sm:text-sm line-clamp-2 ml-11">
+                Next.js 14 App Router - 47 votos
+              </p>
+            </div>
+
+            {/* Platform Stats */}
+            <div className="group cursor-pointer p-3 sm:p-4 rounded-lg hover:bg-slate-700/20 transition-all duration-200 animate-fade-in" style={{ animationDelay: '400ms' }}>
+              <div className="flex items-center space-x-3 mb-2">
+                <div className="w-8 h-8 bg-purple-500/20 rounded-full flex items-center justify-center">
+                  <Users className="w-4 h-4 text-purple-400" />
+                </div>
+                <h3 className="text-white text-sm sm:text-base font-medium group-hover:text-[#ff7551] transition-colors">
+                  Comunidade Ativa
+                </h3>
+              </div>
+              <p className="text-slate-400 text-xs sm:text-sm line-clamp-2 ml-11">
+                +1.2K novos membros este mês
+              </p>
+            </div>
           </div>
 
-          {/* View All News Button */}
+          {/* View More Button */}
           <div className="mt-4 sm:mt-6 pt-4 sm:pt-6 border-t border-slate-700/30 flex-shrink-0">
             <button className="w-full text-center text-[#ff7551] hover:text-[#ff7551]/80 text-sm sm:text-base font-medium transition-colors">
-              Ver todas as notícias →
+              Ver mais estatísticas →
             </button>
           </div>
         </div>
