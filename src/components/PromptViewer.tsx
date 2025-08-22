@@ -121,22 +121,22 @@ const PromptViewer: React.FC<PromptViewerProps> = ({ prompt, onBack }) => {
 
   useEffect(() => {
     const loadPromptData = async () => {
-      console.log('PromptViewer: Starting loadPromptData for prompt:', prompt.title, 'ID:', prompt.id, 'Slug:', prompt.slug);
+      console.log('PromptViewer: Starting loadPromptData for prompt:', currentPrompt.title, 'ID:', currentPrompt.id, 'Slug:', currentPrompt.slug);
       
-      let currentPromptData = prompt;
+      let currentPromptData = currentPrompt;
       
       // Try to load full prompt data if we have a slug
-      if (currentPrompt.slug && currentPrompt.slug.trim() !== '') {
-        console.log('PromptViewer: Loading full prompt data by slug:', currentPrompt.slug);
-        const fullPrompt = await videoService.getVideoBySlug(currentPrompt.slug, user?.id);
+      if (currentPromptSlug && currentPromptSlug.trim() !== '') {
+        console.log('PromptViewer: Loading full prompt data by slug:', currentPromptSlug);
+        const fullPrompt = await videoService.getVideoBySlug(currentPromptSlug, user?.id);
         if (fullPrompt) {
           console.log('PromptViewer: Successfully loaded full prompt data');
           currentPromptData = fullPrompt;
         } else {
-          console.log('PromptViewer: No prompt found for slug, using passed prompt data');
+          console.log('PromptViewer: No prompt found for slug, using current prompt data');
         }
       } else {
-        console.log('PromptViewer: No slug provided, using passed prompt data');
+        console.log('PromptViewer: No slug provided, using current prompt data');
       }
       
       // Set initial prompt data
@@ -168,7 +168,7 @@ const PromptViewer: React.FC<PromptViewerProps> = ({ prompt, onBack }) => {
     };
 
     loadPromptData();
-  }, [selectedVersion, prompt.id, prompt.slug, user?.id, onBack]);
+  }, [selectedVersion?.id, selectedVersion?.slug, prompt.id, prompt.slug, user?.id]);
 
   const handleToggleLike = async () => {
     if (!user || !currentPrompt || likeLoading) return;
@@ -223,6 +223,9 @@ const PromptViewer: React.FC<PromptViewerProps> = ({ prompt, onBack }) => {
     setSelectedVersion(version);
     setShowVersionDropdown(false);
     
+    // Update prompt data with selected version
+    setPromptData(version);
+    
     // Update bookmark and like status for the new version
     if (user) {
       const [isBookmarked, isUpvoted] = await Promise.all([
@@ -235,6 +238,9 @@ const PromptViewer: React.FC<PromptViewerProps> = ({ prompt, onBack }) => {
   };
 
   const handleCopyPrompt = async () => {
+    const currentPrompt = selectedVersion || prompt;
+    const currentPromptSlug = currentPrompt.slug;
+
     if (!currentPrompt?.prompt_content && !currentPrompt?.description) return;
     
     try {
