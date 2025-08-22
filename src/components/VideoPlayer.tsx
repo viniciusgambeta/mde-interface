@@ -410,7 +410,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video, onBack }) => {
                 } ${likeLoading ? 'animate-pulse' : ''} w-12 h-12 hover:w-auto hover:pl-4 hover:pr-4`}
               >
                 <ThumbsUp className="w-5 h-5 flex-shrink-0 group-hover:ml-0 ml-0.5" />
-                <span className="ml-2 text-sm font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300 max-w-0 group-hover:max-w-xs overflow-hidden">
+                <span className="ml-2 text-sm font-medium whitespace-nowrap hidden group-hover:block">
                   {liked ? 'Curtido' : 'Curtir'}
                 </span>
               </button>
@@ -424,7 +424,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video, onBack }) => {
                 } ${bookmarkLoading ? 'animate-pulse' : ''} w-12 h-12 hover:w-auto hover:pl-4 hover:pr-4`}
               >
                 <Bookmark className="w-5 h-5 flex-shrink-0 group-hover:ml-0 ml-0.5" fill={saved ? 'currentColor' : 'none'} />
-                <span className="ml-2 text-sm font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300 max-w-0 group-hover:max-w-xs overflow-hidden">
+                <span className="ml-2 text-sm font-medium whitespace-nowrap hidden group-hover:block">
                   {saved ? 'Salvo' : 'Salvar'}
                 </span>
               </button>
