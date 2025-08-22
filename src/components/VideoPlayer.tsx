@@ -545,7 +545,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video, onBack }) => {
                <h3 className="text-white font-semibold mb-6">Ferramentas</h3>
                
                {currentVideo.ferramentas && currentVideo.ferramentas.length > 0 ? (
-                 <div className="space-y-4">
+                 <div className="flex flex-wrap gap-3">
                    {currentVideo.ferramentas.map((ferramenta) => {
                      return (
                        <a
@@ -553,12 +553,13 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video, onBack }) => {
                          href={ferramenta.link}
                          target="_blank"
                          rel="noopener noreferrer"
-                         className="flex items-center space-x-3 p-3 bg-slate-700/30 rounded-lg hover:bg-slate-600/30 transition-colors cursor-pointer"
+                         className="block hover:scale-110 transition-transform duration-200"
+                         title={ferramenta.nome}
                        >
                          <img 
                            src={ferramenta.icone} 
                            alt={ferramenta.nome}
-                           className="w-5 h-5 object-contain"
+                           className="w-8 h-8 object-contain rounded"
                            onError={(e) => {
                              // Fallback to ExternalLink icon if image fails to load
                              const target = e.target as HTMLImageElement;
@@ -567,10 +568,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video, onBack }) => {
                              if (fallbackIcon) fallbackIcon.style.display = 'block';
                            }}
                          />
-                         <ExternalLink className="w-5 h-5 text-slate-400 hidden" />
-                         <div className="flex-1">
-                           <div className="text-white font-medium text-sm">{ferramenta.nome}</div>
-                         </div>
+                         <ExternalLink className="w-8 h-8 text-slate-400 hidden rounded" />
                        </a>
                      );
                    })}
