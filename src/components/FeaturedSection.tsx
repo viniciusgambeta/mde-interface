@@ -37,7 +37,7 @@ const FeaturedSection: React.FC<FeaturedSectionProps> = ({ onVideoSelect }) => {
     if (featuredContent.length > 1) {
       intervalRef.current = setInterval(() => {
         setCurrentIndex((prev) => (prev + 1) % featuredContent.length);
-      }, 5000); // Change slide every 5 seconds
+      }, 8000); // Change slide every 8 seconds
 
       return () => {
         if (intervalRef.current) {
@@ -68,7 +68,7 @@ const FeaturedSection: React.FC<FeaturedSectionProps> = ({ onVideoSelect }) => {
       clearInterval(intervalRef.current);
       intervalRef.current = setInterval(() => {
         setCurrentIndex((prev) => (prev + 1) % featuredContent.length);
-      }, 5000);
+      }, 8000);
     }
   };
 
@@ -227,10 +227,9 @@ const FeaturedSection: React.FC<FeaturedSectionProps> = ({ onVideoSelect }) => {
                     {/* Action Button */}
                     <button
                       onClick={(e) => handleButtonClick(e, content)}
-                      className="flex items-center space-x-2 sm:space-x-3 bg-[#ff7551] hover:bg-[#ff7551]/80 text-white font-semibold px-4 sm:px-6 py-2.5 sm:py-3 rounded-lg transition-all duration-200 transform hover:scale-105 text-sm sm:text-base"
+                      className="bg-[#ff7551] hover:bg-[#ff7551]/80 text-white font-semibold px-4 sm:px-6 py-2.5 sm:py-3 rounded-lg transition-all duration-200 transform hover:scale-105 text-sm sm:text-base"
                     >
-                      <ExternalLink className="w-4 h-4 sm:w-5 sm:h-5" />
-                      <span>{content.nome_botao}</span>
+                      {content.nome_botao}
                     </button>
                   </div>
                 </div>
@@ -243,14 +242,14 @@ const FeaturedSection: React.FC<FeaturedSectionProps> = ({ onVideoSelect }) => {
             <>
               <button
                 onClick={goToPrevious}
-                className="absolute left-4 top-1/2 transform -translate-y-1/2 w-10 h-10 bg-black/50 hover:bg-black/70 text-white rounded-full flex items-center justify-center transition-all duration-200 z-20"
+                className="absolute left-4 top-1/2 transform -translate-y-1/2 p-3 bg-black/50 hover:bg-black/70 text-white flex items-center justify-center transition-all duration-200 z-20"
               >
                 <ChevronLeft className="w-5 h-5" />
               </button>
               
               <button
                 onClick={goToNext}
-                className="absolute right-4 top-1/2 transform -translate-y-1/2 w-10 h-10 bg-black/50 hover:bg-black/70 text-white rounded-full flex items-center justify-center transition-all duration-200 z-20"
+                className="absolute right-4 top-1/2 transform -translate-y-1/2 p-3 bg-black/50 hover:bg-black/70 text-white flex items-center justify-center transition-all duration-200 z-20"
               >
                 <ChevronRight className="w-5 h-5" />
               </button>
