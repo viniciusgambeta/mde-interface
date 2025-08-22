@@ -286,6 +286,76 @@ export const videoService = {
     return this.getVideos({ category: categorySlug, limit, userId });
   },
 
+  // Get all versions of a video
+  async getVideoVersions(videoId: string, userId?: string): Promise<Video[]> {
+    if (!videoId) return [];
+
+    try {
+      // First, get the current video to determine the parent
+      const { data: currentVideo, error: currentError } = await supabase
+        .from('videos')
+        .select('parent_video_id')
+        .eq('id', videoId)
+        .single();
+
+      if (currentError) {
+        console.error('Error fetching current video:', currentError);
+        return [];
+      }
+
+      // Determine the parent video ID
+      const parentVideoId = currentVideo.parent_video_id || videoId;
+
+      // Get all versions (including the parent)
+      const { data: versions, error: versionsError } = await supabase
+        .from('videos')
+        .select(`
+          *,
+          instructor:instructors(*),
+          category:categories(*),
+          difficulty_level:difficulty_levels(*),
+          materials:video_materials(*),
+          ferramentas:video_ferramentas(
+            ferramenta:ferramentas_links(*)
+          )
+        `)
+        .or(`id.eq.${parentVideoId},parent_video_id.eq.${parentVideoId}`)
+        .eq('status', 'published')
+        .order('version_order', { ascending: true });
+
+      if (versionsError) {
+        console.error('Error fetching video versions:', versionsError);
+        return [];
+      }
+
+      const videoVersions = versions as Video[];
+
+      // Transform ferramentas data structure
+      videoVersions.forEach(video => {
+        if (video.ferramentas) {
+          video.ferramentas = (video.ferramentas as any[]).map((item: any) => item.ferramenta).filter(Boolean);
+        }
+      });
+
+      // If user is provided, check bookmark status for each version
+      if (userId && videoVersions.length > 0) {
+        const bookmarkStatuses = await this.getBookmarkStatuses(
+          videoVersions.map(v => v.id), 
+          userId
+        );
+        
+        videoVersions.forEach(video => {
+          video.is_bookmarked = bookmarkStatuses[video.id] || false;
+        });
+      }
+
+      return videoVersions;
+    } catch (error) {
+      console.error('Error in getVideoVersions:', error);
+      return [];
+    }
+  },
+
   // Check if video is bookmarked by user
   async isBookmarked(videoId: string, userId: string): Promise<boolean> {
     if (!videoId || !userId) return false;
