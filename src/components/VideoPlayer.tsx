@@ -119,10 +119,6 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video, onBack }) => {
   const [selectedVersion, setSelectedVersion] = useState<Video | null>(null);
   const [showVersionDropdown, setShowVersionDropdown] = useState(false);
 
-  // Check if video has versions
-  const hasVersions = (videoData?.versions && videoData.versions.length > 1) || 
-                     (videoData?.parent_video_id !== null);
-
   const handleVersionChange = async (version: Video) => {
     setSelectedVersion(version);
     setShowVersionDropdown(false);
@@ -150,13 +146,11 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video, onBack }) => {
         console.log('Loaded full video data:', fullVideo);
         if (fullVideo) {
           setVideoData(fullVideo);
-          setSelectedVersion(fullVideo);
           setLiked(fullVideo.is_upvoted || false);
           setSaved(fullVideo.is_bookmarked || false);
         } else {
           console.log('No video found for slug, using passed video data');
           setVideoData(video);
-          setSelectedVersion(video);
           // Check bookmark and like status for the passed video
           if (user) {
             const [isBookmarked, isUpvoted] = await Promise.all([
@@ -170,7 +164,6 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video, onBack }) => {
       } else {
         console.log('No slug provided, using passed video data');
         setVideoData(video);
-        setSelectedVersion(video);
         // Check bookmark and like status for the passed video
         if (user) {
           const [isBookmarked, isUpvoted] = await Promise.all([
@@ -188,19 +181,24 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video, onBack }) => {
   }, [video.id, video.timestamp, user?.id]);
 
   const handleToggleLike = async () => {
-    if (!user || !videoData || likeLoading) return;
+    if (!user || !currentVideo || likeLoading) return;
     
     setLikeLoading(true);
     
     try {
-      const success = await videoService.toggleUpvote(videoData.id, user.id);
+      const success = await videoService.toggleUpvote(currentVideo.id, user.id);
       if (success) {
         setLiked(!liked);
         // Update local count
-        setVideoData(prev => prev ? {
+        const updateCount = (prev: Video | null) => prev ? {
           ...prev,
           upvote_count: liked ? prev.upvote_count - 1 : prev.upvote_count + 1
-        } : null);
+        } : null;
+        
+        setVideoData(updateCount);
+        if (selectedVersion) {
+          setSelectedVersion(updateCount);
+        }
       }
     } catch (error) {
       console.error('Error toggling like:', error);
@@ -210,12 +208,12 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video, onBack }) => {
   };
 
   const handleToggleSave = async () => {
-    if (!user || !videoData || bookmarkLoading) return;
+    if (!user || !currentVideo || bookmarkLoading) return;
     
     setBookmarkLoading(true);
     
     try {
-      const result = await videoService.toggleBookmarkOptimized(videoData.id, user.id);
+      const result = await videoService.toggleBookmarkOptimized(currentVideo.id, user.id);
       if (result.success) {
         setSaved(result.isBookmarked);
         console.log('Updated video player bookmark status to:', result.isBookmarked);
@@ -255,7 +253,11 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video, onBack }) => {
     );
   }
 
-  const currentVideo = videoData || video;
+  const currentVideo = selectedVersion || videoData || video;
+  
+  // Check if video has versions - use videoData (the full loaded data) to check for versions
+  const hasVersions = (videoData?.versions && videoData.versions.length > 1) || 
+                     (videoData?.parent_video_id !== null);
 
   return (
     <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
@@ -344,7 +346,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video, onBack }) => {
                     className="flex items-center space-x-2 px-4 py-3 bg-slate-700/30 hover:bg-slate-600/30 text-slate-300 hover:text-white rounded-lg transition-colors border border-slate-600/30 h-12"
                   >
                     <span className="text-sm font-medium">
-                      {selectedVersion?.version_name || 'Outras versões'}
+                      Outras versões
                     </span>
                     <ChevronDown className={`w-4 h-4 transition-transform ${showVersionDropdown ? 'rotate-180' : ''}`} />
                   </button>
@@ -357,7 +359,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video, onBack }) => {
                             key={version.id}
                             onClick={() => handleVersionChange(version)}
                             className={`w-full text-left px-3 py-2 text-sm rounded transition-colors ${
-                              selectedVersion?.id === version.id
+                              currentVideo.id === version.id
                                 ? 'bg-[#ff7551] text-white'
                                 : 'text-slate-300 hover:bg-slate-700/30'
                             }`}

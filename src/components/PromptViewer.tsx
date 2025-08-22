@@ -128,13 +128,11 @@ const PromptViewer: React.FC<PromptViewerProps> = ({ prompt, onBack }) => {
         console.log('Loaded full prompt data:', fullPrompt);
         if (fullPrompt) {
           setPromptData(fullPrompt);
-          setSelectedVersion(fullPrompt);
           setLiked(fullPrompt.is_upvoted || false);
           setSaved(fullPrompt.is_bookmarked || false);
         } else {
           console.log('No prompt found for slug, using passed prompt data');
           setPromptData(prompt);
-          setSelectedVersion(prompt);
           // Check bookmark and like status for the passed prompt
           if (user) {
             const [isBookmarked, isUpvoted] = await Promise.all([
@@ -148,7 +146,6 @@ const PromptViewer: React.FC<PromptViewerProps> = ({ prompt, onBack }) => {
       } else {
         console.log('No slug provided, using passed prompt data');
         setPromptData(prompt);
-        setSelectedVersion(prompt);
         // Check bookmark and like status for the passed prompt
         if (user) {
           const [isBookmarked, isUpvoted] = await Promise.all([
@@ -166,19 +163,24 @@ const PromptViewer: React.FC<PromptViewerProps> = ({ prompt, onBack }) => {
   }, [prompt.id, prompt.timestamp, user?.id]);
 
   const handleToggleLike = async () => {
-    if (!user || !selectedVersion || likeLoading) return;
+    if (!user || !currentPrompt || likeLoading) return;
     
     setLikeLoading(true);
     
     try {
-      const success = await videoService.toggleUpvote(selectedVersion.id, user.id);
+      const success = await videoService.toggleUpvote(currentPrompt.id, user.id);
       if (success) {
         setLiked(!liked);
         // Update local count
-        setSelectedVersion(prev => prev ? {
+        const updateCount = (prev: Video | null) => prev ? {
           ...prev,
           upvote_count: liked ? prev.upvote_count - 1 : prev.upvote_count + 1
-        } : null);
+        } : null;
+        
+        setPromptData(updateCount);
+        if (selectedVersion) {
+          setSelectedVersion(updateCount);
+        }
       }
     } catch (error) {
       console.error('Error toggling like:', error);
@@ -188,14 +190,14 @@ const PromptViewer: React.FC<PromptViewerProps> = ({ prompt, onBack }) => {
   };
 
   const handleToggleSave = async () => {
-    if (!user || !selectedVersion || bookmarkLoading) return;
+    if (!user || !currentPrompt || bookmarkLoading) return;
     
     setBookmarkLoading(true);
     
     try {
-      console.log('Toggling bookmark for prompt viewer:', selectedVersion.id, 'Current status:', saved);
+      console.log('Toggling bookmark for prompt viewer:', currentPrompt.id, 'Current status:', saved);
       
-      const success = await videoService.toggleBookmark(selectedVersion.id, user.id);
+      const success = await videoService.toggleBookmark(currentPrompt.id, user.id);
       if (success) {
         const newSavedStatus = !saved;
         setSaved(newSavedStatus);
@@ -225,10 +227,10 @@ const PromptViewer: React.FC<PromptViewerProps> = ({ prompt, onBack }) => {
   };
 
   const handleCopyPrompt = async () => {
-    if (!selectedVersion?.prompt_content && !selectedVersion?.description) return;
+    if (!currentPrompt?.prompt_content && !currentPrompt?.description) return;
     
     try {
-      const contentToCopy = selectedVersion.prompt_content || selectedVersion.description || '';
+      const contentToCopy = currentPrompt.prompt_content || currentPrompt.description || '';
       await navigator.clipboard.writeText(contentToCopy);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
@@ -256,6 +258,8 @@ const PromptViewer: React.FC<PromptViewerProps> = ({ prompt, onBack }) => {
   }
 
   const currentPrompt = selectedVersion || promptData || prompt;
+  
+  // Check if prompt has versions - use promptData (the full loaded data) to check for versions
   const hasVersions = (promptData?.versions && promptData.versions.length > 1) || 
                      (promptData?.parent_video_id !== null);
 
@@ -325,7 +329,7 @@ const PromptViewer: React.FC<PromptViewerProps> = ({ prompt, onBack }) => {
                     className="flex items-center space-x-2 px-4 py-3 bg-slate-700/30 hover:bg-slate-600/30 text-slate-300 hover:text-white rounded-lg transition-colors border border-slate-600/30 h-12"
                   >
                     <span className="text-sm font-medium">
-                      {selectedVersion?.version_name || 'Outras versões'}
+                      Outras versões
                     </span>
                     <ChevronDown className={`w-4 h-4 transition-transform ${showVersionDropdown ? 'rotate-180' : ''}`} />
                   </button>
@@ -338,7 +342,7 @@ const PromptViewer: React.FC<PromptViewerProps> = ({ prompt, onBack }) => {
                             key={version.id}
                             onClick={() => handleVersionChange(version)}
                             className={`w-full text-left px-3 py-2 text-sm rounded transition-colors ${
-                              selectedVersion?.id === version.id
+                              currentPrompt.id === version.id
                                 ? 'bg-[#ff7551] text-white'
                                 : 'text-slate-300 hover:bg-slate-700/30'
                             }`}
@@ -432,7 +436,7 @@ const PromptViewer: React.FC<PromptViewerProps> = ({ prompt, onBack }) => {
                     )}
 
                     <pre className="text-slate-100 whitespace-pre-wrap leading-relaxed font-mono">
-                      {selectedVersion.prompt_content || selectedVersion.description}
+                      {currentPrompt.prompt_content || currentPrompt.description}
                     </pre>
                   </div>
                 </div>
