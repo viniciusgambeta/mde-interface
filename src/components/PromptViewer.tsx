@@ -434,11 +434,78 @@ const PromptViewer: React.FC<PromptViewerProps> = ({ prompt, onBack }) => {
                 </div>
               )}
               
+              {/* Materials/Downloads Section */}
+              {currentVideo.materials && currentVideo.materials.length > 0 && (
+                <div className="mt-6 pt-4 border-t border-slate-600/30">
+                  <h4 className="text-white font-semibold text-base mb-4">
+                    Materiais e Downloads
+                  </h4>
+                  <div className="space-y-3">
+                    {currentVideo.materials
+                      .sort((a, b) => a.order_index - b.order_index)
+                      .map((material) => (
+                        <a
+                          key={material.id}
+                          href={material.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center space-x-3 p-3 bg-slate-600/20 rounded-lg hover:bg-slate-600/30 transition-colors cursor-pointer"
+                        >
+                          <Download className="w-4 h-4 text-slate-400" />
+                          <div className="flex-1">
+                            <div className="text-white font-medium text-sm">{material.title}</div>
+                            {material.description && (
+                              <div className="text-slate-400 text-xs mt-1">{material.description}</div>
+                            )}
+                            {material.file_size_mb && (
+                              <div className="text-slate-500 text-xs mt-1">{material.file_size_mb}MB</div>
+                            )}
+                          </div>
+                        </a>
+                      ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Tools Section */}
+              {currentVideo.ferramentas && currentVideo.ferramentas.length > 0 && (
+                <div className="mt-6 pt-4 border-t border-slate-600/30">
+                  <h4 className="text-white font-semibold text-base mb-4">
+                    Ferramentas
+                  </h4>
+                  <div className="flex flex-wrap gap-3">
+                    {currentVideo.ferramentas.map((ferramenta) => (
+                      <a
+                        key={ferramenta.id}
+                        href={ferramenta.link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center justify-center w-12 h-12 bg-slate-600/20 rounded-lg hover:bg-slate-600/30 transition-colors cursor-pointer group"
+                        title={ferramenta.nome}
+                      >
+                        <img 
+                          src={ferramenta.icone} 
+                          alt={ferramenta.nome}
+                          className="w-6 h-6 object-contain group-hover:scale-110 transition-transform"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.style.display = 'none';
+                            const fallbackIcon = target.nextElementSibling as HTMLElement;
+                            if (fallbackIcon) fallbackIcon.style.display = 'block';
+                          }}
+                        />
+                        <ExternalLink className="w-5 h-5 text-slate-400 hidden" />
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              )}
+              
               {/* Prompt Code Box */}
               {(currentPrompt.prompt_content || currentPrompt.description) && (
                 <div className="mt-6 pt-6 border-t border-slate-600/30">
                   <div className="mb-4">
-                    <h4 className="text-white font-semibold text-lg">Prompt para copiar 🠗</h4>
+                    <h4 className="text-white font-bold text-lg">Prompt para copiar 🠗</h4>
                   </div>
                   
                   <div className={`relative bg-gray-900/95 border rounded-lg p-8 font-mono text-sm transition-all duration-300 ${
