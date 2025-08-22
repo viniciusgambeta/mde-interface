@@ -109,6 +109,9 @@ export interface Video {
   updated_at: string;
   tipo: 'video' | 'prompt';
   prompt_content?: string;
+  parent_video_id?: string;
+  version_name?: string;
+  version_order: number;
   
   // Joined data
   instructor?: Instructor;
@@ -116,6 +119,7 @@ export interface Video {
   difficulty_level?: DifficultyLevel;
   materials?: VideoMaterial[];
   ferramentas?: FerramentaLink[];
+  versions?: Video[];
   is_bookmarked?: boolean;
   is_upvoted?: boolean;
 }
@@ -238,6 +242,7 @@ export const videoService = {
         )
       `)
       .eq('slug', slug)
+      .eq('status', 'published')
       .single();
 
     const { data: video, error } = await query;
@@ -252,6 +257,11 @@ export const videoService = {
       video.ferramentas = (video.ferramentas as any[]).map((item: any) => item.ferramenta).filter(Boolean);
     }
 
+    // Get all versions of this video
+    if (video) {
+      const versions = await this.getVideoVersions(video.id, userId);
+      video.versions = versions;
+    }
     // If user is logged in, check if they bookmarked/upvoted this video
     if (userId && video) {
       const [isBookmarked, isUpvoted] = await Promise.all([

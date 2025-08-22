@@ -309,6 +309,42 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video, onBack }) => {
                 </div>
               </div>
               
+              {/* Version Selector */}
+              {hasVersions && (
+                <div className="relative">
+                  <button
+                    onClick={() => setShowVersionDropdown(!showVersionDropdown)}
+                    className="flex items-center space-x-2 px-4 py-2.5 bg-slate-700/30 hover:bg-slate-600/30 text-slate-300 hover:text-white rounded-lg transition-colors border border-slate-600/30"
+                  >
+                    <span className="text-sm font-medium">{currentVideo.version_name}</span>
+                    <ChevronDown className={`w-4 h-4 transition-transform ${showVersionDropdown ? 'rotate-180' : ''}`} />
+                  </button>
+
+                  {showVersionDropdown && (
+                    <div className="absolute top-full right-0 mt-2 w-48 bg-[#1f1d2b] border border-slate-700/30 rounded-lg shadow-xl z-50 max-h-64 overflow-y-auto">
+                      <div className="p-2">
+                        {videoData?.versions?.map((version) => (
+                          <button
+                            key={version.id}
+                            onClick={() => handleVersionChange(version)}
+                            className={`w-full text-left px-3 py-2 text-sm rounded transition-colors ${
+                              selectedVersion?.id === version.id
+                                ? 'bg-[#ff7551] text-white'
+                                : 'text-slate-300 hover:bg-slate-700/30'
+                            }`}
+                          >
+                            <div className="font-medium">{version.version_name}</div>
+                            <div className="text-xs opacity-75 mt-1">
+                              {formatDuration(version.duration_minutes)} • {formatViews(version.view_count)} views
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
               {/* Like Button */}
               <button
                 onClick={handleToggleLike}

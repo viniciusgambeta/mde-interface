@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, Heart, Bookmark, ThumbsUp, Users, Copy, Download, CheckCircle, BarChart3 } from 'lucide-react';
+import { ArrowLeft, Heart, Bookmark, ThumbsUp, Users, Copy, Download, CheckCircle, BarChart3, ChevronDown } from 'lucide-react';
 import { videoService, type Video } from '../lib/database';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -116,6 +116,8 @@ const PromptViewer: React.FC<PromptViewerProps> = ({ prompt, onBack }) => {
   const [bookmarkLoading, setBookmarkLoading] = useState(false);
   const [likeLoading, setLikeLoading] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [selectedVersion, setSelectedVersion] = useState<Video | null>(null);
+  const [showVersionDropdown, setShowVersionDropdown] = useState(false);
 
   useEffect(() => {
     const loadPromptData = async () => {
@@ -126,11 +128,13 @@ const PromptViewer: React.FC<PromptViewerProps> = ({ prompt, onBack }) => {
         console.log('Loaded full prompt data:', fullPrompt);
         if (fullPrompt) {
           setPromptData(fullPrompt);
+          setSelectedVersion(fullPrompt);
           setLiked(fullPrompt.is_upvoted || false);
           setSaved(fullPrompt.is_bookmarked || false);
         } else {
           console.log('No prompt found for slug, using passed prompt data');
           setPromptData(prompt);
+          setSelectedVersion(prompt);
           // Check bookmark and like status for the passed prompt
           if (user) {
             const [isBookmarked, isUpvoted] = await Promise.all([
@@ -144,6 +148,7 @@ const PromptViewer: React.FC<PromptViewerProps> = ({ prompt, onBack }) => {
       } else {
         console.log('No slug provided, using passed prompt data');
         setPromptData(prompt);
+        setSelectedVersion(prompt);
         // Check bookmark and like status for the passed prompt
         if (user) {
           const [isBookmarked, isUpvoted] = await Promise.all([
@@ -161,16 +166,16 @@ const PromptViewer: React.FC<PromptViewerProps> = ({ prompt, onBack }) => {
   }, [prompt.id, prompt.timestamp, user?.id]);
 
   const handleToggleLike = async () => {
-    if (!user || !promptData || likeLoading) return;
+    if (!user || !selectedVersion || likeLoading) return;
     
     setLikeLoading(true);
     
     try {
-      const success = await videoService.toggleUpvote(promptData.id, user.id);
+      const success = await videoService.toggleUpvote(selectedVersion.id, user.id);
       if (success) {
         setLiked(!liked);
         // Update local count
-        setPromptData(prev => prev ? {
+        setSelectedVersion(prev => prev ? {
           ...prev,
           upvote_count: liked ? prev.upvote_count - 1 : prev.upvote_count + 1
         } : null);
@@ -183,14 +188,14 @@ const PromptViewer: React.FC<PromptViewerProps> = ({ prompt, onBack }) => {
   };
 
   const handleToggleSave = async () => {
-    if (!user || !promptData || bookmarkLoading) return;
+    if (!user || !selectedVersion || bookmarkLoading) return;
     
     setBookmarkLoading(true);
     
     try {
-      console.log('Toggling bookmark for prompt viewer:', promptData.id, 'Current status:', saved);
+      console.log('Toggling bookmark for prompt viewer:', selectedVersion.id, 'Current status:', saved);
       
-      const success = await videoService.toggleBookmark(promptData.id, user.id);
+      const success = await videoService.toggleBookmark(selectedVersion.id, user.id);
       if (success) {
         const newSavedStatus = !saved;
         setSaved(newSavedStatus);
@@ -204,12 +209,26 @@ const PromptViewer: React.FC<PromptViewerProps> = ({ prompt, onBack }) => {
       setBookmarkLoading(false);
     }
   };
+  const handleVersionChange = async (version: Video) => {
+    setSelectedVersion(version);
+    setShowVersionDropdown(false);
+    
+    // Update bookmark and like status for the new version
+    if (user) {
+      const [isBookmarked, isUpvoted] = await Promise.all([
+        videoService.isBookmarked(version.id, user.id),
+        videoService.isUpvoted(version.id, user.id)
+      ]);
+      setSaved(isBookmarked);
+      setLiked(isUpvoted);
+    }
+  };
 
   const handleCopyPrompt = async () => {
-    if (!promptData?.prompt_content && !promptData?.description) return;
+    if (!selectedVersion?.prompt_content && !selectedVersion?.description) return;
     
     try {
-      const contentToCopy = promptData.prompt_content || promptData.description || '';
+      const contentToCopy = selectedVersion.prompt_content || selectedVersion.description || '';
       await navigator.clipboard.writeText(contentToCopy);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
@@ -236,7 +255,8 @@ const PromptViewer: React.FC<PromptViewerProps> = ({ prompt, onBack }) => {
     );
   }
 
-  const currentPrompt = promptData || prompt;
+  const currentPrompt = selectedVersion || promptData || prompt;
+  const hasVersions = promptData?.versions && promptData.versions.length > 1;
 
   return (
     <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
@@ -296,6 +316,42 @@ const PromptViewer: React.FC<PromptViewerProps> = ({ prompt, onBack }) => {
                 )}
               </div>
               
+              {/* Version Selector */}
+              {hasVersions && (
+                <div className="relative">
+                  <button
+                    onClick={() => setShowVersionDropdown(!showVersionDropdown)}
+                    className="flex items-center space-x-2 px-4 py-2.5 bg-slate-700/30 hover:bg-slate-600/30 text-slate-300 hover:text-white rounded-lg transition-colors border border-slate-600/30"
+                  >
+                    <span className="text-sm font-medium">{currentPrompt.version_name}</span>
+                    <ChevronDown className={`w-4 h-4 transition-transform ${showVersionDropdown ? 'rotate-180' : ''}`} />
+                  </button>
+
+                  {showVersionDropdown && (
+                    <div className="absolute top-full right-0 mt-2 w-48 bg-[#1f1d2b] border border-slate-700/30 rounded-lg shadow-xl z-50 max-h-64 overflow-y-auto">
+                      <div className="p-2">
+                        {promptData?.versions?.map((version) => (
+                          <button
+                            key={version.id}
+                            onClick={() => handleVersionChange(version)}
+                            className={`w-full text-left px-3 py-2 text-sm rounded transition-colors ${
+                              selectedVersion?.id === version.id
+                                ? 'bg-[#ff7551] text-white'
+                                : 'text-slate-300 hover:bg-slate-700/30'
+                            }`}
+                          >
+                            <div className="font-medium">{version.version_name}</div>
+                            <div className="text-xs opacity-75 mt-1">
+                              {version.tipo} • {formatViews(version.view_count)} views
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
               <button
                 onClick={handleToggleLike}
                 disabled={!user || likeLoading}
@@ -373,7 +429,7 @@ const PromptViewer: React.FC<PromptViewerProps> = ({ prompt, onBack }) => {
                     )}
 
                     <pre className="text-slate-100 whitespace-pre-wrap leading-relaxed font-mono">
-                      {currentPrompt.prompt_content || currentPrompt.description}
+                      {selectedVersion.prompt_content || selectedVersion.description}
                     </pre>
                   </div>
                 </div>
