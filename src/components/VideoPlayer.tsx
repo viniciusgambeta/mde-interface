@@ -484,7 +484,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video, onBack }) => {
                   : 'text-slate-400 hover:text-white'
               }`}
             >
-              Materiais
+              Links
             </button>
             <button
               onClick={() => setActiveTab('suggestions')}
@@ -503,7 +503,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video, onBack }) => {
         <div className="flex-1 overflow-y-auto p-6">
           {activeTab === 'materials' ? (
             <div className="space-y-6">
-             <h3 className="text-white font-semibold mb-6">Links</h3>
+             <h3 className="text-white font-semibold mb-6">Materiais e downloads</h3>
               
               {/* Downloads */}
               {currentVideo.materials && currentVideo.materials.length > 0 ? (
