@@ -264,7 +264,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video, onBack }) => {
   const currentVideo = selectedVersion || videoData || video;
   
   // Always show versions dropdown - check if there are any versions loaded
-  const hasVersions = videoData?.versions !== undefined;
+  const hasVersions = true; // Always show the dropdown
   const versionsToShow = videoData?.versions || [];
   
   console.log('VideoPlayer: versions check:', {

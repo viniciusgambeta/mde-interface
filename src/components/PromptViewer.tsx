@@ -268,7 +268,7 @@ const PromptViewer: React.FC<PromptViewerProps> = ({ prompt, onBack }) => {
   const currentPrompt = selectedVersion || promptData || prompt;
   
   // Always show versions dropdown - check if there are any versions loaded
-  const hasVersions = promptData?.versions !== undefined;
+  const hasVersions = true; // Always show the dropdown
   const versionsToShow = promptData?.versions || [];
   
   console.log('PromptViewer: versions check:', {
