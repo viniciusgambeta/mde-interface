@@ -233,11 +233,6 @@ const FeaturedSection: React.FC<FeaturedSectionProps> = ({ onVideoSelect }) => {
 
         {/* Platform Indicators - Right Side */}
         <div className="w-full lg:w-[35%] h-[280px] sm:h-[320px] lg:h-[380px]">
-          <div className="mb-6">
-            <h2 className="text-xl sm:text-2xl font-semibold text-white mb-3">Destaques da Plataforma</h2>
-            <div className="w-16 h-1.5 bg-[#ff7551] rounded-full"></div>
-          </div>
-
           <div className="grid grid-cols-1 gap-4 h-full">
             {/* Most Watched Video of the Week */}
             <div className="bg-[#1f1d2b]/90 backdrop-blur-sm border border-slate-700/30 rounded-xl p-4 hover:bg-slate-700/20 transition-all duration-200 animate-fade-in">
@@ -287,19 +282,6 @@ const FeaturedSection: React.FC<FeaturedSectionProps> = ({ onVideoSelect }) => {
                 <div>
                   <h3 className="text-white font-medium">Sugestão Mais Votada</h3>
                   <p className="text-slate-400 text-sm">Next.js 14 App Router - 47 votos</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Platform Stats */}
-            <div className="bg-[#1f1d2b]/90 backdrop-blur-sm border border-slate-700/30 rounded-xl p-4 hover:bg-slate-700/20 transition-all duration-200 animate-fade-in" style={{ animationDelay: '400ms' }}>
-              <div className="flex items-center space-x-3 mb-2">
-                <div className="w-10 h-10 bg-purple-500/20 rounded-full flex items-center justify-center">
-                  <Users className="w-5 h-5 text-purple-400" />
-                </div>
-                <div>
-                  <h3 className="text-white font-medium">Comunidade Ativa</h3>
-                  <p className="text-slate-400 text-sm">+1.2K novos membros este mês</p>
                 </div>
               </div>
             </div>
