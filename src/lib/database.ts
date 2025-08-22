@@ -303,28 +303,46 @@ export const videoService = {
     console.log('getVideoVersions: Called for videoId:', videoId);
 
     try {
-      // Use the new database function to get all versions
-      const { data: versionData, error: versionsError } = await supabase
-        .rpc('get_all_video_versions', { input_video_id: videoId });
+      // Get all related video IDs (both as main and as version)
+      const { data: relatedVersions, error: versionsError } = await supabase
+        .from('video_versions')
+        .select('main_video_id, version_video_id, version_name, version_order')
+        .or(`main_video_id.eq.${videoId},version_video_id.eq.${videoId}`);
 
       if (versionsError) {
-        console.error('getVideoVersions: Error calling RPC function:', versionsError);
+        console.error('getVideoVersions: Error fetching versions:', versionsError);
         return { versions: [], currentIsMain: false };
       }
 
-      if (!versionData || versionData.length === 0) {
+      if (!relatedVersions || relatedVersions.length === 0) {
         console.log('getVideoVersions: No versions found for videoId:', videoId);
         return { versions: [], currentIsMain: false };
       }
 
-      console.log('getVideoVersions: Found versions:', versionData.length);
+      // Collect all unique video IDs related to this video
+      const allRelatedVideoIds = new Set<string>();
+      let currentIsMain = false;
 
-      // Check if current video is the main video
-      const currentIsMain = versionData.some(v => v.id === videoId && v.is_main);
-      console.log('getVideoVersions: Current video is main:', currentIsMain);
+      relatedVersions.forEach(relation => {
+        allRelatedVideoIds.add(relation.main_video_id);
+        allRelatedVideoIds.add(relation.version_video_id);
+        
+        // Check if current video is a main video
+        if (relation.main_video_id === videoId) {
+          currentIsMain = true;
+        }
+      });
 
-      // Get additional data for each version (instructor, category, etc.)
-      const versionIds = versionData.map(v => v.id);
+      // Remove the current video from the list (we don't want to show it in its own versions)
+      allRelatedVideoIds.delete(videoId);
+
+      if (allRelatedVideoIds.size === 0) {
+        console.log('getVideoVersions: No other versions found');
+        return { versions: [], currentIsMain };
+      }
+
+      const versionIds = Array.from(allRelatedVideoIds);
+      console.log('getVideoVersions: Found related video IDs:', versionIds);
       
       const { data: fullVersions, error: fullVersionsError } = await supabase
         .from('videos')
@@ -349,24 +367,33 @@ export const videoService = {
 
       const videoVersions = fullVersions as Video[];
 
-      // Sort versions according to the order from the RPC function
-      const sortedVersions = videoVersions.sort((a, b) => {
-        const aData = versionData.find(v => v.id === a.id);
-        const bData = versionData.find(v => v.id === b.id);
+      // Add version metadata to each video and sort
+      const sortedVersions = videoVersions.map(video => {
+        // Find the relation that defines this video's version info
+        const relation = relatedVersions.find(r => 
+          r.version_video_id === video.id || r.main_video_id === video.id
+        );
         
-        if (!aData || !bData) return 0;
-        
-        // Main video first (version_order = 0), then by version_order
-        return aData.version_order - bData.version_order;
-      });
-
-      // Add version metadata to each video
-      sortedVersions.forEach(video => {
-        const versionInfo = versionData.find(v => v.id === video.id);
-        if (versionInfo) {
-          (video as any).version_name = versionInfo.version_name;
-          (video as any).is_main_version = versionInfo.is_main;
+        if (relation) {
+          if (relation.main_video_id === video.id) {
+            // This video is a main video
+            (video as any).version_name = 'Original';
+            (video as any).is_main_version = true;
+            (video as any).version_order = 0;
+          } else {
+            // This video is a version
+            (video as any).version_name = relation.version_name;
+            (video as any).is_main_version = false;
+            (video as any).version_order = relation.version_order;
+          }
         }
+        
+        return video;
+      }).sort((a, b) => {
+        // Sort by version_order, with main videos (order 0) first
+        const aOrder = (a as any).version_order || 999;
+        const bOrder = (b as any).version_order || 999;
+        return aOrder - bOrder;
       });
 
       // Transform ferramentas data structure
