@@ -433,13 +433,13 @@ const VideoCard: React.FC<{
         <button
           onClick={handleBookmarkClick}
           disabled={bookmarkLoading}
-          className={`absolute top-3 left-3 z-20 p-2 rounded-full backdrop-blur-sm transition-all duration-200 ${
+          className={`absolute top-3 left-3 z-20 p-2 rounded-full backdrop-blur-sm transition-all duration-200 group-hover:opacity-100 ${
             isBookmarked 
-              ? 'opacity-100 scale-100 bg-white text-black shadow-lg' 
-              : 'opacity-0 group-hover:opacity-100 scale-75 group-hover:scale-100 bg-black/60 text-white hover:bg-[#ff7551]/80'
+              ? 'opacity-100 scale-100 bg-[#ff7551] text-white shadow-lg' 
+              : 'opacity-0 scale-75 group-hover:scale-100 bg-black/60 text-white hover:bg-[#ff7551]/80'
           } ${bookmarkLoading ? 'animate-pulse scale-110' : ''}`}
         >
-          <svg className="w-4 h-4" fill={isBookmarked ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
           </svg>
         </button>
@@ -496,9 +496,8 @@ const VideoCard: React.FC<{
         {/* Live Badge */}
         {video.tipo === 'live' && (
           <div className="absolute top-3 right-3 z-10 flex items-center space-x-1 bg-red-500 text-white text-xs px-2.5 py-1 rounded font-medium">
-            <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
-              <circle cx="12" cy="12" r="3" />
-              <path d="M12 1v6m0 10v6m11-7h-6m-10 0H1m15.5-6.5l-4.24 4.24M7.76 7.76L3.52 3.52m12.96 12.96l-4.24-4.24M7.76 16.24l-4.24 4.24" />
+            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 14.142M5 7h4l1 1v8l-1 1H5a2 2 0 01-2-2V9a2 2 0 012-2z" />
             </svg>
             <span>Live</span>
           </div>
