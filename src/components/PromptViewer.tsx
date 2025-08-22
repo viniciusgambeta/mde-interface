@@ -444,47 +444,41 @@ const PromptViewer: React.FC<PromptViewerProps> = ({ prompt, onBack }) => {
         {/* Tab Content */}
         <div className="flex-1 overflow-y-auto p-6">
           <div className="space-y-8">
-            {/* Version Selector */}
-            {hasVersions && (
-              <div>
+            {/* Version Selector - Only show if there are versions */}
+            {versionsToShow.length > 0 && (
+              <div className="mt-12">
                 <h3 className="text-white font-semibold mb-4">Outras versões</h3>
                 
-                {versionsToShow.length > 0 ? (
-                  <div className="space-y-2">
-                    {versionsToShow.map((version) => (
-                      <button
-                        key={version.id}
-                        onClick={() => handleVersionChange(version)}
-                        className={`w-full text-left p-3 rounded-lg transition-colors ${
-                          currentPrompt.id === version.id
-                            ? 'bg-[#ff7551] text-white'
-                            : 'bg-slate-700/30 text-slate-300 hover:bg-slate-600/30'
-                        }`}
-                      >
-                        <div className="font-medium text-sm">
-                          {(version as any).version_name || version.title}
-                          {(version as any).is_main_version && (
-                            <span className="ml-2 text-xs bg-slate-600/50 text-slate-300 px-2 py-0.5 rounded">
-                              Original
-                            </span>
-                          )}
-                        </div>
-                        <div className="text-xs text-slate-400 mt-1">
-                          {version.tipo} • {formatViews(version.view_count)} views
-                        </div>
-                      </button>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-6">
-                    <p className="text-slate-400 text-sm">Sem outras versões disponíveis</p>
-                  </div>
-                )}
+                <div className="space-y-2">
+                  {versionsToShow.map((version) => (
+                    <button
+                      key={version.id}
+                      onClick={() => handleVersionChange(version)}
+                      className={`w-full text-left p-3 rounded-lg transition-colors ${
+                        currentPrompt.id === version.id
+                          ? 'bg-[#ff7551] text-white'
+                          : 'bg-slate-700/30 text-slate-300 hover:bg-slate-600/30'
+                      }`}
+                    >
+                      <div className="font-medium text-sm">
+                        {(version as any).version_name || version.title}
+                        {(version as any).is_main_version && (
+                          <span className="ml-2 text-xs bg-slate-600/50 text-slate-300 px-2 py-0.5 rounded">
+                            Original
+                          </span>
+                        )}
+                      </div>
+                      <div className="text-xs text-slate-400 mt-1">
+                        {version.tipo} • {formatViews(version.view_count)} views
+                      </div>
+                    </button>
+                  ))}
+                </div>
               </div>
             )}
             
             {/* Suggested Prompts */}
-            <div>
+            <div className="mt-12">
               <h3 className="text-white font-semibold mb-6">Prompts Relacionados</h3>
               <SuggestedPrompts currentPrompt={currentPrompt} />
             </div>
