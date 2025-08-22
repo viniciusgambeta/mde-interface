@@ -263,12 +263,13 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video, onBack }) => {
 
   const currentVideo = selectedVersion || videoData || video;
   
-  // Check if video has versions - use videoData (the full loaded data) to check for versions
-  const hasVersions = videoData?.versions && videoData.versions.length > 1;
+  // Always show versions dropdown - check if there are any versions loaded
+  const hasVersions = videoData?.versions !== undefined;
+  const versionsToShow = videoData?.versions || [];
   
-  console.log('VideoPlayer: hasVersions check:', {
+  console.log('VideoPlayer: versions check:', {
     hasVersions,
-    versionsCount: videoData?.versions?.length || 0,
+    versionsCount: versionsToShow.length,
     videoDataId: videoData?.id,
     currentVideoId: currentVideo?.id
   });
@@ -352,23 +353,30 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video, onBack }) => {
                 </div>
               </div>
               
-              {/* Version Selector */}
+              {/* Version Selector - Always show */}
               {hasVersions && (
                 <div className="relative">
                   <button
                     onClick={() => setShowVersionDropdown(!showVersionDropdown)}
-                    className="flex items-center space-x-2 px-4 py-3 bg-slate-700/30 hover:bg-slate-600/30 text-slate-300 hover:text-white rounded-lg transition-colors border border-slate-600/30 h-12"
+                    className={`flex items-center space-x-2 px-4 py-3 rounded-lg transition-colors border border-slate-600/30 h-12 ${
+                      versionsToShow.length > 0 
+                        ? 'bg-slate-700/30 hover:bg-slate-600/30 text-slate-300 hover:text-white cursor-pointer' 
+                        : 'bg-slate-800/50 text-slate-500 cursor-not-allowed'
+                    }`}
+                    disabled={versionsToShow.length === 0}
                   >
                     <span className="text-sm font-medium">
-                      Outras versões
+                      {versionsToShow.length > 0 ? 'Outras versões' : 'Sem outras versões'}
                     </span>
-                    <ChevronDown className={`w-4 h-4 transition-transform ${showVersionDropdown ? 'rotate-180' : ''}`} />
+                    {versionsToShow.length > 0 && (
+                      <ChevronDown className={`w-4 h-4 transition-transform ${showVersionDropdown ? 'rotate-180' : ''}`} />
+                    )}
                   </button>
 
-                  {showVersionDropdown && (
+                  {showVersionDropdown && versionsToShow.length > 0 && (
                     <div className="absolute top-full right-0 mt-2 w-48 bg-[#1f1d2b] border border-slate-700/30 rounded-lg shadow-xl z-50 max-h-64 overflow-y-auto">
                       <div className="p-2">
-                        {videoData?.versions?.map((version) => (
+                        {versionsToShow.map((version) => (
                           <button
                             key={version.id}
                             onClick={() => handleVersionChange(version)}
@@ -378,7 +386,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video, onBack }) => {
                                 : 'text-slate-300 hover:bg-slate-700/30'
                             }`}
                           >
-                            <div className="font-medium">{version.version_name}</div>
+                            <div className="font-medium">{(version as any).version_name || version.title}</div>
                             <div className="text-xs opacity-75 mt-1">
                               {formatDuration(version.duration_minutes)} • {formatViews(version.view_count)} views
                             </div>

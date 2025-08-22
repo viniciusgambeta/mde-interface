@@ -336,13 +336,14 @@ export const videoService = {
       // Remove the current video from the list (we don't want to show it in its own versions)
       allRelatedVideoIds.delete(videoId);
 
-      if (allRelatedVideoIds.size === 0) {
-        console.log('getVideoVersions: No other versions found');
-        return { versions: [], currentIsMain };
-      }
 
       const versionIds = Array.from(allRelatedVideoIds);
       console.log('getVideoVersions: Found related video IDs:', versionIds);
+      
+      if (versionIds.length === 0) {
+        console.log('getVideoVersions: No other versions found');
+        return { versions: [], currentIsMain };
+      }
       
       const { data: fullVersions, error: fullVersionsError } = await supabase
         .from('videos')
@@ -362,7 +363,7 @@ export const videoService = {
 
       if (fullVersionsError) {
         console.error('getVideoVersions: Error fetching full version data:', fullVersionsError);
-        return { versions: [], currentIsMain: false };
+        return { versions: [], currentIsMain };
       }
 
       const videoVersions = fullVersions as Video[];

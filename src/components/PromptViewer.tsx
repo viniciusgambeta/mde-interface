@@ -267,12 +267,13 @@ const PromptViewer: React.FC<PromptViewerProps> = ({ prompt, onBack }) => {
 
   const currentPrompt = selectedVersion || promptData || prompt;
   
-  // Check if prompt has versions - use promptData (the full loaded data) to check for versions
-  const hasVersions = promptData?.versions && promptData.versions.length > 1;
+  // Always show versions dropdown - check if there are any versions loaded
+  const hasVersions = promptData?.versions !== undefined;
+  const versionsToShow = promptData?.versions || [];
   
-  console.log('PromptViewer: hasVersions check:', {
+  console.log('PromptViewer: versions check:', {
     hasVersions,
-    versionsCount: promptData?.versions?.length || 0,
+    versionsCount: versionsToShow.length,
     promptDataId: promptData?.id,
     currentPromptId: currentPrompt?.id
   });
@@ -335,23 +336,30 @@ const PromptViewer: React.FC<PromptViewerProps> = ({ prompt, onBack }) => {
                 )}
               </div>
               
-              {/* Version Selector */}
+              {/* Version Selector - Always show */}
               {hasVersions && (
                 <div className="relative">
                   <button
                     onClick={() => setShowVersionDropdown(!showVersionDropdown)}
-                    className="flex items-center space-x-2 px-4 py-3 bg-slate-700/30 hover:bg-slate-600/30 text-slate-300 hover:text-white rounded-lg transition-colors border border-slate-600/30 h-12"
+                    className={`flex items-center space-x-2 px-4 py-3 rounded-lg transition-colors border border-slate-600/30 h-12 ${
+                      versionsToShow.length > 0 
+                        ? 'bg-slate-700/30 hover:bg-slate-600/30 text-slate-300 hover:text-white cursor-pointer' 
+                        : 'bg-slate-800/50 text-slate-500 cursor-not-allowed'
+                    }`}
+                    disabled={versionsToShow.length === 0}
                   >
                     <span className="text-sm font-medium">
-                      Outras versões
+                      {versionsToShow.length > 0 ? 'Outras versões' : 'Sem outras versões'}
                     </span>
-                    <ChevronDown className={`w-4 h-4 transition-transform ${showVersionDropdown ? 'rotate-180' : ''}`} />
+                    {versionsToShow.length > 0 && (
+                      <ChevronDown className={`w-4 h-4 transition-transform ${showVersionDropdown ? 'rotate-180' : ''}`} />
+                    )}
                   </button>
 
-                  {showVersionDropdown && (
+                  {showVersionDropdown && versionsToShow.length > 0 && (
                     <div className="absolute top-full right-0 mt-2 w-48 bg-[#1f1d2b] border border-slate-700/30 rounded-lg shadow-xl z-50 max-h-64 overflow-y-auto">
                       <div className="p-2">
-                        {promptData?.versions?.map((version) => (
+                        {versionsToShow.map((version) => (
                           <button
                             key={version.id}
                             onClick={() => handleVersionChange(version)}
