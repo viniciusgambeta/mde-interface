@@ -129,54 +129,40 @@ const PromptViewer: React.FC<PromptViewerProps> = ({ prompt, onBack }) => {
         if (fullPrompt) {
           setPromptData(fullPrompt);
           
-          // Load versions for this prompt
-          if (fullPrompt.id) {
-            const versions = await videoService.getVideoVersions(fullPrompt.id, user?.id);
-            setPromptData(prev => prev ? { ...prev, versions } : null);
-          }
-          
           setLiked(fullPrompt.is_upvoted || false);
           setSaved(fullPrompt.is_bookmarked || false);
         } else {
           console.log('No prompt found for slug, using passed prompt data');
           setPromptData(prompt);
-          
-          // Load versions for the passed prompt
-          if (prompt.id) {
-            const versions = await videoService.getVideoVersions(prompt.id, user?.id);
-            setPromptData(prev => prev ? { ...prev, versions } : { ...prompt, versions });
-          }
-          
-          // Check bookmark and like status for the passed prompt
-          if (user) {
-            const [isBookmarked, isUpvoted] = await Promise.all([
-              videoService.isBookmarked(prompt.id, user.id),
-              videoService.isUpvoted(prompt.id, user.id)
-            ]);
-            setSaved(isBookmarked);
-            setLiked(isUpvoted);
-          }
         }
       } else {
         console.log('No slug provided, using passed prompt data');
         setPromptData(prompt);
-        
-        // Load versions for the passed prompt
-        if (prompt.id) {
-          const versions = await videoService.getVideoVersions(prompt.id, user?.id);
-          setPromptData(prev => prev ? { ...prev, versions } : { ...prompt, versions });
-        }
-        
-        // Check bookmark and like status for the passed prompt
-        if (user) {
-          const [isBookmarked, isUpvoted] = await Promise.all([
-            videoService.isBookmarked(prompt.id, user.id),
-            videoService.isUpvoted(prompt.id, user.id)
-          ]);
-          setSaved(isBookmarked);
-          setLiked(isUpvoted);
-        }
       }
+      
+      // Always load versions after setting initial prompt data
+      const currentPromptData = promptData || prompt;
+      if (currentPromptData?.id) {
+        console.log('Loading versions for prompt ID:', currentPromptData.id);
+        const versions = await videoService.getVideoVersions(currentPromptData.id, user?.id);
+        console.log('Loaded versions:', versions);
+        setPromptData(prev => {
+          const baseData = prev || prompt;
+          return { ...baseData, versions };
+        });
+      }
+      
+      // Check bookmark and like status
+      const finalPromptData = promptData || prompt;
+      if (user && finalPromptData?.id) {
+        const [isBookmarked, isUpvoted] = await Promise.all([
+          videoService.isBookmarked(finalPromptData.id, user.id),
+          videoService.isUpvoted(finalPromptData.id, user.id)
+        ]);
+        setSaved(isBookmarked);
+        setLiked(isUpvoted);
+      }
+      
       setLoading(false);
     };
 

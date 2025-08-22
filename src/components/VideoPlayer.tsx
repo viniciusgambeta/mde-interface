@@ -147,54 +147,40 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video, onBack }) => {
         if (fullVideo) {
           setVideoData(fullVideo);
           
-          // Load versions for this video
-          if (fullVideo.id) {
-            const versions = await videoService.getVideoVersions(fullVideo.id, user?.id);
-            setVideoData(prev => prev ? { ...prev, versions } : null);
-          }
-          
           setLiked(fullVideo.is_upvoted || false);
           setSaved(fullVideo.is_bookmarked || false);
         } else {
           console.log('No video found for slug, using passed video data');
           setVideoData(video);
-          
-          // Load versions for the passed video
-          if (video.id) {
-            const versions = await videoService.getVideoVersions(video.id, user?.id);
-            setVideoData(prev => prev ? { ...prev, versions } : { ...video, versions });
-          }
-          
-          // Check bookmark and like status for the passed video
-          if (user) {
-            const [isBookmarked, isUpvoted] = await Promise.all([
-              videoService.isBookmarked(video.id, user.id),
-              videoService.isUpvoted(video.id, user.id)
-            ]);
-            setSaved(isBookmarked);
-            setLiked(isUpvoted);
-          }
         }
       } else {
         console.log('No slug provided, using passed video data');
         setVideoData(video);
-        
-        // Load versions for the passed video
-        if (video.id) {
-          const versions = await videoService.getVideoVersions(video.id, user?.id);
-          setVideoData(prev => prev ? { ...prev, versions } : { ...video, versions });
-        }
-        
-        // Check bookmark and like status for the passed video
-        if (user) {
-          const [isBookmarked, isUpvoted] = await Promise.all([
-            videoService.isBookmarked(video.id, user.id),
-            videoService.isUpvoted(video.id, user.id)
-          ]);
-          setSaved(isBookmarked);
-          setLiked(isUpvoted);
-        }
       }
+      
+      // Always load versions after setting initial video data
+      const currentVideoData = videoData || video;
+      if (currentVideoData?.id) {
+        console.log('Loading versions for video ID:', currentVideoData.id);
+        const versions = await videoService.getVideoVersions(currentVideoData.id, user?.id);
+        console.log('Loaded versions:', versions);
+        setVideoData(prev => {
+          const baseData = prev || video;
+          return { ...baseData, versions };
+        });
+      }
+      
+      // Check bookmark and like status
+      const finalVideoData = videoData || video;
+      if (user && finalVideoData?.id) {
+        const [isBookmarked, isUpvoted] = await Promise.all([
+          videoService.isBookmarked(finalVideoData.id, user.id),
+          videoService.isUpvoted(finalVideoData.id, user.id)
+        ]);
+        setSaved(isBookmarked);
+        setLiked(isUpvoted);
+      }
+      
       setLoading(false);
     };
 
