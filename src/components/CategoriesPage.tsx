@@ -505,7 +505,7 @@ const VideoCard: React.FC<{
         
         {/* Title Overlay */}
         <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 via-black/70 to-transparent p-3">
-          <h3 className="text-white font-medium line-clamp-2 leading-snug group-hover:text-[#ff7551] transition-colors text-sm">
+          <h3 className="text-white font-medium leading-snug group-hover:text-[#ff7551] transition-colors text-lg">
             {video.title}
           </h3>
         </div>
