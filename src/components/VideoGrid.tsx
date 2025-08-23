@@ -680,10 +680,6 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
     title, 
     videos, 
     scrollRef
-  }: { 
-    title: string; 
-    videos: Video[];
-    scrollRef: React.RefObject<HTMLDivElement>;
   }) => (
     <div className="mb-16">
       <div className="flex items-center justify-between mb-8">
