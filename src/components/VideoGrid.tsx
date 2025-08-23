@@ -678,17 +678,17 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
 
   const ScrollableVideoRow = ({ 
     title, 
-    videos: rowVideos, 
+    videos, 
     scrollRef
   }: { 
     title: string; 
-    videos: Video[]; 
+    videos: Video[];
     scrollRef: React.RefObject<HTMLDivElement>;
   }) => (
     <div className="mb-16">
       <div className="flex items-center justify-between mb-8">
         <h2 className="text-3xl font-semibold text-white">{title}</h2>
-        {rowVideos.length > 4 && (
+        {videos.length > 4 && (
           <div className="flex items-center space-x-2">
             <button 
               onClick={() => scrollLeftFn(scrollRef)}
@@ -706,7 +706,7 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
         )}
       </div>
       
-      {rowVideos.length === 0 ? (
+      {videos.length === 0 ? (
         <div className="text-center py-12">
           <div className="text-slate-400 text-base">Nenhum vídeo encontrado nesta categoria.</div>
         </div>
@@ -720,7 +720,7 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
               msOverflowStyle: 'none'
             }}
           >
-            {rowVideos.map((video, index) => (
+            {videos.map((video, index) => (
               <div 
                 key={video.id} 
                 className="flex-shrink-0 w-64"
