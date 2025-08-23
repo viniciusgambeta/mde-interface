@@ -631,6 +631,7 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
           
           {/* Title Overlay */}
           <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 via-black/70 to-transparent p-4">
+          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black via-black/90 to-transparent p-4">
             <h3 className="text-white font-medium leading-snug group-hover:text-[#ff7551] transition-colors text-xl">
               {video.title}
             </h3>
@@ -638,6 +639,39 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
           </div>
 
         </div>
+
+        {/* Tools Icons */}
+        {video.ferramentas && video.ferramentas.length > 0 && (
+          <div className="flex items-center justify-center space-x-2 mt-3 px-2">
+            {video.ferramentas.slice(0, 6).map((ferramenta) => (
+              <div
+                key={ferramenta.id}
+                className="w-6 h-6 rounded bg-slate-700/30 flex items-center justify-center group-hover:bg-slate-600/40 transition-colors"
+                title={ferramenta.nome}
+              >
+                <img 
+                  src={ferramenta.icone} 
+                  alt={ferramenta.nome}
+                  className="w-4 h-4 object-contain rounded-sm opacity-80"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.style.display = 'none';
+                    const fallback = target.nextElementSibling as HTMLElement;
+                    if (fallback) fallback.style.display = 'block';
+                  }}
+                />
+                <svg className="w-3 h-3 text-slate-400 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-2M14 4h6m0 0v6m0-6L10 14" />
+                </svg>
+              </div>
+            ))}
+            {video.ferramentas.length > 6 && (
+              <div className="w-6 h-6 rounded bg-slate-700/30 flex items-center justify-center text-slate-400 text-xs font-medium">
+                +{video.ferramentas.length - 6}
+              </div>
+            )}
+          </div>
+        )}
       </div>
     );
   };
