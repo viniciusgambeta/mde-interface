@@ -227,64 +227,62 @@ const CategoriesPage: React.FC<CategoriesPageProps> = ({ onVideoSelect }) => {
 
       {/* Filters */}
       <div className={`${showFilters ? 'block' : 'hidden lg:block'} space-y-4`}>
-        <div className="flex flex-wrap gap-4">
-          <FilterDropdown
-            label="Categoria"
-            value={filters.category}
-            options={categories}
-            onChange={(value) => updateFilter('category', value)}
-            icon={<Filter className="w-4 h-4" />}
-          />
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+          <div className="flex flex-wrap gap-4">
+            <FilterDropdown
+              label="Categoria"
+              value={filters.category}
+              options={categories}
+              onChange={(value) => updateFilter('category', value)}
+              icon={<Filter className="w-4 h-4" />}
+            />
 
-          <FilterDropdown
-            label="Nível"
-            value={filters.difficulty}
-            options={difficulties}
-            onChange={(value) => updateFilter('difficulty', value)}
-            icon={<BarChart3 className="w-4 h-4" />}
-          />
+            <FilterDropdown
+              label="Nível"
+              value={filters.difficulty}
+              options={difficulties}
+              onChange={(value) => updateFilter('difficulty', value)}
+              icon={<BarChart3 className="w-4 h-4" />}
+            />
 
-          <FilterDropdown
-            label="Instrutor"
-            value={filters.instructor}
-            options={instructors}
-            onChange={(value) => updateFilter('instructor', value)}
-            icon={<User className="w-4 h-4" />}
-          />
+            <FilterDropdown
+              label="Instrutor"
+              value={filters.instructor}
+              options={instructors}
+              onChange={(value) => updateFilter('instructor', value)}
+              icon={<User className="w-4 h-4" />}
+            />
 
-          <FilterDropdown
-            label="Duração"
-            value={filters.duration}
-            options={[
-              { id: 'short', name: 'Até 10 min' },
-              { id: 'medium', name: '10-30 min' },
-              { id: 'long', name: 'Mais de 30 min' }
-            ]}
-            onChange={(value) => updateFilter('duration', value)}
-            icon={<Clock className="w-4 h-4" />}
-          />
+            <FilterDropdown
+              label="Duração"
+              value={filters.duration}
+              options={[
+                { id: 'short', name: 'Até 10 min' },
+                { id: 'medium', name: '10-30 min' },
+                { id: 'long', name: 'Mais de 30 min' }
+              ]}
+              onChange={(value) => updateFilter('duration', value)}
+              icon={<Clock className="w-4 h-4" />}
+            />
 
-          {hasActiveFilters && (
-            <button
-              onClick={clearFilters}
-              className="flex items-center space-x-2 px-4 py-2 bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-500/30 rounded-lg transition-colors"
-            >
-              <X className="w-4 h-4" />
-              <span className="text-sm">Limpar Filtros</span>
-            </button>
-          )}
-        </div>
+            {hasActiveFilters && (
+              <button
+                onClick={clearFilters}
+                className="flex items-center space-x-2 px-4 py-2 bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-500/30 rounded-lg transition-colors"
+              >
+                <X className="w-4 h-4" />
+                <span className="text-sm">Limpar Filtros</span>
+              </button>
+            )}
+          </div>
 
-        {/* Results Count */}
-        <div className="flex items-center justify-between text-sm text-slate-400">
-          <span>
-            {filteredVideos.length} aula{filteredVideos.length !== 1 ? 's' : ''} encontrada{filteredVideos.length !== 1 ? 's' : ''}
-          </span>
-          {hasActiveFilters && (
-            <span>
-              de {videos.length} total
-            </span>
-          )}
+          {/* Results Count */}
+          <div className="text-slate-400 text-sm whitespace-nowrap">
+            <span className="font-medium text-white">{filteredVideos.length}</span> aula{filteredVideos.length !== 1 ? 's' : ''} encontrada{filteredVideos.length !== 1 ? 's' : ''}
+            {hasActiveFilters && (
+              <span className="ml-1">de {videos.length} total</span>
+            )}
+          </div>
         </div>
       </div>
 
