@@ -736,7 +736,7 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
                 key={video.id} 
                 className="flex-shrink-0 w-64"
               >
-                <VideoCard video={video} delay={0} />
+                <VideoCard video={video} delay={0} showToolIcons={true} />
               </div>
             ))}
           </div>
