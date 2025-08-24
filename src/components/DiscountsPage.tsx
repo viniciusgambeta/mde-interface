@@ -12,6 +12,7 @@ const DiscountsPage: React.FC = () => {
   const [showSortDropdown, setShowSortDropdown] = useState(false);
   const [loading, setLoading] = useState(true);
   const [coupons, setCoupons] = useState<Coupon[]>([]);
+  const [availableCategories, setAvailableCategories] = useState<string[]>([]);
 
   // Load discounts on component mount
   React.useEffect(() => {
@@ -20,6 +21,10 @@ const DiscountsPage: React.FC = () => {
       try {
         const data = await couponService.getCoupons();
         setCoupons(data);
+        
+        // Extract unique categories from coupons
+        const uniqueCategories = [...new Set(data.map(coupon => coupon.categoria))].sort();
+        setAvailableCategories(uniqueCategories);
       } catch (error) {
         console.error('Error loading coupons:', error);
       } finally {
@@ -29,7 +34,6 @@ const DiscountsPage: React.FC = () => {
 
     loadCoupons();
   }, []);
-  const categories = ['all', 'Design', 'Desenvolvimento', 'IA', 'Marketing', 'Produtividade'];
   const sortOptions = [
     { value: 'name', label: 'Nome A-Z' },
     { value: 'name-desc', label: 'Nome Z-A' },
@@ -344,7 +348,7 @@ const DiscountsPage: React.FC = () => {
                 >
                   Todas as Categorias
                 </button>
-                {categories.map((category) => (
+                {availableCategories.map((category) => (
                   <button
                     key={category}
                     onClick={() => {
@@ -466,18 +470,6 @@ const DiscountsPage: React.FC = () => {
         </div>
       )}
 
-      {/* CTA Section */}
-      <div className="bg-gradient-to-r from-[#ff7551]/10 to-[#ff7551]/5 border border-[#ff7551]/20 rounded-xl p-8 text-center">
-        <Gift className="w-12 h-12 text-[#ff7551] mx-auto mb-4" />
-        <h3 className="text-xl font-bold text-white mb-2">Quer mais descontos?</h3>
-        <p className="text-slate-300 mb-6 max-w-2xl mx-auto">
-          Entre em contato conosco para sugerir novas ferramentas ou negociar descontos exclusivos 
-          para a comunidade Me dá um Exemplo.
-        </p>
-        <button className="px-8 py-3 bg-[#ff7551] hover:bg-[#ff7551]/80 text-white font-semibold rounded-lg transition-colors">
-          Sugerir Ferramenta
-        </button>
-      </div>
     </div>
   );
 };
