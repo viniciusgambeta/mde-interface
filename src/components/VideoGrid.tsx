@@ -88,6 +88,7 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
   // Load videos from database
   useEffect(() => {
     const loadVideos = async () => {
+      console.log('VideoGrid: Loading videos for view:', currentView, 'User ID:', user?.id);
       setLoading(true);
       
       try {
@@ -100,6 +101,7 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
             limit: 20, 
             userId: user?.id 
           });
+          console.log('VideoGrid: Loaded discover videos:', videoData.length);
         } else if (currentView === 'trending') {
           videoData = await videoService.getVideos({ 
             limit: 50, 
@@ -107,16 +109,20 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
           });
           // Sort by view count for trending
           videoData.sort((a, b) => b.view_count - a.view_count);
+          console.log('VideoGrid: Loaded trending videos:', videoData.length);
         } else if (currentView === 'bookmark') {
           // Load bookmarked videos for the user
           if (user) {
             videoData = await videoService.getBookmarkedVideos(user.id);
+            console.log('VideoGrid: Loaded bookmarked videos:', videoData.length);
           } else {
             videoData = [];
+            console.log('VideoGrid: No user, no bookmarked videos');
           }
         } else {
           // For specific categories
           videoData = await videoService.getVideosByCategory(currentView, 12, user?.id);
+          console.log('VideoGrid: Loaded category videos:', videoData.length);
         }
         
         console.log('Loaded videos:', videoData.length, 'videos');

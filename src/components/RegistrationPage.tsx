@@ -289,8 +289,9 @@ const RegistrationPage: React.FC = () => {
       // Logout the user immediately after registration
       await supabase.auth.signOut();
       
-      // Redirect to login with success message
-      navigate('/?registered=true&email=' + encodeURIComponent(formData.email) + '&needsOnboarding=true');
+      // Show success message and redirect to login
+      console.log('Registration successful, redirecting to login with success message');
+      navigate('/?registered=true&email=' + encodeURIComponent(formData.email));
 
     } catch (error) {
       console.error('Registration exception:', error);

@@ -18,11 +18,15 @@ const FeaturedSection: React.FC<FeaturedSectionProps> = ({ onVideoSelect, onView
 
   React.useEffect(() => {
     const loadContent = async () => {
+      console.log('FeaturedSection: Loading content...');
       try {
         const [featuredData, secondaryData] = await Promise.all([
           featuredContentService.getAllActiveFeaturedContent(),
           secondaryHighlightsService.getActiveSecondaryHighlights()
         ]);
+        
+        console.log('FeaturedSection: Featured data loaded:', featuredData?.length || 0);
+        console.log('FeaturedSection: Secondary data loaded:', secondaryData?.length || 0);
         
         if (featuredData && featuredData.length > 0) {
           setFeaturedContent(featuredData);

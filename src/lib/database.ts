@@ -170,6 +170,8 @@ export const videoService = {
     offset?: number;
     userId?: string;
   } = {}) {
+    console.log('videoService.getVideos called with options:', options);
+    
     let query = supabase
       .from('videos')
       .select(`
@@ -208,9 +210,12 @@ export const videoService = {
 
     if (error) {
       console.error('Error fetching videos:', error);
+      console.error('Query details:', { options, error });
       return [];
     }
 
+    console.log('videoService.getVideos: Raw data received:', data?.length || 0, 'videos');
+    
     const videos = data as Video[];
 
     // Transform ferramentas data structure
@@ -844,6 +849,7 @@ export const difficultyService = {
 // Featured content service
 export const featuredContentService = {
   async getActiveFeaturedContent(): Promise<FeaturedContent | null> {
+    console.log('featuredContentService.getActiveFeaturedContent called');
     const { data, error } = await supabase
       .from('featured_content')
       .select('*')
@@ -857,10 +863,12 @@ export const featuredContentService = {
       return null;
     }
 
+    console.log('featuredContentService.getActiveFeaturedContent result:', data);
     return data as FeaturedContent | null;
   },
 
   async getAllActiveFeaturedContent(): Promise<FeaturedContent[]> {
+    console.log('featuredContentService.getAllActiveFeaturedContent called');
     const { data, error } = await supabase
       .from('featured_content')
       .select('*')
@@ -872,6 +880,7 @@ export const featuredContentService = {
       return [];
     }
 
+    console.log('featuredContentService.getAllActiveFeaturedContent result:', data?.length || 0, 'items');
     return data as FeaturedContent[];
   }
 };

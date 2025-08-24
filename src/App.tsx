@@ -1,6 +1,6 @@
 import React from 'react';
 import { Routes, Route, useNavigate, useParams, useLocation } from 'react-router-dom';
-import { useEffect } from 'react';
+import { useEffect, Navigate } from 'react';
 import Header from './components/Header';
 import Sidebar from './components/Sidebar';
 import MainContent from './components/MainContent';
@@ -12,6 +12,8 @@ import Footer from './components/Footer';
 import { AuthProvider } from './contexts/AuthContext';
 import { VideoProvider } from './contexts/VideoContext';
 import { videoService } from './lib/database';
+import { useAuth } from './contexts/AuthContext';
+import OnboardingFlow from './components/OnboardingFlow';
 
 // Onboarding Page Component
 const OnboardingPage: React.FC = () => {
