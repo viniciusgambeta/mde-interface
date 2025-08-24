@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, Heart, Bookmark, ThumbsUp, Users, Calendar, Clock, ExternalLink, BarChart3, MessageCircle, Phone, Instagram } from 'lucide-react';
+import { ArrowLeft, Heart, Bookmark, ThumbsUp, Users, Calendar, Clock, ExternalLink, BarChart3, MessageCircle, Phone, Instagram, Download, FileText } from 'lucide-react';
 import { videoService, type Video } from '../lib/database';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -162,7 +162,7 @@ const Countdown: React.FC<{ targetDate: Date }> = ({ targetDate }) => {
 // YouTube embed component
 const YouTubeEmbed: React.FC<{ url: string; title: string }> = ({ url, title }) => {
   const getYouTubeId = (url: string) => {
-    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
     const match = url.match(regExp);
     return (match && match[2].length === 11) ? match[2] : null;
   };
@@ -180,7 +180,7 @@ const YouTubeEmbed: React.FC<{ url: string; title: string }> = ({ url, title }) 
   return (
     <div className="aspect-video bg-black rounded-lg overflow-hidden">
       <iframe
-        src={`https://www.youtube.com/embed/${videoId}?rel=0&modestbranding=1`}
+        src={`https://www.youtube.com/embed/${videoId}?rel=0&modestbranding=1&autoplay=0&controls=1`}
         title={title}
         className="w-full h-full"
         frameBorder="0"
@@ -584,7 +584,7 @@ const LiveViewer: React.FC<LiveViewerProps> = ({ live, onBack }) => {
       </div>
 
       {/* Materials Section - Only show if there are materials or versions */}
-      {((currentLive.materials && currentLive.materials.length > 0) || versionsToShow.length > 0) && (
+      {((currentLive.materials && currentLive.materials.length > 0) || (currentLive.ferramentas && currentLive.ferramentas.length > 0) || versionsToShow.length > 0) && (
         <div className="w-full lg:w-96 border-l border-slate-700/30 flex flex-col">
           {/* Tab Header */}
           <div className="p-6 border-b border-slate-700/30">
@@ -616,15 +616,15 @@ const LiveViewer: React.FC<LiveViewerProps> = ({ live, onBack }) => {
           <div className="flex-1 overflow-y-auto p-6">
             {activeTab === 'materials' ? (
               <div className="space-y-6">
-                <h3 className="text-white font-semibold mb-6">Materiais e downloads</h3>
-                
-                {/* Downloads */}
-                {currentLive.materials && currentLive.materials.length > 0 ? (
-                  <div className="space-y-4">
-                    {currentLive.materials
-                      .sort((a, b) => a.order_index - b.order_index)
-                      .map((material) => {
-                        return (
+                {/* Materials - Only show if there are materials */}
+                {currentLive.materials && currentLive.materials.length > 0 && (
+                  <div>
+                    <h3 className="text-white font-semibold mb-6">Materiais e downloads</h3>
+                    
+                    <div className="space-y-4">
+                      {currentLive.materials
+                        .sort((a, b) => a.order_index - b.order_index)
+                        .map((material) => (
                           <a
                             key={material.id}
                             href={material.url}
@@ -632,7 +632,7 @@ const LiveViewer: React.FC<LiveViewerProps> = ({ live, onBack }) => {
                             rel="noopener noreferrer"
                             className="flex items-center space-x-3 px-3 py-4 bg-slate-700/30 rounded-lg hover:bg-slate-600/30 transition-colors cursor-pointer"
                           >
-                            <ExternalLink className="w-5 h-5 text-slate-400" />
+                            <Download className="w-5 h-5 text-slate-400" />
                             <div className="flex-1">
                               <div className="text-white font-medium text-sm">{material.title}</div>
                               {material.description && (
@@ -643,43 +643,79 @@ const LiveViewer: React.FC<LiveViewerProps> = ({ live, onBack }) => {
                               )}
                             </div>
                           </a>
+                        ))}
+                    </div>
+                  </div>
+                )}
+                
+                {/* Ferramentas Section - Only show if there are tools */}
+                {currentLive.ferramentas && currentLive.ferramentas.length > 0 && (
+                  <div className="mt-12">
+                    <h3 className="text-white font-semibold mb-6">Ferramentas usadas</h3>
+                    
+                    <div className="flex flex-wrap gap-3">
+                      {currentLive.ferramentas.map((ferramenta) => {
+                        return (
+                          <a
+                            key={ferramenta.id}
+                            href={ferramenta.link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="block hover:scale-110 transition-transform duration-200"
+                            title={ferramenta.nome}
+                          >
+                            <img 
+                              src={ferramenta.icone} 
+                              alt={ferramenta.nome}
+                              className="w-10 h-10 object-contain rounded"
+                              onError={(e) => {
+                                // Fallback to ExternalLink icon if image fails to load
+                                const target = e.target as HTMLImageElement;
+                                target.style.display = 'none';
+                                const fallback = target.nextElementSibling as HTMLElement;
+                                if (fallback) fallback.style.display = 'block';
+                              }}
+                            />
+                            <ExternalLink className="w-10 h-10 text-slate-400 hidden rounded" />
+                          </a>
                         );
                       })}
+                    </div>
                   </div>
-                ) : null}
+                )}
                
-               {/* Version Selector - Only show if there are versions */}
-               {versionsToShow.length > 0 && (
-                 <div className="mt-12">
-                   <h3 className="text-white font-semibold mb-4">Outras versões</h3>
-                   
-                   <div className="space-y-2">
-                     {versionsToShow.map((version) => (
-                       <button
-                         key={version.id}
-                         onClick={() => handleVersionChange(version)}
-                         className={`w-full text-left p-3 rounded-lg transition-colors ${
-                           currentLive.id === version.id
-                             ? 'bg-[#ff7551] text-white'
-                             : 'bg-slate-700/30 text-slate-300 hover:bg-slate-600/30'
-                         }`}
-                       >
-                         <div className="font-medium text-sm">
-                           {(version as any).version_name || version.title}
-                           {(version as any).is_main_version && (
-                             <span className="ml-2 text-xs bg-slate-600/50 text-slate-300 px-2 py-0.5 rounded">
-                               Original
-                             </span>
-                           )}
-                         </div>
-                         <div className="text-xs text-slate-400 mt-1">
-                           Live • {formatViews(version.view_count)} views
-                         </div>
-                       </button>
-                     ))}
+                {/* Version Selector - Only show if there are versions */}
+                {versionsToShow.length > 0 && (
+                  <div className="mt-12">
+                    <h3 className="text-white font-semibold mb-4">Outras versões</h3>
+                    
+                    <div className="space-y-2">
+                      {versionsToShow.map((version) => (
+                        <button
+                          key={version.id}
+                          onClick={() => handleVersionChange(version)}
+                          className={`w-full text-left p-3 rounded-lg transition-colors ${
+                            currentLive.id === version.id
+                              ? 'bg-[#ff7551] text-white'
+                              : 'bg-slate-700/30 text-slate-300 hover:bg-slate-600/30'
+                          }`}
+                        >
+                          <div className="font-medium text-sm">
+                            {(version as any).version_name || version.title}
+                            {(version as any).is_main_version && (
+                              <span className="ml-2 text-xs bg-slate-600/50 text-slate-300 px-2 py-0.5 rounded">
+                                Original
+                              </span>
+                            )}
+                          </div>
+                          <div className="text-xs text-slate-400 mt-1">
+                            Live • {formatViews(version.view_count)} views
+                          </div>
+                        </button>
+                      ))}
+                    </div>
                    </div>
-                 </div>
-               )}
+                )}
               </div>
             ) : (
               <div className="space-y-6" key={currentLive.id}>
@@ -693,7 +729,7 @@ const LiveViewer: React.FC<LiveViewerProps> = ({ live, onBack }) => {
       )}
 
       {/* Suggested Lives - Always show as separate section if no materials */}
-      {!((currentLive.materials && currentLive.materials.length > 0) || versionsToShow.length > 0) && (
+      {!((currentLive.materials && currentLive.materials.length > 0) || (currentLive.ferramentas && currentLive.ferramentas.length > 0) || versionsToShow.length > 0) && (
         <div className="w-full lg:w-96 border-l border-slate-700/30 flex flex-col">
           {/* Tab Header */}
           <div className="p-6 border-b border-slate-700/30">
