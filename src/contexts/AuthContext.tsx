@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { supabase } from '../lib/supabase';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
+import { useNavigate } from 'react-router-dom';
 
 interface User {
   id: string;
@@ -38,6 +39,7 @@ interface AuthProviderProps {
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const navigate = useNavigate();
 
   // Convert Supabase user to our User type
   const convertUser = (supabaseUser: SupabaseUser): User => {
@@ -90,6 +92,23 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         if (event === 'SIGNED_IN' && session?.user) {
           const convertedUser = convertUser(session.user);
           setUser(convertedUser);
+          
+          // Check if user needs onboarding
+          try {
+            const { data: profile, error } = await supabase
+              .from('profiles')
+              .select('onboarding_completed')
+              .eq('id', session.user.id)
+              .single();
+
+            if (!error && !profile?.onboarding_completed) {
+              console.log('User needs onboarding, redirecting to /onboarding');
+              navigate('/onboarding');
+            }
+          } catch (error) {
+            console.error('Error checking onboarding status:', error);
+          }
+          
           setIsLoading(false);
         } else if (event === 'SIGNED_OUT') {
           setUser(null);
