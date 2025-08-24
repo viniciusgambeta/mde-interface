@@ -637,6 +637,51 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
           </div>
           </div>
 
+        {/* Tools Icons */}
+        {video.ferramentas && video.ferramentas.length > 0 && (
+          <div className="mt-3 px-1">
+            <div className="flex items-center space-x-2">
+              {video.ferramentas.slice(0, 5).map((ferramenta, index) => (
+                <div
+                  key={ferramenta.id}
+                  className="w-6 h-6 rounded-sm overflow-hidden bg-white/10 backdrop-blur-sm flex items-center justify-center group/tool relative"
+                  title={ferramenta.nome}
+                >
+                  <img 
+                    src={ferramenta.icone} 
+                    alt={ferramenta.nome}
+                    className="w-4 h-4 object-contain"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.style.display = 'none';
+                      const fallback = target.nextElementSibling as HTMLElement;
+                      if (fallback) fallback.style.display = 'block';
+                    }}
+                  />
+                  <div className="w-4 h-4 bg-slate-500 rounded-sm hidden flex items-center justify-center">
+                    <span className="text-white text-xs font-bold">
+                      {ferramenta.nome.charAt(0).toUpperCase()}
+                    </span>
+                  </div>
+                  
+                  {/* Tooltip */}
+                  <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-slate-800 text-white text-xs rounded opacity-0 group-hover/tool:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
+                    {ferramenta.nome}
+                  </div>
+                </div>
+              ))}
+              
+              {/* More indicator */}
+              {video.ferramentas.length > 5 && (
+                <div className="w-6 h-6 rounded-sm bg-slate-600/30 flex items-center justify-center">
+                  <span className="text-slate-400 text-xs font-medium">
+                    +{video.ferramentas.length - 5}
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
         </div>
       </div>
     );
