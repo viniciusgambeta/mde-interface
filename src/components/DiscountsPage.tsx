@@ -135,8 +135,22 @@ const DiscountsPage: React.FC = () => {
         <div className="p-6">
           <div className="flex items-start justify-between mb-4">
             <div className="flex items-center space-x-3">
-              <div className="w-12 h-12 bg-slate-600/30 rounded-lg flex items-center justify-center text-2xl">
-                {coupon.logo}
+              <div className="w-12 h-12 bg-slate-600/30 rounded-lg flex items-center justify-center overflow-hidden">
+                <img
+                  src={coupon.logo}
+                  alt={`${coupon.nome} logo`}
+                  className="w-full h-full object-contain"
+                  onError={(e) => {
+                    // Fallback to emoji if image fails to load
+                    const target = e.target as HTMLImageElement;
+                    target.style.display = 'none';
+                    const fallback = target.nextElementSibling as HTMLElement;
+                    if (fallback) fallback.style.display = 'flex';
+                  }}
+                />
+                <div className="w-full h-full bg-slate-600/30 rounded-lg hidden items-center justify-center text-2xl">
+                  🎁
+                </div>
               </div>
               <div>
                 <h3 className="text-white font-semibold text-lg">{coupon.nome}</h3>
