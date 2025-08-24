@@ -644,7 +644,7 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
               {video.ferramentas.slice(0, 5).map((ferramenta, index) => (
                 <div
                   key={ferramenta.id}
-                  className="w-8 h-8 rounded-sm overflow-hidden flex items-center justify-center group/tool relative shadow-lg border-2 border-slate-800 bg-white"
+                  className="w-8 h-8 rounded-sm overflow-hidden flex items-center justify-center group/tool relative shadow-xl"
                   style={{ zIndex: 5 - index }}
                   title={ferramenta.nome}
                 >
@@ -659,7 +659,7 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
                       if (fallback) fallback.style.display = 'block';
                     }}
                   />
-                  <div className="w-8 h-8 bg-slate-500 rounded-sm hidden flex items-center justify-center shadow-lg">
+                  <div className="w-8 h-8 bg-slate-500 rounded-sm hidden flex items-center justify-center shadow-xl">
                     <span className="text-white text-xs font-bold">
                       {ferramenta.nome.charAt(0).toUpperCase()}
                     </span>
@@ -674,7 +674,7 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
               
               {/* More indicator */}
               {video.ferramentas.length > 5 && (
-                <div className="w-8 h-8 rounded-sm bg-slate-600 flex items-center justify-center shadow-lg border-2 border-slate-800 text-slate-200" style={{ zIndex: 0 }}>
+                <div className="w-8 h-8 rounded-sm bg-slate-600 flex items-center justify-center shadow-xl text-slate-200" style={{ zIndex: 0 }}>
                   <span className="text-slate-400 text-xs font-medium">
                     +{video.ferramentas.length - 5}
                   </span>
