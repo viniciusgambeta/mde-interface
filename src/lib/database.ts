@@ -934,5 +934,91 @@ export const videoSuggestionsService = {
       console.error('Error fetching approved suggestions:', error);
       return [];
     }
+  },
+
+  async toggleUpvote(suggestionId: string, userId: string): Promise<{ success: boolean; votes: number }> {
+    if (!suggestionId || !userId) {
+      return { success: false, votes: 0 };
+    }
+
+    try {
+      // Check if user already voted
+      const { data: existingVote, error: checkError } = await supabase
+        .from('video_suggestion_votes')
+        .select('id')
+        .eq('suggestion_id', suggestionId)
+        .eq('user_id', userId)
+        .maybeSingle();
+
+      if (checkError && checkError.code !== 'PGRST116') {
+        console.error('Error checking existing vote:', checkError);
+        return { success: false, votes: 0 };
+      }
+
+      if (existingVote) {
+        // Remove vote
+        const { error: deleteError } = await supabase
+          .from('video_suggestion_votes')
+          .delete()
+          .eq('suggestion_id', suggestionId)
+          .eq('user_id', userId);
+
+        if (deleteError) {
+          console.error('Error removing vote:', deleteError);
+          return { success: false, votes: 0 };
+        }
+      } else {
+        // Add vote
+        const { error: insertError } = await supabase
+          .from('video_suggestion_votes')
+          .insert({
+            suggestion_id: suggestionId,
+            user_id: userId
+          });
+
+        if (insertError) {
+          console.error('Error adding vote:', insertError);
+          return { success: false, votes: 0 };
+        }
+      }
+
+      // Get updated vote count
+      const { data: suggestion, error: countError } = await supabase
+        .from('video_suggestions')
+        .select('votes')
+        .eq('id', suggestionId)
+        .single();
+
+      if (countError) {
+        console.error('Error getting vote count:', countError);
+        return { success: false, votes: 0 };
+      }
+
+      return { success: true, votes: suggestion.votes || 0 };
+    } catch (error) {
+      console.error('Error toggling upvote:', error);
+      return { success: false, votes: 0 };
+    }
+  },
+
+  async getUserVotes(userId: string): Promise<string[]> {
+    if (!userId) return [];
+
+    try {
+      const { data, error } = await supabase
+        .from('video_suggestion_votes')
+        .select('suggestion_id')
+        .eq('user_id', userId);
+
+      if (error) {
+        console.error('Error fetching user votes:', error);
+        return [];
+      }
+
+      return data.map(vote => vote.suggestion_id);
+    } catch (error) {
+      console.error('Error fetching user votes:', error);
+      return [];
+    }
   }
 };

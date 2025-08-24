@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Send, ThumbsUp, Clock, CheckCircle, Lightbulb, Users, TrendingUp, Award } from 'lucide-react';
+import { Send, ThumbsUp, Clock, CheckCircle, Lightbulb, Users, TrendingUp, Award, Plus, X } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { videoSuggestionsService, type VideoSuggestion } from '../lib/database';
 
@@ -15,14 +15,21 @@ const RequestLessonPage: React.FC = () => {
   const [showForm, setShowForm] = useState(false);
   const [suggestions, setSuggestions] = useState<VideoSuggestion[]>([]);
   const [loading, setLoading] = useState(true);
+  const [userVotes, setUserVotes] = useState<string[]>([]);
+  const [votingStates, setVotingStates] = useState<Record<string, boolean>>({});
 
   // Load suggestions on component mount
   React.useEffect(() => {
     const loadSuggestions = async () => {
       setLoading(true);
       try {
-        const data = await videoSuggestionsService.getApprovedSuggestions();
-        setSuggestions(data);
+        const [suggestionsData, userVotesData] = await Promise.all([
+          videoSuggestionsService.getApprovedSuggestions(),
+          user ? videoSuggestionsService.getUserVotes(user.id) : Promise.resolve([])
+        ]);
+        
+        setSuggestions(suggestionsData);
+        setUserVotes(userVotesData);
       } catch (error) {
         console.error('Error loading suggestions:', error);
       } finally {
@@ -31,7 +38,7 @@ const RequestLessonPage: React.FC = () => {
     };
 
     loadSuggestions();
-  }, []);
+  }, [user?.id]);
 
   const categories = [
     'Programação',
@@ -69,9 +76,14 @@ const RequestLessonPage: React.FC = () => {
       if (success) {
         setSubmitSuccess(true);
         setFormData({ title: '', category: '', description: '' });
+        setShowForm(false);
         
         // Hide success message after 3 seconds
         setTimeout(() => setSubmitSuccess(false), 3000);
+        
+        // Reload suggestions to show new one if it gets approved
+        const updatedSuggestions = await videoSuggestionsService.getApprovedSuggestions();
+        setSuggestions(updatedSuggestions);
       } else {
         // Handle error - you might want to show an error message
         console.error('Failed to submit suggestion');
@@ -218,132 +230,21 @@ const RequestLessonPage: React.FC = () => {
   return (
     <div className="w-full space-y-12">
       {/* Header */}
-      <div className="text-left">
-        <h1 className="text-3xl font-bold text-white mb-4">Pedir Aula</h1>
-        <p className="text-slate-400 text-lg max-w-2xl">
-          Sugira novos tópicos e aulas que você gostaria de ver na plataforma. 
-          Sua opinião é fundamental para criarmos o melhor conteúdo!
-        </p>
-      </div>
-
-      {/* Suggestion Form */}
-      <div className="bg-slate-700/30 border border-slate-600/30 rounded-xl p-8">
+      <div className="flex items-start justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-white mb-4">Pedir Aula</h1>
+          <p className="text-slate-400 text-lg max-w-2xl">
+            Vote nas aulas que mais quer ver e sugira novos tópicos para a plataforma.
+          </p>
+        </div>
+        
         <button
-          onClick={() => setShowForm(!showForm)}
-          className="flex items-center justify-between w-full group"
+          onClick={() => setShowForm(true)}
+          className="flex items-center space-x-2 px-6 py-3 bg-[#ff7551] hover:bg-[#ff7551]/80 text-white font-medium rounded-lg transition-colors"
         >
-          <div className="flex items-center space-x-3">
-            <div className="w-12 h-12 bg-[#ff7551] rounded-full flex items-center justify-center">
-              <Lightbulb className="w-6 h-6 text-white" />
-            </div>
-            <div className="text-left">
-              <h2 className="text-xl font-semibold text-white group-hover:text-[#ff7551] transition-colors">
-                Sugerir Nova Aula
-              </h2>
-              <p className="text-slate-400 text-sm">
-                Compartilhe sua ideia e ajude a comunidade a aprender algo novo
-              </p>
-            </div>
-          </div>
-          <div className={`transform transition-transform duration-200 ${showForm ? 'rotate-180' : ''}`}>
-            <svg className="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-            </svg>
-          </div>
+          <Plus className="w-5 h-5" />
+          <span>Sugerir Aula</span>
         </button>
-
-        {showForm && (
-          <div className="mt-6 pt-6 border-t border-slate-600/30">
-            {submitSuccess && (
-              <div className="mb-6 p-4 bg-green-500/10 border border-green-500/20 rounded-lg">
-                <div className="flex items-center space-x-2">
-                  <CheckCircle className="w-5 h-5 text-green-400" />
-                  <span className="text-green-400 font-medium">
-                    Sugestão enviada com sucesso! Obrigado pela contribuição.
-                  </span>
-                </div>
-              </div>
-            )}
-
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="grid md:grid-cols-2 gap-6">
-                {/* Title */}
-                <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">
-                    Nome da Aula *
-                  </label>
-                  <input
-                    type="text"
-                    name="title"
-                    value={formData.title}
-                    onChange={handleInputChange}
-                    placeholder="Ex: React Hooks Avançados"
-                    className="w-full px-4 py-3 bg-slate-700/30 border border-slate-600/30 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#ff7551]/50 focus:border-transparent transition-all"
-                    required
-                  />
-                </div>
-
-                {/* Category */}
-                <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">
-                    Categoria *
-                  </label>
-                  <select
-                    name="category"
-                    value={formData.category}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-3 bg-slate-700/30 border border-slate-600/30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-[#ff7551]/50 focus:border-transparent transition-all"
-                    required
-                  >
-                    <option value="">Selecione uma categoria</option>
-                    {categories.map((category) => (
-                      <option key={category} value={category}>
-                        {category}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              {/* Description */}
-              <div>
-                <label className="block text-sm font-medium text-slate-300 mb-2">
-                  Descrição *
-                </label>
-                <textarea
-                  name="description"
-                  value={formData.description}
-                  onChange={handleInputChange}
-                  placeholder="Descreva o que você gostaria de aprender nesta aula. Seja específico sobre os tópicos que devem ser abordados..."
-                  rows={4}
-                  className="w-full px-4 py-3 bg-slate-700/30 border border-slate-600/30 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#ff7551]/50 focus:border-transparent transition-all resize-none"
-                  required
-                />
-              </div>
-
-              {/* Submit Button */}
-              <div className="flex justify-end">
-                <button
-                  type="submit"
-                  disabled={isSubmitting || !formData.title || !formData.category || !formData.description}
-                  className="flex items-center space-x-2 px-8 py-3 bg-[#ff7551] hover:bg-[#ff7551]/80 disabled:bg-[#ff7551]/50 text-white font-medium rounded-lg transition-colors disabled:cursor-not-allowed"
-                >
-                  {isSubmitting ? (
-                    <>
-                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                      <span>Enviando...</span>
-                    </>
-                  ) : (
-                    <>
-                      <Send className="w-4 h-4" />
-                      <span>Enviar Sugestão</span>
-                    </>
-                  )}
-                </button>
-              </div>
-            </form>
-          </div>
-        )}
       </div>
 
       {/* Kanban Board */}
@@ -363,6 +264,131 @@ const RequestLessonPage: React.FC = () => {
           />
         </div>
       </div>
+
+      {/* Suggestion Form Modal */}
+      {showForm && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-[#1f1d2b] border border-slate-700/30 rounded-xl w-full max-w-2xl animate-fade-in">
+            {/* Header */}
+            <div className="flex items-center justify-between p-6 border-b border-slate-700/30">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 bg-[#ff7551] rounded-full flex items-center justify-center">
+                  <Lightbulb className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-semibold text-white">Sugerir Nova Aula</h2>
+                  <p className="text-slate-400 text-sm">Compartilhe sua ideia com a comunidade</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowForm(false)}
+                className="p-2 rounded-lg hover:bg-slate-700/30 transition-colors"
+              >
+                <X className="w-5 h-5 text-slate-400" />
+              </button>
+            </div>
+
+            {/* Form */}
+            <div className="p-6">
+              {submitSuccess && (
+                <div className="mb-6 p-4 bg-green-500/10 border border-green-500/20 rounded-lg">
+                  <div className="flex items-center space-x-2">
+                    <CheckCircle className="w-5 h-5 text-green-400" />
+                    <span className="text-green-400 font-medium">
+                      Sugestão enviada com sucesso! Obrigado pela contribuição.
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <div className="grid md:grid-cols-2 gap-6">
+                  {/* Title */}
+                  <div>
+                    <label className="block text-sm font-medium text-slate-300 mb-2">
+                      Nome da Aula *
+                    </label>
+                    <input
+                      type="text"
+                      name="title"
+                      value={formData.title}
+                      onChange={handleInputChange}
+                      placeholder="Ex: React Hooks Avançados"
+                      className="w-full px-4 py-3 bg-slate-700/30 border border-slate-600/30 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#ff7551]/50 focus:border-transparent transition-all"
+                      required
+                    />
+                  </div>
+
+                  {/* Category */}
+                  <div>
+                    <label className="block text-sm font-medium text-slate-300 mb-2">
+                      Categoria *
+                    </label>
+                    <select
+                      name="category"
+                      value={formData.category}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-3 bg-slate-700/30 border border-slate-600/30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-[#ff7551]/50 focus:border-transparent transition-all"
+                      required
+                    >
+                      <option value="">Selecione uma categoria</option>
+                      {categories.map((category) => (
+                        <option key={category} value={category}>
+                          {category}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                {/* Description */}
+                <div>
+                  <label className="block text-sm font-medium text-slate-300 mb-2">
+                    Descrição *
+                  </label>
+                  <textarea
+                    name="description"
+                    value={formData.description}
+                    onChange={handleInputChange}
+                    placeholder="Descreva o que você gostaria de aprender nesta aula. Seja específico sobre os tópicos que devem ser abordados..."
+                    rows={4}
+                    className="w-full px-4 py-3 bg-slate-700/30 border border-slate-600/30 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#ff7551]/50 focus:border-transparent transition-all resize-none"
+                    required
+                  />
+                </div>
+
+                {/* Submit Button */}
+                <div className="flex justify-end space-x-3">
+                  <button
+                    type="button"
+                    onClick={() => setShowForm(false)}
+                    className="px-6 py-3 text-slate-300 hover:text-white transition-colors"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isSubmitting || !formData.title || !formData.category || !formData.description}
+                    className="flex items-center space-x-2 px-8 py-3 bg-[#ff7551] hover:bg-[#ff7551]/80 disabled:bg-[#ff7551]/50 text-white font-medium rounded-lg transition-colors disabled:cursor-not-allowed"
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        <span>Enviando...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Send className="w-4 h-4" />
+                        <span>Enviar Sugestão</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
