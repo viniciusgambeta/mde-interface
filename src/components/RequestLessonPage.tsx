@@ -468,8 +468,6 @@ const RequestLessonPage: React.FC = () => {
             </div>
           </div>
         </div>
-          </div>
-        </div>
       )}
     </div>
   );
