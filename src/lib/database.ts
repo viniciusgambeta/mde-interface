@@ -277,7 +277,7 @@ export const videoService = {
       `)
       .eq('slug', slug)
       .eq('status', 'published')
-      .single();
+      .maybeSingle();
 
     const { data: video, error } = await query;
 
@@ -286,18 +286,21 @@ export const videoService = {
       return null;
     }
 
+    if (!video) {
+      return null;
+    }
+
     // Transform ferramentas data structure
-    if (video && video.ferramentas) {
+    if (video.ferramentas) {
       video.ferramentas = (video.ferramentas as any[]).map((item: any) => item.ferramenta).filter(Boolean);
     }
 
     // Get all versions of this video
-    if (video) {
-      const versions = await this.getVideoVersions(video.id, userId);
-      video.versions = versions;
-    }
+    const versions = await this.getVideoVersions(video.id, userId);
+    video.versions = versions;
+    
     // If user is logged in, check if they bookmarked/upvoted this video
-    if (userId && video) {
+    if (userId) {
       const [isBookmarked, isUpvoted] = await Promise.all([
         this.isBookmarked(video.id, userId),
         this.isUpvoted(video.id, userId)
@@ -732,7 +735,7 @@ export const videoService = {
   async getVideoWithFreshCounts(videoId: string, userId?: string): Promise<Video | null> {
     if (!videoId) return null;
 
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from('videos')
       .select(`
         *,
@@ -745,11 +748,31 @@ export const videoService = {
         )
       `)
       .eq('id', videoId)
-      .single();
+      .maybeSingle();
 
     if (error) {
       console.error('Error fetching video with fresh counts:', error);
       return null;
+    }
+
+    if (!data) {
+      return null;
+    }
+
+    // Transform ferramentas data structure
+    if (data.ferramentas) {
+      data.ferramentas = (data.ferramentas as any[]).map((item: any) => item.ferramenta).filter(Boolean);
+    }
+
+    // If user is logged in, check if they bookmarked/upvoted this video
+    if (userId) {
+      const [isBookmarked, isUpvoted] = await Promise.all([
+        this.isBookmarked(data.id, userId),
+        this.isUpvoted(data.id, userId)
+      ]);
+
+      data.is_bookmarked = isBookmarked;
+      data.is_upvoted = isUpvoted;
     }
 
     return data as Video;
@@ -764,10 +787,14 @@ export const videoService = {
         .from('videos')
         .select('view_count, upvote_count')
         .eq('id', videoId)
-        .single();
+        .maybeSingle();
 
       if (error) {
         console.error('Error refreshing video counts:', error);
+        return null;
+      }
+
+      if (!data) {
         return null;
       }
 
