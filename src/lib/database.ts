@@ -2,6 +2,19 @@ import { supabase } from './supabase';
 import type { Category } from './database';
 import type { DifficultyLevel } from './database';
 
+// Profile interface
+export interface Profile {
+  id: string;
+  name: string;
+  avatar_url?: string;
+  is_premium: boolean;
+  phone_number?: string;
+  bio?: string;
+  score: number;
+  created_at: string;
+  updated_at: string;
+}
+
 // Database types
 export interface Instructor {
   id: string;

@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { supabase } from '../lib/supabase';
+import { profileService, type Profile } from '../lib/database';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
 
 interface User {
@@ -8,6 +9,9 @@ interface User {
   email: string;
   avatar: string;
   isPremium: boolean;
+  phoneNumber?: string;
+  bio?: string;
+  score: number;
   joinedAt: string;
 }
 
@@ -39,16 +43,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Convert Supabase user to our User type
-  const convertUser = (supabaseUser: SupabaseUser): User => {
-    const metadata = supabaseUser.user_metadata || {};
-    
+  // Convert Supabase user + profile to our User type
+  const convertUser = (supabaseUser: SupabaseUser, profile?: Profile | null): User => {
     return {
       id: supabaseUser.id,
-      name: metadata.name || supabaseUser.email?.split('@')[0] || 'Usuário',
+      name: profile?.name || supabaseUser.email?.split('@')[0] || 'Usuário',
       email: supabaseUser.email || '',
-      avatar: metadata.avatar_url || '/src/images/avatar.jpg',
-      isPremium: metadata.is_premium || false,
+      avatar: profile?.avatar_url || '/src/images/avatar.jpg',
+      isPremium: profile?.is_premium || false,
+      phoneNumber: profile?.phone_number,
+      bio: profile?.bio,
+      score: profile?.score || 0,
       joinedAt: supabaseUser.created_at || new Date().toISOString()
     };
   };
@@ -68,7 +73,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         }
 
         if (session?.user && mounted) {
-          const convertedUser = convertUser(session.user);
+          // Get profile data
+          const profile = await profileService.getProfile(session.user.id);
+          const convertedUser = convertUser(session.user, profile);
           setUser(convertedUser);
         }
       } catch (error) {
@@ -88,7 +95,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         if (!mounted) return;
 
         if (event === 'SIGNED_IN' && session?.user) {
-          const convertedUser = convertUser(session.user);
+          // Get profile data
+          const profile = await profileService.getProfile(session.user.id);
+          const convertedUser = convertUser(session.user, profile);
           setUser(convertedUser);
           setIsLoading(false);
         } else if (event === 'SIGNED_OUT') {
@@ -96,7 +105,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           setIsLoading(false);
         } else if (event === 'TOKEN_REFRESHED' && session?.user) {
           if (!user) {
-            const convertedUser = convertUser(session.user);
+            // Get profile data
+            const profile = await profileService.getProfile(session.user.id);
+            const convertedUser = convertUser(session.user, profile);
             setUser(convertedUser);
           }
           setIsLoading(false);
@@ -139,8 +150,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         options: {
           data: {
             name: name,
-            avatar_url: '/src/images/avatar.jpg',
-            is_premium: false,
           },
         },
       });
@@ -150,6 +159,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         return false;
       }
 
+      // Profile will be created automatically by the database trigger
       return !!data?.user;
     } catch (error) {
       console.error('💥 Registration exception:', error);
@@ -174,18 +184,21 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
     
     try {
-      const updateData: any = {};
+      // Prepare profile update data
+      const profileUpdateData: any = {};
       
-      if (data.name) updateData.name = data.name;
-      if (data.avatar) updateData.avatar_url = data.avatar;
-      if (data.isPremium !== undefined) updateData.is_premium = data.isPremium;
+      if (data.name !== undefined) profileUpdateData.name = data.name;
+      if (data.avatar !== undefined) profileUpdateData.avatar_url = data.avatar;
+      if (data.isPremium !== undefined) profileUpdateData.is_premium = data.isPremium;
+      if (data.phoneNumber !== undefined) profileUpdateData.phone_number = data.phoneNumber;
+      if (data.bio !== undefined) profileUpdateData.bio = data.bio;
+      if (data.score !== undefined) profileUpdateData.score = data.score;
 
-      const { error } = await supabase.auth.updateUser({
-        data: updateData
-      });
+      // Update profile in database
+      const success = await profileService.updateProfile(user.id, profileUpdateData);
 
-      if (error) {
-        console.error('❌ Profile update error:', error);
+      if (!success) {
+        console.error('❌ Profile update failed');
         return false;
       }
 
