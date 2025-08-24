@@ -162,7 +162,7 @@ const Countdown: React.FC<{ targetDate: Date }> = ({ targetDate }) => {
 // YouTube embed component
 const YouTubeEmbed: React.FC<{ url: string; title: string }> = ({ url, title }) => {
   const getYouTubeId = (url: string) => {
-    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+    const regExp = /^.*(youtu\.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
     const match = url.match(regExp);
     return (match && match[2].length === 11) ? match[2] : null;
   };
@@ -180,11 +180,11 @@ const YouTubeEmbed: React.FC<{ url: string; title: string }> = ({ url, title }) 
   return (
     <div className="aspect-video bg-black rounded-lg overflow-hidden">
       <iframe
-        src={`https://www.youtube.com/embed/${videoId}?rel=0&modestbranding=1&autoplay=0&controls=1`}
+        src={`https://www.youtube.com/embed/${videoId}?autoplay=0&controls=1&modestbranding=1&rel=0&showinfo=0`}
         title={title}
         className="w-full h-full"
         frameBorder="0"
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
         allowFullScreen
       />
     </div>
@@ -352,6 +352,28 @@ const LiveViewer: React.FC<LiveViewerProps> = ({ live, onBack }) => {
     }
   };
 
+  const handleAddToCalendar = () => {
+    if (!liveDate) return;
+    
+    const startDate = new Date(liveDate);
+    const endDate = new Date(startDate.getTime() + (60 * 60 * 1000)); // 1 hour duration
+    
+    const formatDate = (date: Date) => {
+      return date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+    };
+    
+    const title = encodeURIComponent(currentLive.title);
+    const description = encodeURIComponent(
+      `${currentLive.summary || currentLive.description || 'Live do Me dá um Exemplo'}\n\nAssistir em: ${currentLive.video_url || ''}`
+    );
+    const startTime = formatDate(startDate);
+    const endTime = formatDate(endDate);
+    
+    const googleCalendarUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${startTime}/${endTime}&details=${description}&sf=true&output=xml`;
+    
+    window.open(googleCalendarUrl, '_blank');
+  };
+
   const formatViews = (count: number) => {
     if (count >= 1000000) {
       return `${(count / 1000000).toFixed(1)}M`;
@@ -393,7 +415,8 @@ const LiveViewer: React.FC<LiveViewerProps> = ({ live, onBack }) => {
   // Check if it's a YouTube URL
   const isYouTubeUrl = currentLive.video_url && (
     currentLive.video_url.includes('youtube.com') || 
-    currentLive.video_url.includes('youtu.be')
+    currentLive.video_url.includes('youtu.be') ||
+    currentLive.video_url.includes('www.youtube.com')
   );
 
   return (
@@ -530,20 +553,28 @@ const LiveViewer: React.FC<LiveViewerProps> = ({ live, onBack }) => {
             <div className="space-y-6">
               <Countdown targetDate={liveDate!} />
               
-              {/* YouTube Link for upcoming live */}
-              {isYouTubeUrl && (
-                <div className="text-center">
+              {/* Action Buttons for upcoming live */}
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                {isYouTubeUrl && (
                   <a
                     href={currentLive.video_url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center space-x-2 px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg transition-colors"
+                    className="flex items-center justify-center space-x-2 px-6 py-3 bg-[#ff7551] hover:bg-[#ff7551]/80 text-white font-medium rounded-lg transition-colors"
                   >
                     <ExternalLink className="w-5 h-5" />
                     <span>Assistir no YouTube</span>
                   </a>
-                </div>
-              )}
+                )}
+                
+                <button
+                  onClick={handleAddToCalendar}
+                  className="flex items-center justify-center space-x-2 px-6 py-3 bg-slate-700 hover:bg-slate-600 text-white font-medium rounded-lg transition-colors"
+                >
+                  <Calendar className="w-5 h-5" />
+                  <span>Adicionar ao Calendário</span>
+                </button>
+              </div>
             </div>
           ) : (
             /* Description - Only show if not upcoming */
