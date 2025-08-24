@@ -132,6 +132,7 @@ const DiscountsPage: React.FC = () => {
   const CouponCardComponent: React.FC<{ coupon: Coupon }> = ({ coupon }) => {
     const isExpanded = expandedCards.has(coupon.id);
     const isCopied = copiedCoupons.has(coupon.id);
+    const hasCouponCode = coupon.codigo_cupom && coupon.codigo_cupom.trim() !== '';
 
     return (
       <div className="bg-slate-700/30 border border-slate-600/30 rounded-xl overflow-hidden hover:bg-slate-600/20 transition-all duration-300 group">
@@ -179,38 +180,52 @@ const DiscountsPage: React.FC = () => {
 
           {/* Action Buttons */}
           <div className="flex space-x-3 mt-4">
-            <button
-              onClick={() => handleToggleCard(coupon.id)}
-              className={`flex-1 flex items-center justify-center space-x-2 py-3 px-4 rounded-lg font-medium transition-all duration-200 ${
-                isExpanded
-                  ? 'bg-slate-600/30 text-slate-300 hover:bg-slate-500/30'
-                  : 'bg-slate-600/30 hover:bg-slate-500/30 text-slate-300 hover:text-white'
-              }`}
-            >
-              <span>{isExpanded ? 'Ocultar Cupom' : 'Ver Cupom'}</span>
-              <svg 
-                className={`w-4 h-4 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} 
-                fill="none" 
-                stroke="currentColor" 
-                viewBox="0 0 24 24"
+            {hasCouponCode ? (
+              <>
+                <button
+                  onClick={() => handleToggleCard(coupon.id)}
+                  className={`flex-1 flex items-center justify-center space-x-2 py-3 px-4 rounded-lg font-medium transition-all duration-200 ${
+                    isExpanded
+                      ? 'bg-slate-600/30 text-slate-300 hover:bg-slate-500/30'
+                      : 'bg-slate-600/30 hover:bg-slate-500/30 text-slate-300 hover:text-white'
+                  }`}
+                >
+                  <span>{isExpanded ? 'Ocultar Cupom' : 'Ver Cupom'}</span>
+                  <svg 
+                    className={`w-4 h-4 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} 
+                    fill="none" 
+                    stroke="currentColor" 
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+                
+                <a
+                  href={coupon.link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-12 h-12 bg-slate-600/30 hover:bg-slate-500/30 text-slate-300 hover:text-white rounded-lg transition-all duration-200 transform hover:scale-105 flex items-center justify-center"
+                >
+                  <ExternalLink className="w-4 h-4" />
+                </a>
+              </>
+            ) : (
+              <a
+                href={coupon.link}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex-1 flex items-center justify-center space-x-2 py-3 px-4 bg-[#ff7551] hover:bg-[#ff7551]/80 text-white rounded-lg font-medium transition-all duration-200 transform hover:scale-105"
               >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
-            </button>
-            
-            <a
-              href={coupon.link}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="w-12 h-12 bg-slate-600/30 hover:bg-slate-500/30 text-slate-300 hover:text-white rounded-lg transition-all duration-200 transform hover:scale-105 flex items-center justify-center"
-            >
-              <ExternalLink className="w-4 h-4" />
-            </a>
+                <ExternalLink className="w-4 h-4" />
+                <span>Acessar Link</span>
+              </a>
+            )}
           </div>
         </div>
 
         {/* Expandable Coupon Section */}
-        {isExpanded && (
+        {isExpanded && hasCouponCode && (
           <div className="border-t border-slate-600/30 p-6 bg-slate-800/30 animate-fade-in">
             <div className="text-center">
               <h4 className="text-white font-medium mb-3">Código do Cupom</h4>
