@@ -354,7 +354,8 @@ const VideoCard: React.FC<{
   video: Video; 
   delay: number;
   onVideoSelect: (video: Video) => void;
-}> = ({ video, delay, onVideoSelect }) => {
+  showToolIcons?: boolean;
+}> = ({ video, delay, onVideoSelect, showToolIcons = true }) => {
   const { user } = useAuth();
   const [isBookmarked, setIsBookmarked] = useState(video.is_bookmarked || false);
   const [bookmarkLoading, setBookmarkLoading] = useState(false);
@@ -487,7 +488,8 @@ const VideoCard: React.FC<{
       </div>
 
       {/* Tools Icons */}
-      {video.ferramentas && video.ferramentas.length > 0 && (
+      {/* Tools Icons - Only show if showToolIcons is true */}
+      {showToolIcons && video.ferramentas && video.ferramentas.length > 0 && (
         <div className="absolute -bottom-4 left-1/2 transform -translate-x-1/2">
           <div className="flex items-center space-x-1">
             {video.ferramentas.slice(0, 5).map((ferramenta, index) => (
