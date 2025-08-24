@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ExternalLink, ChevronLeft, ChevronRight, MessageCircle, Calendar, Plus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { featuredContentService, type FeaturedContent } from '../lib/database';
+import { featuredContentService, secondaryHighlightsService, type FeaturedContent, type SecondaryHighlight } from '../lib/database';
 
 interface FeaturedSectionProps {
   onVideoSelect: (video: any) => void;
@@ -11,26 +11,36 @@ interface FeaturedSectionProps {
 const FeaturedSection: React.FC<FeaturedSectionProps> = ({ onVideoSelect, onViewChange = () => {} }) => {
   const navigate = useNavigate();
   const [featuredContent, setFeaturedContent] = React.useState<FeaturedContent[]>([]);
+  const [secondaryHighlights, setSecondaryHighlights] = React.useState<SecondaryHighlight[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = React.useState(true);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   React.useEffect(() => {
-    const loadFeaturedContent = async () => {
+    const loadContent = async () => {
       try {
-        const content = await featuredContentService.getAllActiveFeaturedContent();
-        if (content && content.length > 0) {
-          setFeaturedContent(content);
-          console.log('Featured content loaded:', content.length, 'items');
+        const [featuredData, secondaryData] = await Promise.all([
+          featuredContentService.getAllActiveFeaturedContent(),
+          secondaryHighlightsService.getActiveSecondaryHighlights()
+        ]);
+        
+        if (featuredData && featuredData.length > 0) {
+          setFeaturedContent(featuredData);
+          console.log('Featured content loaded:', featuredData.length, 'items');
+        }
+        
+        if (secondaryData && secondaryData.length > 0) {
+          setSecondaryHighlights(secondaryData);
+          console.log('Secondary highlights loaded:', secondaryData.length, 'items');
         }
       } catch (error) {
-        console.error('Error loading featured content:', error);
+        console.error('Error loading content:', error);
       } finally {
         setLoading(false);
       }
     };
 
-    loadFeaturedContent();
+    loadContent();
   }, []);
 
   // Auto-advance carousel
@@ -83,13 +93,8 @@ const FeaturedSection: React.FC<FeaturedSectionProps> = ({ onVideoSelect, onView
     goToSlide(newIndex);
   };
 
-  const handleWhatsAppClick = () => {
-    window.open('https://chat.whatsapp.com/example', '_blank', 'noopener,noreferrer');
-  };
-
-  const handleCalendarClick = () => {
-    const calendarUrl = 'https://calendar.google.com/calendar/u/0?cid=example@group.calendar.google.com';
-    window.open(calendarUrl, '_blank', 'noopener,noreferrer');
+  const handleSecondaryHighlightClick = (highlight: SecondaryHighlight) => {
+    window.open(highlight.link, '_blank', 'noopener,noreferrer');
   };
 
   if (loading) {
@@ -244,73 +249,46 @@ const FeaturedSection: React.FC<FeaturedSectionProps> = ({ onVideoSelect, onView
         {/* Action Blocks - Right Side */}
         <div className="w-full lg:w-[35%] h-[280px] sm:h-[320px] lg:h-[380px]">
           <div className="h-full flex flex-col space-y-3">
-            {/* WhatsApp Block */}
-            <div className="flex-1 relative overflow-hidden rounded-lg cursor-pointer group"
-                 onClick={handleWhatsAppClick}>
-              {/* Background Image */}
-              <div className="absolute inset-0">
-                <img
-                  src="https://images.pexels.com/photos/147413/twitter-facebook-together-exchange-of-information-147413.jpeg?auto=compress&cs=tinysrgb&w=800&h=400&fit=crop"
-                  alt="WhatsApp Community"
-                  className="w-full h-full object-cover"
-                />
-                {/* Gradient Overlays */}
-                <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/70 to-transparent" />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-              </div>
+            {/* Secondary Highlights Blocks */}
+            {secondaryHighlights.map((highlight, index) => (
+              <div 
+                key={highlight.id}
+                className="flex-1 relative overflow-hidden rounded-lg cursor-pointer group"
+                onClick={() => handleSecondaryHighlightClick(highlight)}
+              >
+                {/* Background Image */}
+                <div className="absolute inset-0">
+                  <img
+                    src={highlight.imagem || 'https://images.pexels.com/photos/147413/twitter-facebook-together-exchange-of-information-147413.jpeg?auto=compress&cs=tinysrgb&w=800&h=400&fit=crop'}
+                    alt={highlight.nome}
+                    className="w-full h-full object-cover"
+                  />
+                  {/* Gradient Overlays */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/70 to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                </div>
 
-              {/* Content */}
-              <div className="relative z-10 h-full flex items-center pl-6 pr-4 py-4">
-                <div className="max-w-full">
-                  <h3 className="text-white font-semibold text-xl mb-2 leading-tight">
-                    Entre no Grupo
-                  </h3>
-                  <p className="text-slate-200 text-base mb-3 leading-relaxed">
-                    Participe da nossa comunidade no WhatsApp
-                  </p>
-                  <div className="flex items-center space-x-2 text-white group-hover:text-slate-200 transition-colors">
-                    <span className="text-base font-medium">Entrar agora</span>
-                    <svg className="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
+                {/* Content */}
+                <div className="relative z-10 h-full flex items-center pl-6 pr-4 py-4">
+                  <div className="max-w-full">
+                    <h3 className="text-white font-semibold text-xl mb-2 leading-tight">
+                      {highlight.nome}
+                    </h3>
+                    {highlight.descricao && (
+                      <p className="text-slate-200 text-base mb-3 leading-relaxed">
+                        {highlight.descricao}
+                      </p>
+                    )}
+                    <div className="flex items-center space-x-2 text-white group-hover:text-slate-200 transition-colors">
+                      <span className="text-base font-medium">{highlight.titulo_botao}</span>
+                      <svg className="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-            
-            {/* Calendar Block */}
-            <div className="flex-1 relative overflow-hidden rounded-lg cursor-pointer group"
-                 onClick={handleCalendarClick}>
-              {/* Background Image */}
-              <div className="absolute inset-0">
-                <img
-                  src="https://images.pexels.com/photos/1319854/pexels-photo-1319854.jpeg?auto=compress&cs=tinysrgb&w=800&h=400&fit=crop"
-                  alt="Calendar Events"
-                  className="w-full h-full object-cover"
-                />
-                {/* Gradient Overlays */}
-                <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/70 to-transparent" />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-              </div>
-
-              {/* Content */}
-              <div className="relative z-10 h-full flex items-center pl-6 pr-4 py-4">
-                <div className="max-w-full">
-                  <h3 className="text-white font-semibold text-xl mb-2 leading-tight">
-                    Adicionar Eventos
-                  </h3>
-                  <p className="text-slate-200 text-base mb-3 leading-relaxed">
-                    Adicione nossos eventos à sua agenda
-                  </p>
-                  <div className="flex items-center space-x-2 text-white group-hover:text-slate-200 transition-colors">
-                    <span className="text-base font-medium">Adicionar agora</span>
-                    <svg className="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
-                  </div>
-                </div>
-              </div>
-            </div>
+            ))}
           </div>
         </div>
       </div>

@@ -68,6 +68,19 @@ export interface FeaturedContent {
   updated_at: string;
 }
 
+export interface SecondaryHighlight {
+  id: string;
+  nome: string;
+  descricao?: string;
+  titulo_botao: string;
+  link: string;
+  imagem?: string;
+  posicao: number;
+  status: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface Coupon {
   id: string;
   nome: string;
@@ -818,6 +831,24 @@ export const featuredContentService = {
     }
 
     return data as FeaturedContent[];
+  }
+};
+
+// Secondary highlights service
+export const secondaryHighlightsService = {
+  async getActiveSecondaryHighlights(): Promise<SecondaryHighlight[]> {
+    const { data, error } = await supabase
+      .from('secondary_highlights')
+      .select('*')
+      .eq('status', true)
+      .order('posicao', { ascending: true });
+
+    if (error) {
+      console.error('Error fetching secondary highlights:', error);
+      return [];
+    }
+
+    return data as SecondaryHighlight[];
   }
 };
 
