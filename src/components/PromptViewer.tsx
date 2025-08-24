@@ -120,10 +120,14 @@ const PromptViewer: React.FC<PromptViewerProps> = ({ prompt, onBack }) => {
   const [showVersionDropdown, setShowVersionDropdown] = useState(false);
 
   useEffect(() => {
+    // Initialize variables at the beginning of useEffect
+    const currentPromptToLoad = selectedVersion || promptData || prompt;
+    const currentPromptSlug = currentPromptToLoad.slug;
+    
     const loadPromptData = async () => {
-      console.log('PromptViewer: Starting loadPromptData for prompt:', currentPrompt.title, 'ID:', currentPrompt.id, 'Slug:', currentPrompt.slug);
+      console.log('PromptViewer: Starting loadPromptData for prompt:', currentPromptToLoad.title, 'ID:', currentPromptToLoad.id, 'Slug:', currentPromptToLoad.slug);
       
-      let currentPromptData = currentPrompt;
+      let currentPromptData = currentPromptToLoad;
       
       // Try to load full prompt data if we have a slug
       if (currentPromptSlug && currentPromptSlug.trim() !== '') {
