@@ -205,7 +205,7 @@ const DiscountsPage: React.FC = () => {
                   href={coupon.link}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-12 h-12 bg-slate-600/30 hover:bg-slate-500/30 text-slate-300 hover:text-white rounded-lg transition-all duration-200 transform hover:scale-105 flex items-center justify-center"
+                  className="flex-1 flex items-center justify-center space-x-2 py-3 px-4 bg-slate-600/30 hover:bg-slate-500/30 text-slate-300 hover:text-white rounded-lg font-medium transition-all duration-200"
                 >
                   <ExternalLink className="w-4 h-4" />
                 </a>
@@ -259,8 +259,18 @@ const DiscountsPage: React.FC = () => {
                 </button>
               </div>
               
+              <a
+                href={coupon.link}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full flex items-center justify-center space-x-2 py-3 px-4 bg-[#ff7551] hover:bg-[#ff7551]/80 text-white rounded-lg font-medium transition-all duration-200 transform hover:scale-105 mt-3"
+              >
+                <ExternalLink className="w-4 h-4" />
+                <span>Acessar Link</span>
+              </a>
+              
               <p className="text-slate-400 text-xs mt-3">
-                Clique no link acima para ir ao site e aplicar o cupom
+                Use o código copiado no site para obter o desconto
               </p>
             </div>
           </div>
