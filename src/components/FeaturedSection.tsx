@@ -313,59 +313,55 @@ const FeaturedSection: React.FC<FeaturedSectionProps> = ({ onVideoSelect, onView
         <div className="w-full lg:w-[35%] h-[280px] sm:h-[320px] lg:h-[380px]">
           <div className="bg-[#1f1d2b]/90 backdrop-blur-sm border border-slate-700/30 rounded-xl p-6 h-full flex flex-col">
             {/* Header */}
-            <div className="flex items-center space-x-3 mb-6">
+            <div className="flex items-center space-x-3 mb-8">
               <div className="w-10 h-10 bg-[#ff7551]/20 rounded-full flex items-center justify-center">
                 <Calendar className="w-5 h-5 text-[#ff7551]" />
               </div>
               <div>
-                <h3 className="text-white font-semibold text-lg">Próximos Eventos</h3>
-                <p className="text-slate-400 text-sm">Não perca nenhuma live!</p>
+                <h3 className="text-white font-semibold text-xl">Próximos Eventos</h3>
+                <p className="text-slate-400 text-sm">Não perca!</p>
               </div>
             </div>
 
-            {/* Events List */}
-            <div className="flex-1 space-y-4 overflow-y-auto">
-              {upcomingEvents.map((event, index) => {
+            {/* Events Grid */}
+            <div className="flex-1 space-y-6">
+              {upcomingEvents.slice(0, 3).map((event, index) => {
                 const typeConfig = getEventTypeConfig(event.type);
                 return (
                   <div
                     key={event.id}
-                    className="group cursor-pointer animate-fade-in"
+                    className="group cursor-pointer animate-fade-in bg-slate-700/20 hover:bg-slate-600/30 rounded-lg p-4 transition-all duration-200 hover:scale-[1.02]"
                     style={{ animationDelay: `${index * 100}ms` }}
                     onClick={() => window.open(event.link, '_blank')}
                   >
-                    <div className="bg-slate-700/30 hover:bg-slate-600/30 border border-slate-600/30 rounded-lg p-4 transition-all duration-200 hover:scale-[1.02]">
-                      {/* Event Header */}
-                      <div className="flex items-start justify-between mb-3">
-                        <div className="flex-1">
-                          <div className="flex items-center space-x-2 mb-2">
-                            <span className={`text-xs px-2 py-1 rounded-full text-white font-medium ${typeConfig.color}`}>
-                              {typeConfig.label}
-                            </span>
-                          </div>
-                          <h4 className="text-white font-medium text-sm leading-tight group-hover:text-[#ff7551] transition-colors">
-                            {event.title}
-                          </h4>
-                        </div>
-                        <ExternalLink className="w-4 h-4 text-slate-400 group-hover:text-[#ff7551] transition-colors flex-shrink-0 ml-2" />
+                    {/* Event Header */}
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center space-x-3">
+                        <span className={`text-xs px-3 py-1.5 rounded-full text-white font-medium ${typeConfig.color}`}>
+                          {typeConfig.label}
+                        </span>
+                        <h4 className="text-white font-medium text-base group-hover:text-[#ff7551] transition-colors">
+                          {event.title}
+                        </h4>
                       </div>
+                      <ExternalLink className="w-4 h-4 text-slate-400 group-hover:text-[#ff7551] transition-colors flex-shrink-0" />
+                    </div>
 
-                      {/* Event Details */}
-                      <div className="space-y-2">
-                        <div className="flex items-center space-x-2 text-xs text-slate-400">
-                          <Calendar className="w-3 h-3" />
+                    {/* Event Details */}
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-4">
+                        <div className="flex items-center space-x-2 text-sm text-slate-300">
+                          <Calendar className="w-4 h-4" />
                           <span>{formatEventDate(event.date)}</span>
                         </div>
-                        <div className="flex items-center space-x-2 text-xs text-slate-400">
-                          <Clock className="w-3 h-3" />
-                          <span>{event.time} • {event.duration}</span>
+                        <div className="flex items-center space-x-2 text-sm text-slate-300">
+                          <Clock className="w-4 h-4" />
+                          <span>{event.time}</span>
                         </div>
                       </div>
-
-                      {/* Event Description */}
-                      <p className="text-slate-400 text-xs mt-2 line-clamp-2 leading-relaxed">
-                        {event.description}
-                      </p>
+                      <span className="text-sm text-slate-400 font-medium">
+                        {event.duration}
+                      </span>
                     </div>
                   </div>
                 );
@@ -373,13 +369,13 @@ const FeaturedSection: React.FC<FeaturedSectionProps> = ({ onVideoSelect, onView
             </div>
 
             {/* Add to Calendar Button */}
-            <div className="mt-4 pt-4 border-t border-slate-600/30">
+            <div className="mt-6 pt-6 border-t border-slate-600/30">
               <button
                 onClick={addAllEventsToCalendar}
-                className="w-full flex items-center justify-center space-x-2 px-4 py-3 bg-[#ff7551] hover:bg-[#ff7551]/80 text-white font-medium rounded-lg transition-all duration-200 transform hover:scale-[1.02]"
+                className="w-full flex items-center justify-center space-x-2 px-4 py-3.5 bg-[#ff7551] hover:bg-[#ff7551]/80 text-white font-semibold rounded-lg transition-all duration-200 transform hover:scale-[1.02] shadow-lg hover:shadow-xl"
               >
-                <Plus className="w-4 h-4" />
-                <span className="text-sm">Adicionar ao Google Calendar</span>
+                <Plus className="w-5 h-5" />
+                <span>Adicionar ao Calendário</span>
               </button>
             </div>
           </div>
