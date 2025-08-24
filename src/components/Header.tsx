@@ -162,7 +162,7 @@ const Header: React.FC<HeaderProps> = ({ sidebarCollapsed, onSidebarToggle, onVi
               <span>Reproduzindo em Picture-in-Picture: {currentVideo.title}</span>
             </div>
             <button
-              onClick={returnToVideo}
+              onClick={() => navigate('/registro')}
               className="text-white hover:text-black transition-colors font-medium"
             >
               Voltar ao vídeo →
@@ -364,7 +364,7 @@ const Header: React.FC<HeaderProps> = ({ sidebarCollapsed, onSidebarToggle, onVi
                   Entrar
                 </button>
                 <button
-                  onClick={() => setShowRegisterModal(true)}
+                  onClick={() => navigate('/registro')}
                   className="flex items-center space-x-2 px-4 py-3 bg-[#ff7551] hover:bg-[#ff7551]/80 text-white font-medium rounded-lg transition-colors text-base"
                 >
                   <UserPlus className="w-5 h-5" />

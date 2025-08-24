@@ -151,13 +151,16 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ userId, userEmail, onCo
 
       if (error) {
         console.error('Error updating onboarding data:', error);
-        throw error;
+        // Continue anyway, but show warning
+        console.warn('Could not save onboarding data, but proceeding with login');
       }
 
       onComplete();
     } catch (error) {
       console.error('Error completing onboarding:', error);
-      alert('Erro ao salvar informações. Tente novamente.');
+      // Don't block the user, just proceed
+      console.warn('Onboarding data save failed, but allowing user to continue');
+      onComplete();
     } finally {
       setIsLoading(false);
     }
@@ -430,7 +433,6 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ userId, userEmail, onCo
         {/* Footer */}
         <div className="p-6 border-t border-slate-700/30">
           {currentStep === 0 ? (
-            /* Avatar step footer */
             <div className="flex space-x-4 justify-center">
               <button
                 onClick={handleSkipAvatar}
@@ -448,39 +450,38 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ userId, userEmail, onCo
               </button>
             </div>
           ) : (
-            /* Other steps footer */
-          <div className="p-6 border-t border-slate-700/30 flex justify-between">
-            <button
-              onClick={handleBack}
-              className="flex items-center space-x-2 px-6 py-3 text-slate-400 hover:text-white transition-colors"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              <span>Voltar</span>
-            </button>
-            
-            <button
-              onClick={handleNext}
-              disabled={!canProceed() || isLoading}
-              className="flex items-center space-x-2 px-8 py-3 bg-[#ff7551] hover:bg-[#ff7551]/80 disabled:bg-[#ff7551]/50 text-white font-medium rounded-lg transition-colors disabled:cursor-not-allowed"
-            >
-              {isLoading ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  <span>Finalizando...</span>
-                </>
-              ) : currentStep === steps.length - 1 ? (
-                <>
-                  <CheckCircle className="w-4 h-4" />
-                  <span>Finalizar</span>
-                </>
-              ) : (
-                <>
-                  <span>Continuar</span>
-                  <ArrowRight className="w-4 h-4" />
-                </>
-              )}
-            </button>
-          </div>
+            <div className="flex justify-between">
+              <button
+                onClick={handleBack}
+                className="flex items-center space-x-2 px-6 py-3 text-slate-400 hover:text-white transition-colors"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                <span>Voltar</span>
+              </button>
+              
+              <button
+                onClick={handleNext}
+                disabled={!canProceed() || isLoading}
+                className="flex items-center space-x-2 px-8 py-3 bg-[#ff7551] hover:bg-[#ff7551]/80 disabled:bg-[#ff7551]/50 text-white font-medium rounded-lg transition-colors disabled:cursor-not-allowed"
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>Finalizando...</span>
+                  </>
+                ) : currentStep === steps.length - 1 ? (
+                  <>
+                    <CheckCircle className="w-4 h-4" />
+                    <span>Finalizar</span>
+                  </>
+                ) : (
+                  <>
+                    <span>Continuar</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </>
+                )}
+              </button>
+            </div>
           )}
         </div>
       </div>

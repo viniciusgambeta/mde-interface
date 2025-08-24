@@ -64,7 +64,6 @@ const RegistrationPage: React.FC = () => {
           .from('assinaturas')
           .select('*')
           .eq('Email do cliente', formData.email.toLowerCase())
-          .eq('Status da assinatura', 'Ativo')
           .maybeSingle();
 
         if (error) {
@@ -74,7 +73,7 @@ const RegistrationPage: React.FC = () => {
           return;
         }
 
-        if (data) {
+        if (data && data['Status da assinatura'] === 'Ativo') {
           // Check if user already registered
           if (data.cadastro_mde) {
             console.log('User already has an account, redirecting to login');
@@ -84,7 +83,7 @@ const RegistrationPage: React.FC = () => {
             
             // Redirect to login after 2 seconds
             setTimeout(() => {
-              navigate('/login?message=account_exists&email=' + encodeURIComponent(formData.email));
+              navigate('/');
             }, 2000);
           } else {
             console.log('Email is valid and can register');
@@ -95,6 +94,11 @@ const RegistrationPage: React.FC = () => {
               setFormData(prev => ({ ...prev, name: data['Nome do cliente'] }));
             }
           }
+        } else if (data && data['Status da assinatura'] !== 'Ativo') {
+          console.log('Email found but subscription not active');
+          setEmailValid(false);
+          setError('Sua assinatura não está ativa. Entre em contato com o suporte.');
+          setSubscriptionData(null);
         } else {
           console.log('Email not found or subscription not active');
           setEmailValid(false);
@@ -190,13 +194,14 @@ const RegistrationPage: React.FC = () => {
         .from('assinaturas')
         .update({ 
           cadastro_mde: true,
-          user_id: authData.user.id // Link subscription to user
+          user_id: authData.user.id
         })
         .eq('ID da assinatura', subscriptionData['ID da assinatura']);
 
       if (updateError) {
         console.error('Error updating subscription:', updateError);
-        // Don't fail the registration for this, just log it
+        // Try to continue anyway, but log the error
+        console.warn('Could not update subscription record, but user was created successfully');
       }
 
       // Success - show onboarding
@@ -215,7 +220,7 @@ const RegistrationPage: React.FC = () => {
   const handleOnboardingComplete = () => {
     console.log('Onboarding completed, redirecting to login');
     // Redirect to login after onboarding
-    navigate('/login?registered=true&email=' + encodeURIComponent(formData.email));
+    navigate('/?registered=true&email=' + encodeURIComponent(formData.email));
   };
 
   // Show onboarding if registration was successful
