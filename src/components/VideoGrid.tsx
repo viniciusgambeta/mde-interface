@@ -676,11 +676,11 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
     );
   };
 
-  const ScrollableVideoRow = ({ 
-    title, 
-    videos, 
-    scrollRef
-  }) => (
+  const ScrollableVideoRow: React.FC<{
+    title: string;
+    videos: Video[];
+    scrollRef: React.RefObject<HTMLDivElement>;
+  }> = ({ title, videos, scrollRef }) => (
     <div className="mb-16">
       <div className="flex items-center justify-between mb-8">
         <h2 className="text-3xl font-semibold text-white">{title}</h2>
