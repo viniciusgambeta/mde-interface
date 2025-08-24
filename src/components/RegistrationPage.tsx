@@ -41,6 +41,52 @@ const RegistrationPage: React.FC = () => {
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [newUserId, setNewUserId] = useState<string | null>(null);
 
+  // Debug function to test subscription query
+  const debugSubscriptionQuery = async () => {
+    console.log('🔍 Debug: Testing subscription query...');
+    
+    try {
+      // Test 1: Get all subscriptions
+      const { data: allSubs, error: allError } = await supabase
+        .from('assinaturas')
+        .select('*')
+        .limit(5);
+      
+      console.log('📊 All subscriptions (first 5):', { data: allSubs, error: allError });
+      
+      // Test 2: Search by email with different approaches
+      if (formData.email) {
+        const testEmail = formData.email.trim();
+        
+        // Exact match
+        const { data: exact, error: exactError } = await supabase
+          .from('assinaturas')
+          .select('*')
+          .eq('Email do cliente', testEmail);
+        
+        console.log('📧 Exact email match:', { data: exact, error: exactError, email: testEmail });
+        
+        // Case insensitive match
+        const { data: ilike, error: ilikeError } = await supabase
+          .from('assinaturas')
+          .select('*')
+          .ilike('Email do cliente', testEmail);
+        
+        console.log('📧 Case insensitive match:', { data: ilike, error: ilikeError, email: testEmail });
+        
+        // Lowercase match
+        const { data: lower, error: lowerError } = await supabase
+          .from('assinaturas')
+          .select('*')
+          .eq('Email do cliente', testEmail.toLowerCase());
+        
+        console.log('📧 Lowercase match:', { data: lower, error: lowerError, email: testEmail.toLowerCase() });
+      }
+    } catch (error) {
+      console.error('Debug query error:', error);
+    }
+  };
+
   // Redirect if user is already authenticated
   if (isAuthenticated && user) {
     console.log('User is already authenticated, redirecting to home');
@@ -60,11 +106,23 @@ const RegistrationPage: React.FC = () => {
       setError('');
 
       try {
+        console.log('🔍 Validating email:', formData.email);
+        
+        // Try different query approaches to debug the issue
         const { data, error } = await supabase
           .from('assinaturas')
-          .select('*')
-          .eq('Email do cliente', formData.email.toLowerCase())
-          .maybeSingle();
+          .select(`
+            "ID da assinatura",
+            "Status da assinatura", 
+            "Email do cliente",
+            "Nome do cliente",
+            cadastro_mde,
+            user_id
+          `)
+          .ilike('Email do cliente', formData.email.trim())
+          .limit(1);
+
+        console.log('📊 Query result:', { data, error, email: formData.email });
 
         if (error) {
           console.error('Error validating email:', error);
@@ -73,9 +131,24 @@ const RegistrationPage: React.FC = () => {
           return;
         }
 
-        if (data && data['Status da assinatura'] === 'Ativo') {
+        // Get the first result if any
+        const subscription = data && data.length > 0 ? data[0] : null;
+        
+        console.log('📋 Subscription found:', subscription);
+        
+        if (subscription) {
+          const status = subscription['Status da assinatura'];
+          const isActive = status === 'Ativo' || status === 'ativo' || status === 'ATIVO';
+          
+          console.log('📊 Subscription status check:', { 
+            status, 
+            isActive, 
+            cadastro_mde: subscription.cadastro_mde 
+          });
+          
+          if (isActive) {
           // Check if user already registered
-          if (data.cadastro_mde) {
+            if (subscription.cadastro_mde) {
             console.log('User already has an account, redirecting to login');
             setEmailValid(false);
             setError('Este email já possui uma conta ativa.');
@@ -88,17 +161,18 @@ const RegistrationPage: React.FC = () => {
           } else {
             console.log('Email is valid and can register');
             setEmailValid(true);
-            setSubscriptionData(data);
+            setSubscriptionData(subscription);
             // Auto-fill name if available and not already filled
-            if (data['Nome do cliente'] && !formData.name) {
-              setFormData(prev => ({ ...prev, name: data['Nome do cliente'] }));
+            if (subscription['Nome do cliente'] && !formData.name) {
+              setFormData(prev => ({ ...prev, name: subscription['Nome do cliente'] }));
             }
           }
-        } else if (data && data['Status da assinatura'] !== 'Ativo') {
+          } else {
           console.log('Email found but subscription not active');
           setEmailValid(false);
-          setError('Sua assinatura não está ativa. Entre em contato com o suporte.');
+          setError(`Sua assinatura está como "${status}". Entre em contato com o suporte.`);
           setSubscriptionData(null);
+          }
         } else {
           console.log('Email not found or subscription not active');
           setEmailValid(false);
@@ -108,7 +182,7 @@ const RegistrationPage: React.FC = () => {
       } catch (error) {
         console.error('Exception validating email:', error);
         setEmailValid(false);
-        setError('Erro ao validar email. Tente novamente.');
+        setError(`Erro ao validar email: ${error.message}. Tente novamente.`);
       } finally {
         setValidatingEmail(false);
       }
@@ -196,7 +270,7 @@ const RegistrationPage: React.FC = () => {
           cadastro_mde: true,
           user_id: authData.user.id
         })
-        .eq('ID da assinatura', subscriptionData['ID da assinatura']);
+        .eq('Email do cliente', formData.email.trim());
 
       if (updateError) {
         console.error('Error updating subscription:', updateError);
@@ -395,6 +469,15 @@ const RegistrationPage: React.FC = () => {
             ) : (
               <span>Criar Conta</span>
             )}
+          </button>
+
+          {/* Debug Button - Remove this after testing */}
+          <button
+            type="button"
+            onClick={debugSubscriptionQuery}
+            className="w-full bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 rounded-lg transition-colors text-sm"
+          >
+            🔍 Debug: Testar Consulta
           </button>
 
           {/* Info */}
