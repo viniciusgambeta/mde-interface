@@ -7,6 +7,7 @@ import MainContent from './components/MainContent';
 import VideoPlayer from './components/VideoPlayer';
 import PromptViewer from './components/PromptViewer';
 import LiveViewer from './components/LiveViewer';
+import RegistrationPage from './components/RegistrationPage';
 import Footer from './components/Footer';
 import { AuthProvider } from './contexts/AuthContext';
 import { VideoProvider } from './contexts/VideoContext';
@@ -250,6 +251,7 @@ function App() {
           <Route path="/video/:slug" element={<AppLayout />} />
           <Route path="/prompt/:slug" element={<AppLayout />} />
           <Route path="/live/:slug" element={<AppLayout />} />
+          <Route path="/registro" element={<RegistrationPage />} />
           
           {/* Catch all route - redirect to home */}
           <Route path="*" element={<AppLayout />} />

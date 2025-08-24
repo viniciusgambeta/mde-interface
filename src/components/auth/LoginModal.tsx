@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { X, Eye, EyeOff, Mail, Lock, Loader2 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 
@@ -9,17 +10,31 @@ interface LoginModalProps {
 }
 
 const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onSwitchToRegister }) => {
+  const [searchParams] = useSearchParams();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [success, setSuccess] = useState('');
   const { login } = useAuth();
+
+  // Check for registration success message
+  React.useEffect(() => {
+    if (searchParams.get('registered') === 'true') {
+      setSuccess('Conta criada com sucesso! Faça login para continuar.');
+      const email = searchParams.get('email');
+      if (email) {
+        setEmail(email);
+      }
+    }
+  }, [searchParams]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     console.log('🔐 Login form submitted with:', { email, hasPassword: !!password });
     setError('');
+    setSuccess('');
     setIsSubmitting(true);
 
     if (!email || !password) {
@@ -65,6 +80,12 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onSwitchToRegi
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
+          {success && (
+            <div className="p-3 bg-green-500/10 border border-green-500/20 rounded-lg">
+              <p className="text-green-400 text-sm">{success}</p>
+            </div>
+          )}
+
           {error && (
             <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-lg">
               <p className="text-red-400 text-sm">{error}</p>
