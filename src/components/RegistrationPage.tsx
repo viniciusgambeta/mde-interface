@@ -125,9 +125,9 @@ const RegistrationPage: React.FC = () => {
         console.log('📊 Query result:', { data, error, email: formData.email });
 
         if (error) {
-          console.error('❌ Error validating email:', error);
+          console.error('Error validating email:', error);
           setEmailValid(false);
-          setError(`Erro ao validar email: ${error.message}. Verifique se você tem acesso à tabela assinaturas.`);
+          setError('Erro ao validar email. Tente novamente.');
           return;
         }
 
@@ -138,12 +138,7 @@ const RegistrationPage: React.FC = () => {
         
         if (subscription) {
           const status = subscription['Status da assinatura'];
-          const isActive = status && (
-            status.toLowerCase() === 'ativo' || 
-            status.toLowerCase() === 'active' ||
-            status === 'Ativo' ||
-            status === 'ATIVO'
-          );
+          const isActive = status === 'Ativo' || status === 'ativo' || status === 'ATIVO';
           
           console.log('📊 Subscription status check:', { 
             status, 
@@ -175,13 +170,13 @@ const RegistrationPage: React.FC = () => {
           } else {
           console.log('Email found but subscription not active');
           setEmailValid(false);
-          setError(`Sua assinatura está como "${status}". Status deve ser "Ativo" para criar conta.`);
+          setError(`Sua assinatura está como "${status}". Entre em contato com o suporte.`);
           setSubscriptionData(null);
           }
         } else {
           console.log('Email not found or subscription not active');
           setEmailValid(false);
-          setError('Email não encontrado na base de assinaturas ativas. Verifique se você possui uma assinatura válida.');
+          setError('Email não encontrado ou assinatura não está ativa.');
           setSubscriptionData(null);
         }
       } catch (error) {
@@ -275,7 +270,7 @@ const RegistrationPage: React.FC = () => {
           cadastro_mde: true,
           user_id: authData.user.id
         })
-        .ilike('Email do cliente', formData.email.trim());
+        .eq('Email do cliente', formData.email.trim());
 
       if (updateError) {
         console.error('Error updating subscription:', updateError);
@@ -285,12 +280,8 @@ const RegistrationPage: React.FC = () => {
 
       // Success - show onboarding
       console.log('Registration successful, showing onboarding for user:', authData.user.id);
-      
-      // Logout the user immediately after registration
-      await supabase.auth.signOut();
-      
-      // Redirect to login with success message
-      navigate('/?registered=true&email=' + encodeURIComponent(formData.email) + '&needsOnboarding=true');
+      setNewUserId(authData.user.id);
+      setShowOnboarding(true);
 
     } catch (error) {
       console.error('Registration exception:', error);
@@ -305,6 +296,18 @@ const RegistrationPage: React.FC = () => {
     // Redirect to login after onboarding
     navigate('/?registered=true&email=' + encodeURIComponent(formData.email));
   };
+
+  // Show onboarding if registration was successful
+  if (showOnboarding && newUserId) {
+    console.log('Rendering onboarding flow for user:', newUserId);
+    return (
+      <OnboardingFlow 
+        userId={newUserId}
+        userEmail={formData.email}
+        onComplete={handleOnboardingComplete}
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#1f1d2b] via-[#1f1d2b] to-black flex items-center justify-center p-4">

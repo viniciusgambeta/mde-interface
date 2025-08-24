@@ -13,29 +13,6 @@ import { AuthProvider } from './contexts/AuthContext';
 import { VideoProvider } from './contexts/VideoContext';
 import { videoService } from './lib/database';
 
-// Onboarding Page Component
-const OnboardingPage: React.FC = () => {
-  const { user, isAuthenticated } = useAuth();
-  const navigate = useNavigate();
-
-  // Redirect if not authenticated
-  if (!isAuthenticated || !user) {
-    return <Navigate to="/" replace />;
-  }
-
-  const handleOnboardingComplete = () => {
-    navigate('/');
-  };
-
-  return (
-    <OnboardingFlow 
-      userId={user.id}
-      userEmail={user.email}
-      onComplete={handleOnboardingComplete}
-    />
-  );
-};
-
 // Video Detail Page Component
 const VideoDetailPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -275,7 +252,6 @@ function App() {
           <Route path="/prompt/:slug" element={<AppLayout />} />
           <Route path="/live/:slug" element={<AppLayout />} />
           <Route path="/registro" element={<RegistrationPage />} />
-          <Route path="/onboarding" element={<OnboardingPage />} />
           
           {/* Catch all route - redirect to home */}
           <Route path="*" element={<AppLayout />} />

@@ -22,12 +22,7 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onSwitchToRegi
   // Check for registration success message
   React.useEffect(() => {
     if (searchParams.get('registered') === 'true') {
-      const needsOnboarding = searchParams.get('needsOnboarding') === 'true';
-      if (needsOnboarding) {
-        setSuccess('Conta criada com sucesso! Faça login para completar seu perfil.');
-      } else {
-        setSuccess('Conta criada com sucesso! Faça login para continuar.');
-      }
+      setSuccess('Conta criada com sucesso! Faça login para continuar.');
       const email = searchParams.get('email');
       if (email) {
         setEmail(email);
