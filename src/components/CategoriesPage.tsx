@@ -514,17 +514,17 @@ const VideoCard: React.FC<{
       {/* Tools Icons */}
       {video.ferramentas && video.ferramentas.length > 0 && (
         <div className="mt-3 px-1">
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-1">
             {video.ferramentas.slice(0, 5).map((ferramenta, index) => (
               <div
                 key={ferramenta.id}
-                className="w-6 h-6 rounded-sm overflow-hidden bg-white/10 backdrop-blur-sm flex items-center justify-center group/tool relative"
+                className="w-8 h-8 rounded-sm overflow-hidden flex items-center justify-center group/tool relative"
                 title={ferramenta.nome}
               >
                 <img 
                   src={ferramenta.icone} 
                   alt={ferramenta.nome}
-                  className="w-4 h-4 object-contain"
+                  className="w-8 h-8 object-contain"
                   onError={(e) => {
                     const target = e.target as HTMLImageElement;
                     target.style.display = 'none';
@@ -532,7 +532,7 @@ const VideoCard: React.FC<{
                     if (fallback) fallback.style.display = 'block';
                   }}
                 />
-                <div className="w-4 h-4 bg-slate-500 rounded-sm hidden flex items-center justify-center">
+                <div className="w-8 h-8 bg-slate-500 rounded-sm hidden flex items-center justify-center">
                   <span className="text-white text-xs font-bold">
                     {ferramenta.nome.charAt(0).toUpperCase()}
                   </span>
@@ -547,7 +547,7 @@ const VideoCard: React.FC<{
             
             {/* More indicator */}
             {video.ferramentas.length > 5 && (
-              <div className="w-6 h-6 rounded-sm bg-slate-600/30 flex items-center justify-center">
+              <div className="w-8 h-8 rounded-sm bg-slate-600/30 flex items-center justify-center">
                 <span className="text-slate-400 text-xs font-medium">
                   +{video.ferramentas.length - 5}
                 </span>
