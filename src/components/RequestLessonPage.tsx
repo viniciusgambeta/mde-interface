@@ -172,9 +172,9 @@ const RequestLessonPage: React.FC = () => {
     sugestao: [
       ...suggestions.filter(s => s.etapa === 'sugestao'),
       ...userSuggestions.filter(s => s.etapa === 'sugestao')
-    ],
-    producao: suggestions.filter(s => s.etapa === 'producao'),
-    prontas: suggestions.filter(s => s.etapa === 'prontas')
+    ].sort((a, b) => (b.votes || 0) - (a.votes || 0)),
+    producao: suggestions.filter(s => s.etapa === 'producao').sort((a, b) => (b.votes || 0) - (a.votes || 0)),
+    prontas: suggestions.filter(s => s.etapa === 'prontas').sort((a, b) => (b.votes || 0) - (a.votes || 0))
   };
 
   const SuggestionCard: React.FC<{ suggestion: VideoSuggestion }> = ({ suggestion }) => {
@@ -185,7 +185,7 @@ const RequestLessonPage: React.FC = () => {
     const isUserSuggestion = suggestion.user_id === user?.id;
     
     return (
-      <div className={`border rounded-lg p-5 hover:bg-slate-600/20 transition-all duration-200 group ${
+      <div className={`border rounded-lg p-6 hover:bg-slate-600/20 transition-all duration-200 group ${
         isPending ? 'bg-slate-700/20 border-slate-600/20' : 'bg-slate-700/30 border-slate-600/30'
       }`}>
         {/* Header with user info and vote button */}
@@ -219,7 +219,7 @@ const RequestLessonPage: React.FC = () => {
         
         {/* Title */}
         <div className="mb-3">
-          <h4 className="text-white font-semibold text-sm leading-snug line-clamp-2">
+          <h4 className="text-white font-semibold text-base leading-snug line-clamp-2">
             {suggestion.title}
           </h4>
         </div>
@@ -232,18 +232,18 @@ const RequestLessonPage: React.FC = () => {
         )}
         
         {/* Description */}
-        <p className="text-slate-400 text-xs mb-3 line-clamp-2 leading-relaxed">
+        <p className="text-slate-400 text-sm mb-3 line-clamp-2 leading-relaxed">
           {suggestion.description}
         </p>
         
         {/* Footer with category */}
         <div className="flex items-center justify-between">
-          <span className="text-xs px-2 py-1 bg-slate-600/30 text-slate-300 rounded">
+          <span className="text-sm px-3 py-1.5 bg-slate-600/30 text-slate-300 rounded">
             {suggestion.category}
           </span>
           
           {isPending && isUserSuggestion && (
-            <span className="text-xs text-slate-500">
+            <span className="text-sm text-slate-500">
               Pendente
             </span>
           )}
@@ -271,7 +271,7 @@ const RequestLessonPage: React.FC = () => {
           </div>
         </div>
         
-        <div className="space-y-3 max-h-96 overflow-y-auto scrollbar-hide">
+        <div className="space-y-4">
           {suggestions.map((suggestion) => (
             <SuggestionCard key={suggestion.id} suggestion={suggestion} />
           ))}
@@ -304,7 +304,7 @@ const RequestLessonPage: React.FC = () => {
       {/* Header */}
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-white mb-4">Pedir Aula</h1>
+          <h1 className="text-3xl font-bold text-white mb-4">Envie sugestões de aulas</h1>
           <p className="text-slate-400 text-lg max-w-2xl">
             Vote nas aulas que mais quer ver e sugira novos tópicos para a plataforma.
           </p>
