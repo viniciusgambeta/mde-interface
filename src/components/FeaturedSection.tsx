@@ -245,38 +245,70 @@ const FeaturedSection: React.FC<FeaturedSectionProps> = ({ onVideoSelect, onView
         <div className="w-full lg:w-[35%] h-[280px] sm:h-[320px] lg:h-[380px]">
           <div className="h-full flex flex-col space-y-3">
             {/* WhatsApp Block */}
-            <div className="flex-1 bg-slate-700/20 border border-slate-600/20 rounded-lg p-4 flex flex-col justify-center items-center text-center group hover:bg-slate-600/25 transition-all duration-200 cursor-pointer"
+            <div className="flex-1 relative overflow-hidden rounded-lg cursor-pointer group"
                  onClick={handleWhatsAppClick}>
-              <div className="w-10 h-10 bg-green-500/15 rounded-full flex items-center justify-center mb-3 group-hover:bg-green-500/25 transition-colors">
-                <MessageCircle className="w-5 h-5 text-green-400" />
+              {/* Background Image */}
+              <div className="absolute inset-0">
+                <img
+                  src="https://images.pexels.com/photos/147413/twitter-facebook-together-exchange-of-information-147413.jpeg?auto=compress&cs=tinysrgb&w=800&h=400&fit=crop"
+                  alt="WhatsApp Community"
+                  className="w-full h-full object-cover"
+                />
+                {/* Gradient Overlays */}
+                <div className="absolute inset-0 bg-gradient-to-r from-green-900/90 via-green-800/70 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
               </div>
-              <h3 className="text-white font-medium text-base mb-2 group-hover:text-green-400 transition-colors">
-                Entre no Grupo
-              </h3>
-              <p className="text-slate-400 text-xs mb-3 leading-relaxed">
-                Participe da nossa comunidade
-              </p>
-              <div className="w-full bg-green-500/80 hover:bg-green-500 text-white font-medium py-2 px-3 rounded-md transition-colors flex items-center justify-center space-x-1.5 text-sm">
-                <MessageCircle className="w-3.5 h-3.5" />
-                <span>Entrar</span>
+
+              {/* Content */}
+              <div className="relative z-10 h-full flex items-center p-4">
+                <div className="max-w-full">
+                  <h3 className="text-white font-semibold text-lg mb-2 leading-tight">
+                    Entre no Grupo
+                  </h3>
+                  <p className="text-green-100 text-sm mb-3 leading-relaxed">
+                    Participe da nossa comunidade no WhatsApp
+                  </p>
+                  <div className="flex items-center space-x-2 text-white group-hover:text-green-200 transition-colors">
+                    <span className="text-sm font-medium">Entrar agora</span>
+                    <svg className="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </div>
+                </div>
               </div>
             </div>
             
             {/* Calendar Block */}
-            <div className="flex-1 bg-slate-700/20 border border-slate-600/20 rounded-lg p-4 flex flex-col justify-center items-center text-center group hover:bg-slate-600/25 transition-all duration-200 cursor-pointer"
+            <div className="flex-1 relative overflow-hidden rounded-lg cursor-pointer group"
                  onClick={handleCalendarClick}>
-              <div className="w-10 h-10 bg-[#ff7551]/15 rounded-full flex items-center justify-center mb-3 group-hover:bg-[#ff7551]/25 transition-colors">
-                <Calendar className="w-5 h-5 text-[#ff7551]" />
+              {/* Background Image */}
+              <div className="absolute inset-0">
+                <img
+                  src="https://images.pexels.com/photos/1319854/pexels-photo-1319854.jpeg?auto=compress&cs=tinysrgb&w=800&h=400&fit=crop"
+                  alt="Calendar Events"
+                  className="w-full h-full object-cover"
+                />
+                {/* Gradient Overlays */}
+                <div className="absolute inset-0 bg-gradient-to-r from-orange-900/90 via-orange-800/70 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
               </div>
-              <h3 className="text-white font-medium text-base mb-2 group-hover:text-[#ff7551] transition-colors">
-                Adicionar Eventos
-              </h3>
-              <p className="text-slate-400 text-xs mb-3 leading-relaxed">
-                Adicione à sua agenda
-              </p>
-              <div className="w-full bg-[#ff7551]/80 hover:bg-[#ff7551] text-white font-medium py-2 px-3 rounded-md transition-colors flex items-center justify-center space-x-1.5 text-sm">
-                <Plus className="w-3.5 h-3.5" />
-                <span>Adicionar</span>
+
+              {/* Content */}
+              <div className="relative z-10 h-full flex items-center p-4">
+                <div className="max-w-full">
+                  <h3 className="text-white font-semibold text-lg mb-2 leading-tight">
+                    Adicionar Eventos
+                  </h3>
+                  <p className="text-orange-100 text-sm mb-3 leading-relaxed">
+                    Adicione nossos eventos à sua agenda
+                  </p>
+                  <div className="flex items-center space-x-2 text-white group-hover:text-orange-200 transition-colors">
+                    <span className="text-sm font-medium">Adicionar agora</span>
+                    <svg className="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
