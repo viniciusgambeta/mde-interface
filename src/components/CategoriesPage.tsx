@@ -518,14 +518,14 @@ const VideoCard: React.FC<{
             {video.ferramentas.slice(0, 5).map((ferramenta, index) => (
               <div
                 key={ferramenta.id}
-                className="w-8 h-8 rounded-sm overflow-hidden flex items-center justify-center group/tool relative shadow-xl"
+                className="w-8 h-8 rounded-sm overflow-hidden flex items-center justify-center group/tool relative"
                 style={{ zIndex: 5 - index }}
                 title={ferramenta.nome}
               >
                 <img 
                   src={ferramenta.icone} 
                   alt={ferramenta.nome}
-                  className="w-8 h-8 object-contain"
+                  className="w-8 h-8 object-contain drop-shadow-lg"
                   onError={(e) => {
                     const target = e.target as HTMLImageElement;
                     target.style.display = 'none';
@@ -533,7 +533,7 @@ const VideoCard: React.FC<{
                     if (fallback) fallback.style.display = 'block';
                   }}
                 />
-                <div className="w-8 h-8 bg-slate-500 rounded-sm hidden flex items-center justify-center shadow-xl">
+                <div className="w-8 h-8 bg-slate-500 rounded-sm hidden flex items-center justify-center drop-shadow-lg">
                   <span className="text-white text-xs font-bold">
                     {ferramenta.nome.charAt(0).toUpperCase()}
                   </span>
@@ -548,7 +548,7 @@ const VideoCard: React.FC<{
             
             {/* More indicator */}
             {video.ferramentas.length > 5 && (
-              <div className="w-8 h-8 rounded-sm bg-slate-600 flex items-center justify-center shadow-xl text-slate-200" style={{ zIndex: 0 }}>
+              <div className="w-8 h-8 rounded-sm bg-slate-600 flex items-center justify-center drop-shadow-lg text-slate-200" style={{ zIndex: 0 }}>
                 <span className="text-slate-400 text-xs font-medium">
                   +{video.ferramentas.length - 5}
                 </span>
