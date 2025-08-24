@@ -288,32 +288,6 @@ const CategoriesPage: React.FC<CategoriesPageProps> = ({ onVideoSelect }) => {
         </div>
       </div>
 
-      {/* Category Grid */}
-      {!hasActiveFilters && (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4 mb-8">
-          {categories.map((category) => {
-            const categoryVideos = videos.filter(v => v.category?.id === category.id);
-            return (
-              <button
-                key={category.id}
-                onClick={() => updateFilter('category', category.id)}
-                className="group p-6 bg-slate-700/30 hover:bg-slate-600/30 rounded-xl transition-all duration-200 hover:scale-105"
-              >
-                <div className="w-16 h-16 rounded-lg mb-4 mx-auto flex items-center justify-center bg-slate-600/50 text-3xl">
-                  {getCategoryEmoji(category.slug)}
-                </div>
-                <h3 className="text-white font-medium text-base mb-2 group-hover:text-[#ff7551] transition-colors">
-                  {category.name}
-                </h3>
-                <p className="text-slate-400 text-sm">
-                  {categoryVideos.length} aula{categoryVideos.length !== 1 ? 's' : ''}
-                </p>
-              </button>
-            );
-          })}
-        </div>
-      )}
-
       {/* Videos Grid */}
       {filteredVideos.length > 0 ? (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-8">
