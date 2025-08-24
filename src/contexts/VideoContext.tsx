@@ -77,7 +77,12 @@ export const VideoProvider: React.FC<VideoProviderProps> = ({ children }) => {
 
   const returnToVideo = () => {
     if (currentVideo) {
-      const urlPrefix = currentVideo.tipo === 'prompt' ? '/prompt/' : '/video/';
+      let urlPrefix = '/video/';
+      if (currentVideo.tipo === 'prompt') {
+        urlPrefix = '/prompt/';
+      } else if (currentVideo.tipo === 'live') {
+        urlPrefix = '/live/';
+      }
       navigate(urlPrefix + currentVideo.slug);
       exitPiP();
     }

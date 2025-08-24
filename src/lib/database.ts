@@ -134,9 +134,10 @@ export interface Video {
   published_at: string;
   created_at: string;
   updated_at: string;
-  tipo: 'video' | 'prompt';
+  tipo: 'video' | 'prompt' | 'live';
   prompt_content?: string;
   status: string;
+  data_live?: string;
   
   // Joined data
   instructor?: Instructor;
