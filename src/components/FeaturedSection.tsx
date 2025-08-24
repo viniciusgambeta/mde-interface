@@ -255,21 +255,21 @@ const FeaturedSection: React.FC<FeaturedSectionProps> = ({ onVideoSelect, onView
                   className="w-full h-full object-cover"
                 />
                 {/* Gradient Overlays */}
-                <div className="absolute inset-0 bg-gradient-to-r from-green-900/90 via-green-800/70 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/70 to-transparent" />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
               </div>
 
               {/* Content */}
-              <div className="relative z-10 h-full flex items-center p-4">
+              <div className="relative z-10 h-full flex items-center pl-6 pr-4 py-4">
                 <div className="max-w-full">
-                  <h3 className="text-white font-semibold text-lg mb-2 leading-tight">
+                  <h3 className="text-white font-semibold text-xl mb-2 leading-tight">
                     Entre no Grupo
                   </h3>
-                  <p className="text-green-100 text-sm mb-3 leading-relaxed">
+                  <p className="text-slate-200 text-base mb-3 leading-relaxed">
                     Participe da nossa comunidade no WhatsApp
                   </p>
-                  <div className="flex items-center space-x-2 text-white group-hover:text-green-200 transition-colors">
-                    <span className="text-sm font-medium">Entrar agora</span>
+                  <div className="flex items-center space-x-2 text-white group-hover:text-slate-200 transition-colors">
+                    <span className="text-base font-medium">Entrar agora</span>
                     <svg className="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                     </svg>
@@ -289,21 +289,21 @@ const FeaturedSection: React.FC<FeaturedSectionProps> = ({ onVideoSelect, onView
                   className="w-full h-full object-cover"
                 />
                 {/* Gradient Overlays */}
-                <div className="absolute inset-0 bg-gradient-to-r from-orange-900/90 via-orange-800/70 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/70 to-transparent" />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
               </div>
 
               {/* Content */}
-              <div className="relative z-10 h-full flex items-center p-4">
+              <div className="relative z-10 h-full flex items-center pl-6 pr-4 py-4">
                 <div className="max-w-full">
-                  <h3 className="text-white font-semibold text-lg mb-2 leading-tight">
+                  <h3 className="text-white font-semibold text-xl mb-2 leading-tight">
                     Adicionar Eventos
                   </h3>
-                  <p className="text-orange-100 text-sm mb-3 leading-relaxed">
+                  <p className="text-slate-200 text-base mb-3 leading-relaxed">
                     Adicione nossos eventos à sua agenda
                   </p>
-                  <div className="flex items-center space-x-2 text-white group-hover:text-orange-200 transition-colors">
-                    <span className="text-sm font-medium">Adicionar agora</span>
+                  <div className="flex items-center space-x-2 text-white group-hover:text-slate-200 transition-colors">
+                    <span className="text-base font-medium">Adicionar agora</span>
                     <svg className="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                     </svg>
