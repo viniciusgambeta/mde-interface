@@ -630,8 +630,8 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
           )}
           
           {/* Title Overlay */}
-          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 via-black/70 to-transparent p-4">
-            <h3 className="text-white font-medium leading-snug group-hover:text-[#ff7551] transition-colors text-xl">
+          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/95 via-black/80 to-transparent p-6 pt-12">
+            <h3 className="text-white font-medium leading-snug group-hover:text-[#ff7551] transition-colors text-2xl">
               {video.title}
             </h3>
           </div>
