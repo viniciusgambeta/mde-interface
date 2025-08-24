@@ -243,40 +243,40 @@ const FeaturedSection: React.FC<FeaturedSectionProps> = ({ onVideoSelect, onView
 
         {/* Action Blocks - Right Side */}
         <div className="w-full lg:w-[35%] h-[280px] sm:h-[320px] lg:h-[380px]">
-          <div className="h-full flex flex-col space-y-4">
+          <div className="h-full flex flex-col space-y-3">
             {/* WhatsApp Block */}
-            <div className="flex-1 bg-[#1f1d2b]/90 backdrop-blur-sm border border-slate-700/30 rounded-xl p-6 flex flex-col justify-center items-center text-center group hover:scale-[1.02] transition-all duration-200 cursor-pointer"
+            <div className="flex-1 bg-slate-700/20 border border-slate-600/20 rounded-lg p-4 flex flex-col justify-center items-center text-center group hover:bg-slate-600/25 transition-all duration-200 cursor-pointer"
                  onClick={handleWhatsAppClick}>
-              <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mb-4 group-hover:bg-green-500/30 transition-colors">
-                <MessageCircle className="w-8 h-8 text-green-400" />
+              <div className="w-10 h-10 bg-green-500/15 rounded-full flex items-center justify-center mb-3 group-hover:bg-green-500/25 transition-colors">
+                <MessageCircle className="w-5 h-5 text-green-400" />
               </div>
-              <h3 className="text-white font-semibold text-xl mb-2 group-hover:text-green-400 transition-colors">
+              <h3 className="text-white font-medium text-base mb-2 group-hover:text-green-400 transition-colors">
                 Entre no Grupo
               </h3>
-              <p className="text-slate-400 text-sm mb-4 leading-relaxed">
-                Participe da nossa comunidade no WhatsApp e receba dicas exclusivas
+              <p className="text-slate-400 text-xs mb-3 leading-relaxed">
+                Participe da nossa comunidade
               </p>
-              <div className="w-full bg-green-500 hover:bg-green-600 text-white font-medium py-3 px-4 rounded-lg transition-colors flex items-center justify-center space-x-2">
-                <MessageCircle className="w-4 h-4" />
-                <span>Entrar no WhatsApp</span>
+              <div className="w-full bg-green-500/80 hover:bg-green-500 text-white font-medium py-2 px-3 rounded-md transition-colors flex items-center justify-center space-x-1.5 text-sm">
+                <MessageCircle className="w-3.5 h-3.5" />
+                <span>Entrar</span>
               </div>
             </div>
             
             {/* Calendar Block */}
-            <div className="flex-1 bg-[#1f1d2b]/90 backdrop-blur-sm border border-slate-700/30 rounded-xl p-6 flex flex-col justify-center items-center text-center group hover:scale-[1.02] transition-all duration-200 cursor-pointer"
+            <div className="flex-1 bg-slate-700/20 border border-slate-600/20 rounded-lg p-4 flex flex-col justify-center items-center text-center group hover:bg-slate-600/25 transition-all duration-200 cursor-pointer"
                  onClick={handleCalendarClick}>
-              <div className="w-16 h-16 bg-[#ff7551]/20 rounded-full flex items-center justify-center mb-4 group-hover:bg-[#ff7551]/30 transition-colors">
-                <Calendar className="w-8 h-8 text-[#ff7551]" />
+              <div className="w-10 h-10 bg-[#ff7551]/15 rounded-full flex items-center justify-center mb-3 group-hover:bg-[#ff7551]/25 transition-colors">
+                <Calendar className="w-5 h-5 text-[#ff7551]" />
               </div>
-              <h3 className="text-white font-semibold text-xl mb-2 group-hover:text-[#ff7551] transition-colors">
+              <h3 className="text-white font-medium text-base mb-2 group-hover:text-[#ff7551] transition-colors">
                 Adicionar Eventos
               </h3>
-              <p className="text-slate-400 text-sm mb-4 leading-relaxed">
-                Adicione nossos eventos à sua agenda do Google Calendar
+              <p className="text-slate-400 text-xs mb-3 leading-relaxed">
+                Adicione à sua agenda
               </p>
-              <div className="w-full bg-[#ff7551] hover:bg-[#ff7551]/80 text-white font-medium py-3 px-4 rounded-lg transition-colors flex items-center justify-center space-x-2">
-                <Plus className="w-4 h-4" />
-                <span>Adicionar ao Calendário</span>
+              <div className="w-full bg-[#ff7551]/80 hover:bg-[#ff7551] text-white font-medium py-2 px-3 rounded-md transition-colors flex items-center justify-center space-x-1.5 text-sm">
+                <Plus className="w-3.5 h-3.5" />
+                <span>Adicionar</span>
               </div>
             </div>
           </div>
