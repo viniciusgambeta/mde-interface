@@ -644,14 +644,14 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
               {video.ferramentas.slice(0, 5).map((ferramenta, index) => (
                 <div
                   key={ferramenta.id}
-                  className="w-8 h-8 rounded-sm overflow-hidden flex items-center justify-center group/tool relative"
+                  className="w-6 h-6 rounded-sm overflow-hidden flex items-center justify-center group/tool relative transition-all duration-200 group-hover:w-8 group-hover:h-8"
                   style={{ zIndex: 5 - index }}
                   title={ferramenta.nome}
                 >
                   <img 
                     src={ferramenta.icone} 
                     alt={ferramenta.nome}
-                    className="w-8 h-8 object-contain drop-shadow-2xl"
+                    className="w-6 h-6 object-contain drop-shadow-2xl filter brightness-75 contrast-125 transition-all duration-200 group-hover:w-8 group-hover:h-8 group-hover:filter-none"
                     onError={(e) => {
                       const target = e.target as HTMLImageElement;
                       target.style.display = 'none';
@@ -659,7 +659,7 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
                       if (fallback) fallback.style.display = 'block';
                     }}
                   />
-                  <div className="w-8 h-8 bg-slate-500 rounded-sm hidden flex items-center justify-center drop-shadow-2xl">
+                  <div className="w-6 h-6 bg-slate-500 rounded-sm hidden flex items-center justify-center drop-shadow-2xl filter brightness-75 contrast-125 transition-all duration-200 group-hover:w-8 group-hover:h-8 group-hover:filter-none">
                     <span className="text-white text-xs font-bold">
                       {ferramenta.nome.charAt(0).toUpperCase()}
                     </span>
@@ -674,7 +674,7 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
               
               {/* More indicator */}
               {video.ferramentas.length > 5 && (
-                <div className="w-8 h-8 rounded-sm bg-slate-600 flex items-center justify-center drop-shadow-2xl text-slate-200" style={{ zIndex: 0 }}>
+                <div className="w-6 h-6 rounded-sm bg-slate-600 flex items-center justify-center drop-shadow-2xl text-slate-200 filter brightness-75 contrast-125 transition-all duration-200 group-hover:w-8 group-hover:h-8 group-hover:filter-none" style={{ zIndex: 0 }}>
                   <span className="text-slate-400 text-xs font-medium">
                     +{video.ferramentas.length - 5}
                   </span>
