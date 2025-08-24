@@ -525,7 +525,7 @@ const VideoCard: React.FC<{
                 <img 
                   src={ferramenta.icone} 
                   alt={ferramenta.nome}
-                  className="w-8 h-8 object-contain drop-shadow-lg"
+                  className="w-8 h-8 object-contain drop-shadow-2xl"
                   onError={(e) => {
                     const target = e.target as HTMLImageElement;
                     target.style.display = 'none';
@@ -533,7 +533,7 @@ const VideoCard: React.FC<{
                     if (fallback) fallback.style.display = 'block';
                   }}
                 />
-                <div className="w-8 h-8 bg-slate-500 rounded-sm hidden flex items-center justify-center drop-shadow-lg">
+                <div className="w-8 h-8 bg-slate-500 rounded-sm hidden flex items-center justify-center drop-shadow-2xl">
                   <span className="text-white text-xs font-bold">
                     {ferramenta.nome.charAt(0).toUpperCase()}
                   </span>
@@ -548,7 +548,7 @@ const VideoCard: React.FC<{
             
             {/* More indicator */}
             {video.ferramentas.length > 5 && (
-              <div className="w-8 h-8 rounded-sm bg-slate-600 flex items-center justify-center drop-shadow-lg text-slate-200" style={{ zIndex: 0 }}>
+              <div className="w-8 h-8 rounded-sm bg-slate-600 flex items-center justify-center drop-shadow-2xl text-slate-200" style={{ zIndex: 0 }}>
                 <span className="text-slate-400 text-xs font-medium">
                   +{video.ferramentas.length - 5}
                 </span>
