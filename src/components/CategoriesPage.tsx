@@ -425,7 +425,6 @@ const VideoCard: React.FC<{
         <img
           src={video.thumbnail_url || 'https://images.pexels.com/photos/11035380/pexels-photo-11035380.jpeg?auto=compress&cs=tinysrgb&w=320&h=480&fit=crop'}
           alt={video.title}
-          className="w-full h-full object-cover transition-all duration-300 group-hover:brightness-75"
           className="w-full h-full object-cover transition-all duration-300 group-hover:brightness-75 group-hover:scale-105"
           draggable={false}
         />
@@ -488,8 +487,7 @@ const VideoCard: React.FC<{
       </div>
 
       {/* Tools Icons */}
-      {/* Tools Icons - Only show if showToolIcons is true */}
-      {showToolIcons && video.ferramentas && video.ferramentas.length > 0 && (
+      {video.ferramentas && video.ferramentas.length > 0 && (
         <div className="absolute -bottom-4 left-1/2 transform -translate-x-1/2">
           <div className="flex items-center space-x-1">
             {video.ferramentas.slice(0, 5).map((ferramenta, index) => (
