@@ -7,7 +7,7 @@ const DiscountsPage: React.FC = () => {
   const [copiedCoupons, setCopiedCoupons] = useState<Set<string>>(new Set());
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
-  const [sortBy, setSortBy] = useState<string>('name');
+  const [sortBy, setSortBy] = useState<string>('newest');
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
   const [showSortDropdown, setShowSortDropdown] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -38,7 +38,8 @@ const DiscountsPage: React.FC = () => {
     { value: 'name', label: 'Nome A-Z' },
     { value: 'name-desc', label: 'Nome Z-A' },
     { value: 'category', label: 'Categoria' },
-    { value: 'discount', label: 'Maior Desconto' }
+    { value: 'discount', label: 'Maior Desconto' },
+    { value: 'newest', label: 'Mais Recentes' }
   ];
 
   // Filter and sort discounts
@@ -74,6 +75,8 @@ const DiscountsPage: React.FC = () => {
           const aPercent = parseInt(a.desconto.match(/\d+/)?.[0] || '0');
           const bPercent = parseInt(b.desconto.match(/\d+/)?.[0] || '0');
           return bPercent - aPercent;
+        case 'newest':
+          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
         default:
           return 0;
       }
