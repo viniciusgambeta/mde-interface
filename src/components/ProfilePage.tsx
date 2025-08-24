@@ -181,32 +181,56 @@ const ProfilePage: React.FC = () => {
             </div>
           </div>
 
-          {/* Upgrade Button */}
-          {!user.isPremium && (
-            <div className="flex-shrink-0 w-full sm:w-auto">
-              <button className="flex items-center justify-center space-x-2 w-full sm:w-auto px-4 sm:px-6 py-2 sm:py-3 bg-[#ff7551] hover:bg-[#ff7551]/80 text-white font-medium rounded-lg transition-colors text-sm">
-                <Star className="w-3 h-3 sm:w-4 sm:h-4" />
-                <span>Upgrade</span>
-              </button>
-            </div>
-          )}
         </div>
 
-        {/* Upload Instructions */}
-        <div className="mt-4 sm:mt-6 p-3 sm:p-4 bg-slate-600/20 rounded-lg">
-          <div className="flex items-center space-x-2 text-slate-400 text-xs sm:text-sm">
-            <Upload className="w-3 h-3 sm:w-4 sm:h-4" />
-            <span>Clique na câmera para alterar sua foto de perfil</span>
-          </div>
-          <p className="text-slate-500 text-xs mt-1">
-            Formatos aceitos: JPG, PNG, GIF (máx. 5MB)
-          </p>
-        </div>
       </div>
 
       {/* Edit Profile Form */}
       <div className="bg-slate-700/30 border border-slate-600/30 rounded-xl p-4 sm:p-6 lg:p-8">
-        <h3 className="text-lg sm:text-xl font-semibold text-white mb-4 sm:mb-6">Editar Informações</h3>
+        <div className="flex items-center justify-between mb-6">
+          <h3 className="text-lg sm:text-xl font-semibold text-white">Editar Informações</h3>
+          
+          {/* Avatar Upload Section */}
+          <div className="flex flex-col items-center space-y-2">
+            <div className="relative group">
+              <img
+                src={currentAvatar}
+                alt={user.name}
+                className="w-16 h-16 sm:w-20 sm:h-20 rounded-full object-cover border-2 border-slate-600/50 group-hover:border-[#ff7551]/50 transition-colors cursor-pointer"
+                onClick={handleAvatarClick}
+              />
+              <div 
+                className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                onClick={handleAvatarClick}
+              >
+                {isUploadingAvatar ? (
+                  <Loader2 className="w-6 h-6 text-white animate-spin" />
+                ) : (
+                  <Camera className="w-6 h-6 text-white" />
+                )}
+              </div>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleAvatarChange}
+                className="hidden"
+              />
+            </div>
+            <div className="text-center">
+              <button
+                onClick={handleAvatarClick}
+                disabled={isUploadingAvatar}
+                className="text-xs text-slate-400 hover:text-[#ff7551] transition-colors disabled:opacity-50"
+              >
+                {isUploadingAvatar ? 'Enviando...' : 'Alterar foto'}
+              </button>
+              <p className="text-slate-500 text-xs mt-1">
+                JPG, PNG, GIF (máx. 5MB)
+              </p>
+            </div>
+          </div>
+        </div>
 
         {success && (
           <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-green-500/10 border border-green-500/20 rounded-lg">
@@ -277,67 +301,6 @@ const ProfilePage: React.FC = () => {
           </div>
         </form>
       </div>
-
-      {/* Account Statistics */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
-        <div className="bg-slate-700/30 border border-slate-600/30 rounded-xl p-4 sm:p-6 text-center">
-          <div className="w-12 h-12 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-3">
-            <Star className="w-6 h-6 text-blue-400" />
-          </div>
-          <h4 className="text-white font-semibold mb-1 text-sm sm:text-base">Aulas Assistidas</h4>
-          <p className="text-xl sm:text-2xl font-bold text-blue-400">24</p>
-          <p className="text-slate-400 text-sm">Este mês</p>
-        </div>
-
-        <div className="bg-slate-700/30 border border-slate-600/30 rounded-xl p-4 sm:p-6 text-center">
-          <div className="w-12 h-12 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-3">
-            <Calendar className="w-6 h-6 text-green-400" />
-          </div>
-          <h4 className="text-white font-semibold mb-1 text-sm sm:text-base">Tempo Total</h4>
-          <p className="text-xl sm:text-2xl font-bold text-green-400">18h</p>
-          <p className="text-slate-400 text-sm">De aprendizado</p>
-        </div>
-
-        <div className="bg-slate-700/30 border border-slate-600/30 rounded-xl p-4 sm:p-6 text-center">
-          <div className="w-12 h-12 bg-[#ff7551]/20 rounded-full flex items-center justify-center mx-auto mb-3">
-            <Shield className="w-6 h-6 text-[#ff7551]" />
-          </div>
-          <h4 className="text-white font-semibold mb-1 text-sm sm:text-base">Aulas Salvas</h4>
-          <p className="text-xl sm:text-2xl font-bold text-[#ff7551]">12</p>
-          <p className="text-slate-400 text-sm">Para assistir depois</p>
-        </div>
-      </div>
-
-      {/* Premium Benefits */}
-      {!user.isPremium && (
-        <div className="bg-gradient-to-r from-[#ff7551]/10 to-[#ff7551]/5 border border-[#ff7551]/20 rounded-xl p-4 sm:p-6 lg:p-8">
-          <div className="text-center">
-            <Star className="w-12 h-12 text-[#ff7551] mx-auto mb-4" />
-            <h3 className="text-lg sm:text-xl font-bold text-white mb-2">Upgrade para Premium</h3>
-            <p className="text-slate-300 mb-4 sm:mb-6 max-w-2xl mx-auto text-sm sm:text-base">
-              Desbloqueie acesso completo a todas as aulas, downloads offline, certificados e suporte prioritário.
-            </p>
-            
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4 mb-4 sm:mb-6">
-              {[
-                'Acesso a todas as aulas',
-                'Downloads para offline',
-                'Certificados oficiais',
-                'Suporte prioritário'
-              ].map((benefit, index) => (
-                <div key={index} className="flex items-center space-x-2 text-slate-300 text-xs sm:text-sm">
-                  <div className="w-2 h-2 bg-[#ff7551] rounded-full"></div>
-                  <span>{benefit}</span>
-                </div>
-              ))}
-            </div>
-            
-            <button className="px-6 sm:px-8 py-2.5 sm:py-3 bg-[#ff7551] hover:bg-[#ff7551]/80 text-white font-semibold rounded-lg transition-colors text-sm sm:text-base">
-              Fazer Upgrade Agora
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
