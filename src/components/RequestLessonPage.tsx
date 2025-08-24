@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Send, ThumbsUp, Clock, CheckCircle, Lightbulb, Users, TrendingUp, Award, Plus, X } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
-import { videoSuggestionsService, type VideoSuggestion } from '../lib/database';
+import { videoSuggestionsService, categoryService, type VideoSuggestion, type Category } from '../lib/database';
 
 const RequestLessonPage: React.FC = () => {
   const { user } = useAuth();
@@ -17,19 +17,22 @@ const RequestLessonPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [userVotes, setUserVotes] = useState<string[]>([]);
   const [votingStates, setVotingStates] = useState<Record<string, boolean>>({});
+  const [categories, setCategories] = useState<Category[]>([]);
 
   // Load suggestions on component mount
   React.useEffect(() => {
     const loadSuggestions = async () => {
       setLoading(true);
       try {
-        const [suggestionsData, userVotesData] = await Promise.all([
+        const [suggestionsData, userVotesData, categoriesData] = await Promise.all([
           videoSuggestionsService.getApprovedSuggestions(),
-          user ? videoSuggestionsService.getUserVotes(user.id) : Promise.resolve([])
+          user ? videoSuggestionsService.getUserVotes(user.id) : Promise.resolve([]),
+          categoryService.getCategories()
         ]);
         
         setSuggestions(suggestionsData);
         setUserVotes(userVotesData);
+        setCategories(categoriesData);
       } catch (error) {
         console.error('Error loading suggestions:', error);
       } finally {
@@ -40,16 +43,6 @@ const RequestLessonPage: React.FC = () => {
     loadSuggestions();
   }, [user?.id]);
 
-  const categories = [
-    'Programação',
-    'Design',
-    'Marketing',
-    'Negócios',
-    'Ciência de Dados',
-    'Mobile',
-    'DevOps',
-    'IA & Machine Learning'
-  ];
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -95,39 +88,69 @@ const RequestLessonPage: React.FC = () => {
     }
   };
 
+  const handleUpvote = async (suggestionId: string) => {
+    if (!user || votingStates[suggestionId]) return;
+
+    setVotingStates(prev => ({ ...prev, [suggestionId]: true }));
+
+    try {
+      const result = await videoSuggestionsService.toggleUpvote(suggestionId, user.id);
+      
+      if (result.success) {
+        // Update local state
+        const wasVoted = userVotes.includes(suggestionId);
+        if (wasVoted) {
+          setUserVotes(prev => prev.filter(id => id !== suggestionId));
+        } else {
+          setUserVotes(prev => [...prev, suggestionId]);
+        }
+        
+        // Update suggestion votes count
+        setSuggestions(prev => prev.map(suggestion => 
+          suggestion.id === suggestionId 
+            ? { ...suggestion, votes: result.votes }
+            : suggestion
+        ));
+      }
+    } catch (error) {
+      console.error('Error toggling upvote:', error);
+    } finally {
+      setVotingStates(prev => ({ ...prev, [suggestionId]: false }));
+    }
+  };
   const getEtapaConfig = (etapa: string) => {
     switch (etapa) {
       case 'sugestao':
         return {
           title: 'Sugestões',
           icon: Lightbulb,
-          color: 'text-blue-400',
-          bgColor: 'bg-blue-500/10',
-          borderColor: 'border-blue-500/20'
+          color: 'text-[#ff7551]',
+          bgColor: 'bg-[#ff7551]/10',
+          borderColor: 'border-[#ff7551]/20'
         };
       case 'producao':
         return {
           title: 'Em Produção',
           icon: Clock,
-          color: 'text-yellow-400',
-          bgColor: 'bg-yellow-500/10',
-          borderColor: 'border-yellow-500/20'
+          color: 'text-[#ff7551]',
+          bgColor: 'bg-[#ff7551]/10',
+          borderColor: 'border-[#ff7551]/20'
         };
       case 'prontas':
         return {
           title: 'Prontas',
           icon: CheckCircle,
-          color: 'text-green-400',
-          bgColor: 'bg-green-500/10',
-          borderColor: 'border-green-500/20'
+          color: 'text-[#ff7551]',
+          bgColor: 'bg-[#ff7551]/10',
+          borderColor: 'border-[#ff7551]/20'
         };
       default:
         return {
           title: 'Sugestões',
           icon: Lightbulb,
-          color: 'text-blue-400',
-          bgColor: 'bg-blue-500/10',
-          borderColor: 'border-blue-500/20'
+          color: 'text-[#ff7551]',
+          bgColor: 'bg-[#ff7551]/10',
+          borderColor: 'border-[#ff7551]/20'
         };
     }
   };
@@ -147,15 +170,32 @@ const RequestLessonPage: React.FC = () => {
       });
     };
 
+    const isVoted = userVotes.includes(suggestion.id);
+    const isVoting = votingStates[suggestion.id];
+    const canVote = user && (suggestion.etapa === 'sugestao' || suggestion.etapa === 'producao');
     return (
-      <div className="bg-slate-700/30 border border-slate-600/30 rounded-lg p-4 hover:bg-slate-600/20 transition-all duration-200 group">
-        <div className="flex items-start justify-between mb-3">
-          <h4 className="text-white font-medium text-sm leading-snug line-clamp-2">
+      <div className="bg-slate-700/30 border border-slate-600/30 rounded-lg p-3 hover:bg-slate-600/20 transition-all duration-200 group">
+        <div className="flex items-start justify-between mb-2">
+          <h4 className="text-white font-medium text-xs leading-snug line-clamp-2 flex-1 pr-2">
             {suggestion.title}
           </h4>
+          {canVote && (
+            <button
+              onClick={() => handleUpvote(suggestion.id)}
+              disabled={isVoting}
+              className={`flex items-center space-x-1 px-2 py-1 rounded text-xs font-medium transition-all duration-200 ${
+                isVoted 
+                  ? 'bg-[#ff7551] text-white' 
+                  : 'bg-slate-600/30 text-slate-400 hover:bg-slate-500/30 hover:text-white'
+              } ${isVoting ? 'animate-pulse' : ''}`}
+            >
+              <ThumbsUp className="w-3 h-3" />
+              <span>{suggestion.votes || 0}</span>
+            </button>
+          )}
         </div>
         
-        <p className="text-slate-400 text-xs mb-3 line-clamp-2 leading-relaxed">
+        <p className="text-slate-400 text-xs mb-2 line-clamp-2 leading-relaxed">
           {suggestion.description}
         </p>
         
@@ -170,10 +210,6 @@ const RequestLessonPage: React.FC = () => {
             <span className="text-xs text-slate-400">
               {formatDate(suggestion.created_at)}
             </span>
-          </div>
-          
-          <div className="flex items-center space-x-1 text-slate-400">
-            <span className="text-xs capitalize">{suggestion.status}</span>
           </div>
         </div>
       </div>
@@ -191,15 +227,15 @@ const RequestLessonPage: React.FC = () => {
       <div className="flex-1 min-w-0">
         <div className="p-4 mb-4">
           <div className="flex items-center space-x-2 mb-2">
-            <IconComponent className={`w-5 h-5 ${config.color}`} />
-            <h3 className="text-slate-300 font-medium">{config.title}</h3>
+            <IconComponent className={`w-6 h-6 ${config.color}`} />
+            <h3 className="text-white font-semibold text-lg">{config.title}</h3>
             <span className={`text-xs px-2 py-1 rounded-full bg-slate-700/30 text-slate-400`}>
               {suggestions.length}
             </span>
           </div>
         </div>
         
-        <div className="space-y-3 max-h-96 overflow-y-auto scrollbar-hide">
+        <div className="space-y-2 max-h-96 overflow-y-auto scrollbar-hide">
           {suggestions.map((suggestion) => (
             <SuggestionCard key={suggestion.id} suggestion={suggestion} />
           ))}
@@ -291,12 +327,17 @@ const RequestLessonPage: React.FC = () => {
             {/* Form */}
             <div className="p-6">
               {submitSuccess && (
-                <div className="mb-6 p-4 bg-green-500/10 border border-green-500/20 rounded-lg">
+                <div className="mb-6 p-4 bg-green-500/10 border border-green-500/20 rounded-lg animate-fade-in">
                   <div className="flex items-center space-x-2">
                     <CheckCircle className="w-5 h-5 text-green-400" />
-                    <span className="text-green-400 font-medium">
-                      Sugestão enviada com sucesso! Obrigado pela contribuição.
-                    </span>
+                    <div>
+                      <div className="text-green-400 font-medium">
+                        Sugestão enviada para aprovação!
+                      </div>
+                      <div className="text-green-300 text-sm mt-1">
+                        Enquanto isso, vote nas aulas que mais quer ver no roadmap abaixo.
+                      </div>
+                    </div>
                   </div>
                 </div>
               )}
@@ -333,8 +374,8 @@ const RequestLessonPage: React.FC = () => {
                     >
                       <option value="">Selecione uma categoria</option>
                       {categories.map((category) => (
-                        <option key={category} value={category}>
-                          {category}
+                        <option key={category.id} value={category.name}>
+                          {category.name}
                         </option>
                       ))}
                     </select>
