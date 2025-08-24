@@ -342,6 +342,11 @@ const RequestLessonPage: React.FC = () => {
 
       {/* Suggestion Form Modal */}
       {showForm && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-slate-800 rounded-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between p-6 border-b border-slate-600/30">
+              <h2 className="text-xl font-semibold text-white">Qual a sua sugestão?</h2>
               <button
                 onClick={() => setShowForm(false)}
                 className="p-2 rounded-lg hover:bg-slate-700/30 transition-colors"
@@ -461,6 +466,8 @@ const RequestLessonPage: React.FC = () => {
                 </div>
               </form>
             </div>
+          </div>
+        </div>
           </div>
         </div>
       )}
