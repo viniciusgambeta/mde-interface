@@ -381,22 +381,28 @@ const PromptViewer: React.FC<PromptViewerProps> = ({ prompt, onBack }) => {
               <button
                 onClick={handleToggleLike}
                 disabled={!user || likeLoading}
-                className={`flex items-center justify-center space-x-2 px-4 py-2.5 rounded-full transition-colors cursor-pointer disabled:cursor-not-allowed mr-1 ${
+                className={`group flex items-center justify-center hover:justify-start rounded-lg transition-all duration-300 overflow-hidden cursor-pointer disabled:cursor-not-allowed mr-1 hover:mr-0 ${
                   liked ? 'bg-[#ff7551] text-white shadow-lg' : 'bg-slate-700 text-slate-300 hover:bg-slate-600 disabled:opacity-50'
-                } ${likeLoading ? 'animate-pulse' : ''}`}
+                } ${likeLoading ? 'animate-pulse' : ''} w-12 h-12 hover:w-auto hover:pl-4 hover:pr-4`}
               >
-                <ThumbsUp className="w-4 h-4" />
+                <ThumbsUp className="w-5 h-5 flex-shrink-0 group-hover:ml-0 ml-0.5" />
+                <span className="ml-2 text-sm font-medium whitespace-nowrap hidden group-hover:block">
+                  {liked ? 'Curtido' : 'Curtir'}
+                </span>
               </button>
               
+              {/* Save Button */}
               <button 
                 onClick={handleToggleSave}
                 disabled={!user || bookmarkLoading}
-                className={`flex items-center space-x-2 px-4 py-2.5 rounded-full transition-colors cursor-pointer disabled:cursor-not-allowed mr-1 ${
+                className={`group flex items-center justify-center hover:justify-start rounded-lg transition-all duration-300 overflow-hidden cursor-pointer disabled:cursor-not-allowed mr-1 hover:mr-0 ${
                   saved ? 'bg-[#ff7551] text-white shadow-lg' : 'bg-slate-700 text-slate-300 hover:bg-slate-600 disabled:opacity-50'
-                } ${bookmarkLoading ? 'animate-pulse' : ''}`}
+                } ${bookmarkLoading ? 'animate-pulse' : ''} w-12 h-12 hover:w-auto hover:pl-4 hover:pr-4`}
               >
-                <Bookmark className="w-4 h-4" fill="none" stroke="currentColor" />
-                <span>{saved ? 'Salvo' : 'Salvar'}</span>
+                <Bookmark className="w-5 h-5 flex-shrink-0 group-hover:ml-0 mt-0 ml-0" fill="none" stroke="currentColor" />
+                <span className="ml-2 text-sm font-medium whitespace-nowrap hidden group-hover:block">
+                  {saved ? 'Salvo' : 'Salvar'}
+                </span>
               </button>
             </div>
           </div>
@@ -466,53 +472,101 @@ const PromptViewer: React.FC<PromptViewerProps> = ({ prompt, onBack }) => {
       </div>
 
       {/* Materials Section */}
+      {/* Materials Section - Only show if there are materials or versions */}
+      {((currentPrompt.materials && currentPrompt.materials.length > 0) || versionsToShow.length > 0) && (
+        <div className="w-full lg:w-96 border-l border-slate-700/30 flex flex-col">
+          {/* Tab Header */}
+          <div className="p-6 border-b border-slate-700/30">
+            <h3 className="text-white font-semibold">Links</h3>
+          </div>
+
+          {/* Tab Content */}
+          <div className="flex-1 overflow-y-auto p-6">
+            <div className="space-y-8">
+              {/* Materials - Only show if there are materials */}
+              {currentPrompt.materials && currentPrompt.materials.length > 0 && (
+                <div>
+                  <h3 className="text-white font-semibold mb-6">Materiais e downloads</h3>
+                  
+                  <div className="space-y-4">
+                    {currentPrompt.materials
+                      .sort((a, b) => a.order_index - b.order_index)
+                      .map((material) => (
+                        <a
+                          key={material.id}
+                          href={material.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center space-x-3 px-3 py-4 bg-slate-700/30 rounded-lg hover:bg-slate-600/30 transition-colors cursor-pointer"
+                        >
+                          <svg className="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                          </svg>
+                          <div className="flex-1">
+                            <div className="text-white font-medium text-sm">{material.title}</div>
+                            {material.description && (
+                              <div className="text-slate-400 text-xs mt-1">{material.description}</div>
+                            )}
+                            {material.file_size_mb && (
+                              <div className="text-slate-500 text-xs mt-1">{material.file_size_mb}MB</div>
+                            )}
+                          </div>
+                        </a>
+                      ))}
+                  </div>
+                </div>
+              )}
+              
+              {/* Version Selector - Only show if there are versions */}
+              {versionsToShow.length > 0 && (
+                <div className="mt-12">
+                  <h3 className="text-white font-semibold mb-4">Outras versões</h3>
+                  
+                  <div className="space-y-2">
+                    {versionsToShow.map((version) => (
+                      <button
+                        key={version.id}
+                        onClick={() => handleVersionChange(version)}
+                        className={`w-full text-left p-3 rounded-lg transition-colors ${
+                          currentPrompt.id === version.id
+                            ? 'bg-[#ff7551] text-white'
+                            : 'bg-slate-700/30 text-slate-300 hover:bg-slate-600/30'
+                        }`}
+                      >
+                        <div className="font-medium text-sm">
+                          {(version as any).version_name || version.title}
+                          {(version as any).is_main_version && (
+                            <span className="ml-2 text-xs bg-slate-600/50 text-slate-300 px-2 py-0.5 rounded">
+                              Original
+                            </span>
+                          )}
+                        </div>
+                        <div className="text-xs text-slate-400 mt-1">
+                          {version.tipo} • {formatViews(version.view_count)} views
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Suggested Prompts - Always show as separate section */}
       <div className="w-full lg:w-96 border-l border-slate-700/30 flex flex-col">
-        {/* Tab Header - Only show Suggestions */}
+        {/* Tab Header */}
         <div className="p-6 border-b border-slate-700/30">
-          <h3 className="text-white font-semibold">Links</h3>
+          <h3 className="text-white font-semibold">Sugestões</h3>
         </div>
 
         {/* Tab Content */}
         <div className="flex-1 overflow-y-auto p-6">
-          <div className="space-y-8">
-            {/* Version Selector - Only show if there are versions */}
-            {versionsToShow.length > 0 && (
-              <div className="mt-12">
-                <h3 className="text-white font-semibold mb-4">Outras versões</h3>
-                
-                <div className="space-y-2">
-                  {versionsToShow.map((version) => (
-                    <button
-                      key={version.id}
-                      onClick={() => handleVersionChange(version)}
-                      className={`w-full text-left p-3 rounded-lg transition-colors ${
-                        currentPrompt.id === version.id
-                          ? 'bg-[#ff7551] text-white'
-                          : 'bg-slate-700/30 text-slate-300 hover:bg-slate-600/30'
-                      }`}
-                    >
-                      <div className="font-medium text-sm">
-                        {(version as any).version_name || version.title}
-                        {(version as any).is_main_version && (
-                          <span className="ml-2 text-xs bg-slate-600/50 text-slate-300 px-2 py-0.5 rounded">
-                            Original
-                          </span>
-                        )}
-                      </div>
-                      <div className="text-xs text-slate-400 mt-1">
-                        {version.tipo} • {formatViews(version.view_count)} views
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
+          <div className="space-y-6" key={currentPrompt.id}>
+            <h3 className="text-white font-semibold mb-6">Prompts Relacionados</h3>
             
-            {/* Suggested Prompts */}
-            <div className="mt-12">
-              <h3 className="text-white font-semibold mb-6">Prompts Relacionados</h3>
-              <SuggestedPrompts currentPrompt={currentPrompt} />
-            </div>
+            <SuggestedPrompts currentPrompt={currentPrompt} />
           </div>
         </div>
       </div>
