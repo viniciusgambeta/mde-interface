@@ -354,8 +354,7 @@ const VideoCard: React.FC<{
   video: Video; 
   delay: number;
   onVideoSelect: (video: Video) => void;
-  showToolIcons?: boolean;
-}> = ({ video, delay, onVideoSelect, showToolIcons = true }) => {
+}> = ({ video, delay, onVideoSelect }) => {
   const { user } = useAuth();
   const [isBookmarked, setIsBookmarked] = useState(video.is_bookmarked || false);
   const [bookmarkLoading, setBookmarkLoading] = useState(false);
