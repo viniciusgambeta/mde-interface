@@ -513,8 +513,8 @@ const VideoCard: React.FC<{
 
       {/* Tools Icons */}
       {video.ferramentas && video.ferramentas.length > 0 && (
-        <div className="mt-3 px-1">
-          <div className="flex items-center -space-x-2">
+        <div className="absolute -bottom-4 left-1/2 transform -translate-x-1/2">
+          <div className="flex items-center space-x-1">
             {video.ferramentas.slice(0, 5).map((ferramenta, index) => (
               <div
                 key={ferramenta.id}
