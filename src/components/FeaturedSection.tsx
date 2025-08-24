@@ -1,22 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ExternalLink, ChevronLeft, ChevronRight, Calendar, Clock, MapPin, Plus } from 'lucide-react';
+import { ExternalLink, ChevronLeft, ChevronRight, MessageCircle, Calendar, Plus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { featuredContentService, type FeaturedContent } from '../lib/database';
 
 interface FeaturedSectionProps {
   onVideoSelect: (video: any) => void;
   onViewChange?: (view: string) => void;
-}
-
-interface UpcomingEvent {
-  id: string;
-  title: string;
-  description: string;
-  date: string;
-  time: string;
-  duration: string;
-  link: string;
-  type: 'live' | 'workshop' | 'webinar';
 }
 
 const FeaturedSection: React.FC<FeaturedSectionProps> = ({ onVideoSelect, onViewChange = () => {} }) => {
@@ -26,39 +15,6 @@ const FeaturedSection: React.FC<FeaturedSectionProps> = ({ onVideoSelect, onView
   const [loading, setLoading] = React.useState(true);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Mock data for upcoming events
-  const upcomingEvents: UpcomingEvent[] = [
-    {
-      id: '1',
-      title: 'TypeScript na Prática',
-      description: 'Workshop completo sobre TypeScript avançado com projetos reais',
-      date: '2024-01-25',
-      time: '20:00',
-      duration: '2h',
-      link: 'https://meet.google.com/abc-defg-hij',
-      type: 'workshop'
-    },
-    {
-      id: '2',
-      title: 'React Server Components',
-      description: 'Live sobre as novidades do React 18 e Server Components',
-      date: '2024-01-28',
-      time: '19:30',
-      duration: '1h30',
-      link: 'https://youtube.com/live/example',
-      type: 'live'
-    },
-    {
-      id: '3',
-      title: 'Design System com Figma',
-      description: 'Webinar sobre criação de design systems escaláveis',
-      date: '2024-02-02',
-      time: '18:00',
-      duration: '1h',
-      link: 'https://zoom.us/j/example',
-      type: 'webinar'
-    }
-  ];
   React.useEffect(() => {
     const loadFeaturedContent = async () => {
       try {
@@ -127,39 +83,15 @@ const FeaturedSection: React.FC<FeaturedSectionProps> = ({ onVideoSelect, onView
     goToSlide(newIndex);
   };
 
-  const formatEventDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('pt-BR', {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric'
-    });
+  const handleWhatsAppClick = () => {
+    window.open('https://chat.whatsapp.com/example', '_blank', 'noopener,noreferrer');
   };
 
-  const getEventTypeConfig = (type: string) => {
-    switch (type) {
-      case 'live':
-        return { color: 'bg-red-500', label: 'Live' };
-      case 'workshop':
-        return { color: 'bg-blue-500', label: 'Workshop' };
-      case 'webinar':
-        return { color: 'bg-purple-500', label: 'Webinar' };
-      default:
-        return { color: 'bg-gray-500', label: 'Evento' };
-    }
+  const handleCalendarClick = () => {
+    const calendarUrl = 'https://calendar.google.com/calendar/u/0?cid=example@group.calendar.google.com';
+    window.open(calendarUrl, '_blank', 'noopener,noreferrer');
   };
 
-  const addAllEventsToCalendar = () => {
-    const calendarUrl = 'https://calendar.google.com/calendar/render?action=TEMPLATE';
-    const events = upcomingEvents.map(event => {
-      const startDate = new Date(`${event.date}T${event.time}:00`);
-      const endDate = new Date(startDate.getTime() + (parseInt(event.duration) * 60 * 60 * 1000));
-      
-      return `&text=${encodeURIComponent(event.title)}&dates=${startDate.toISOString().replace(/[-:]/g, '').split('.')[0]}Z/${endDate.toISOString().replace(/[-:]/g, '').split('.')[0]}Z&details=${encodeURIComponent(event.description + '\n\nLink: ' + event.link)}`;
-    }).join('');
-    
-    window.open(calendarUrl + events, '_blank');
-  };
   if (loading) {
     return (
       <section className="mb-16 w-full">
@@ -183,7 +115,7 @@ const FeaturedSection: React.FC<FeaturedSectionProps> = ({ onVideoSelect, onView
             </div>
           </div>
           
-          {/* News Skeleton */}
+          {/* Right Side Skeleton */}
           <div className="w-full lg:w-[35%] h-[280px] sm:h-[320px] lg:h-[380px] bg-slate-700/30 rounded-xl p-6 relative overflow-hidden">
             {/* Shimmer effect */}
             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent animate-shimmer"></div>
@@ -191,12 +123,12 @@ const FeaturedSection: React.FC<FeaturedSectionProps> = ({ onVideoSelect, onView
             {/* Content skeleton */}
             <div className="relative z-10">
               <div className="h-6 bg-slate-600/40 rounded w-32 mb-6 animate-pulse"></div>
-              <div className="space-y-4">
-                {Array.from({ length: 6 }).map((_, index) => (
+              <div className="space-y-6">
+                {Array.from({ length: 2 }).map((_, index) => (
                   <div key={index} className="p-3 space-y-2">
-                    <div className="h-4 bg-slate-600/30 rounded animate-pulse"></div>
-                    <div className="h-3 bg-slate-600/20 rounded w-3/4 animate-pulse"></div>
-                    <div className="h-3 bg-slate-600/20 rounded w-1/2 animate-pulse"></div>
+                    <div className="h-6 bg-slate-600/30 rounded animate-pulse"></div>
+                    <div className="h-4 bg-slate-600/20 rounded w-3/4 animate-pulse"></div>
+                    <div className="h-10 bg-slate-600/30 rounded animate-pulse"></div>
                   </div>
                 ))}
               </div>
@@ -309,74 +241,40 @@ const FeaturedSection: React.FC<FeaturedSectionProps> = ({ onVideoSelect, onView
           )}
         </div>
 
-        {/* Upcoming Events - Right Side */}
+        {/* Action Blocks - Right Side */}
         <div className="w-full lg:w-[35%] h-[280px] sm:h-[320px] lg:h-[380px]">
-          <div className="bg-[#1f1d2b]/90 backdrop-blur-sm border border-slate-700/30 rounded-xl p-6 h-full flex flex-col">
-            {/* Header */}
-            <div className="flex items-center space-x-3 mb-8">
-              <div className="w-10 h-10 bg-[#ff7551]/20 rounded-full flex items-center justify-center">
-                <Calendar className="w-5 h-5 text-[#ff7551]" />
+          <div className="h-full flex flex-col space-y-4">
+            {/* WhatsApp Block */}
+            <div className="flex-1 bg-[#1f1d2b]/90 backdrop-blur-sm border border-slate-700/30 rounded-xl p-6 flex flex-col justify-center items-center text-center group hover:scale-[1.02] transition-all duration-200 cursor-pointer"
+                 onClick={handleWhatsAppClick}>
+              <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mb-4 group-hover:bg-green-500/30 transition-colors">
+                <MessageCircle className="w-8 h-8 text-green-400" />
               </div>
-              <div>
-                <h3 className="text-white font-semibold text-xl">Próximos Eventos</h3>
-                <p className="text-slate-400 text-sm">Não perca!</p>
+              <h3 className="text-white font-semibold text-xl mb-2 group-hover:text-green-400 transition-colors">
+                Entre no Grupo
+              </h3>
+              <p className="text-slate-400 text-sm mb-4 leading-relaxed">
+                Participe da nossa comunidade no WhatsApp e receba dicas exclusivas
+              </p>
+              <div className="w-full bg-green-500 hover:bg-green-600 text-white font-medium py-3 px-4 rounded-lg transition-colors flex items-center justify-center space-x-2">
+                <MessageCircle className="w-4 h-4" />
+                <span>Entrar no WhatsApp</span>
+            {/* Calendar Block */}
+            <div className="flex-1 bg-[#1f1d2b]/90 backdrop-blur-sm border border-slate-700/30 rounded-xl p-6 flex flex-col justify-center items-center text-center group hover:scale-[1.02] transition-all duration-200 cursor-pointer"
+                 onClick={handleCalendarClick}>
+              <div className="w-16 h-16 bg-[#ff7551]/20 rounded-full flex items-center justify-center mb-4 group-hover:bg-[#ff7551]/30 transition-colors">
+                <Calendar className="w-8 h-8 text-[#ff7551]" />
               </div>
-            </div>
-
-            {/* Events Grid */}
-            <div className="flex-1 space-y-6">
-              {upcomingEvents.slice(0, 3).map((event, index) => {
-                const typeConfig = getEventTypeConfig(event.type);
-                return (
-                  <div
-                    key={event.id}
-                    className="group cursor-pointer animate-fade-in bg-slate-700/20 hover:bg-slate-600/30 rounded-lg p-4 transition-all duration-200 hover:scale-[1.02]"
-                    style={{ animationDelay: `${index * 100}ms` }}
-                    onClick={() => window.open(event.link, '_blank')}
-                  >
-                    {/* Event Header */}
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="flex items-center space-x-3">
-                        <span className={`text-xs px-3 py-1.5 rounded-full text-white font-medium ${typeConfig.color}`}>
-                          {typeConfig.label}
-                        </span>
-                        <h4 className="text-white font-medium text-base group-hover:text-[#ff7551] transition-colors">
-                          {event.title}
-                        </h4>
-                      </div>
-                      <ExternalLink className="w-4 h-4 text-slate-400 group-hover:text-[#ff7551] transition-colors flex-shrink-0" />
-                    </div>
-
-                    {/* Event Details */}
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-4">
-                        <div className="flex items-center space-x-2 text-sm text-slate-300">
-                          <Calendar className="w-4 h-4" />
-                          <span>{formatEventDate(event.date)}</span>
-                        </div>
-                        <div className="flex items-center space-x-2 text-sm text-slate-300">
-                          <Clock className="w-4 h-4" />
-                          <span>{event.time}</span>
-                        </div>
-                      </div>
-                      <span className="text-sm text-slate-400 font-medium">
-                        {event.duration}
-                      </span>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-
-            {/* Add to Calendar Button */}
-            <div className="mt-6 pt-6 border-t border-slate-600/30">
-              <button
-                onClick={addAllEventsToCalendar}
-                className="w-full flex items-center justify-center space-x-2 px-4 py-3.5 bg-[#ff7551] hover:bg-[#ff7551]/80 text-white font-semibold rounded-lg transition-all duration-200 transform hover:scale-[1.02] shadow-lg hover:shadow-xl"
-              >
-                <Plus className="w-5 h-5" />
+              <h3 className="text-white font-semibold text-xl mb-2 group-hover:text-[#ff7551] transition-colors">
+                Adicionar Eventos
+              </h3>
+              <p className="text-slate-400 text-sm mb-4 leading-relaxed">
+                Adicione nossos eventos à sua agenda do Google Calendar
+              </p>
+              <div className="w-full bg-[#ff7551] hover:bg-[#ff7551]/80 text-white font-medium py-3 px-4 rounded-lg transition-colors flex items-center justify-center space-x-2">
+                <Plus className="w-4 h-4" />
                 <span>Adicionar ao Calendário</span>
-              </button>
+              </div>
             </div>
           </div>
         </div>

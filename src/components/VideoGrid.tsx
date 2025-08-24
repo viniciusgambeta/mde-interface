@@ -833,7 +833,7 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
           
           <ScrollableVideoRow title="WhatsApp" videos={videos.filter(v => v.category?.slug === 'whatsapp' || v.category?.name.toLowerCase().includes('whatsapp'))} scrollRef={tutorialsScrollRef} />
           
-          <ScrollableVideoRow title="Aulas Básicas" videos={videos.filter(v => v.difficulty_level?.slug === 'basic' || v.difficulty_level?.name.toLowerCase().includes('básico') || v.difficulty_level?.name.toLowerCase().includes('basico') || v.difficulty_level?.name.toLowerCase().includes('iniciante'))} scrollRef={designScrollRef} />
+          <ScrollableVideoRow title="Aulas Básicas" videos={videos.filter(v => v.category?.slug === 'basico' || v.category?.name.toLowerCase().includes('básico') || v.category?.name.toLowerCase().includes('basico'))} scrollRef={designScrollRef} />
           
           <ScrollableVideoRow title="Vibe Coding" videos={videos.filter(v => v.category?.slug === 'bolt' || v.category?.name.toLowerCase().includes('bolt') || v.category?.name.toLowerCase().includes('vibe'))} scrollRef={marketingScrollRef} />
         </>
