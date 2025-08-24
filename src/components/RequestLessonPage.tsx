@@ -18,6 +18,7 @@ const RequestLessonPage: React.FC = () => {
   const [userVotes, setUserVotes] = useState<string[]>([]);
   const [votingStates, setVotingStates] = useState<Record<string, boolean>>({});
   const [categories, setCategories] = useState<Category[]>([]);
+  const [userSuggestions, setUserSuggestions] = useState<VideoSuggestion[]>([]);
 
   // Load suggestions on component mount
   React.useEffect(() => {
@@ -27,12 +28,18 @@ const RequestLessonPage: React.FC = () => {
         const [suggestionsData, userVotesData, categoriesData] = await Promise.all([
           videoSuggestionsService.getApprovedSuggestions(),
           user ? videoSuggestionsService.getUserVotes(user.id) : Promise.resolve([]),
-          categoryService.getCategories()
+          categoryService.getCategories(),
         ]);
         
         setSuggestions(suggestionsData);
         setUserVotes(userVotesData);
         setCategories(categoriesData);
+        
+        // Load user's pending suggestions if logged in
+        if (user) {
+          const userPendingSuggestions = await videoSuggestionsService.getUserPendingSuggestions(user.id);
+          setUserSuggestions(userPendingSuggestions);
+        }
       } catch (error) {
         console.error('Error loading suggestions:', error);
       } finally {
@@ -77,6 +84,12 @@ const RequestLessonPage: React.FC = () => {
         // Reload suggestions to show new one if it gets approved
         const updatedSuggestions = await videoSuggestionsService.getApprovedSuggestions();
         setSuggestions(updatedSuggestions);
+        
+        // Reload user's pending suggestions
+        if (user) {
+          const userPendingSuggestions = await videoSuggestionsService.getUserPendingSuggestions(user.id);
+          setUserSuggestions(userPendingSuggestions);
+        }
       } else {
         // Handle error - you might want to show an error message
         console.error('Failed to submit suggestion');
@@ -156,30 +169,39 @@ const RequestLessonPage: React.FC = () => {
   };
 
   const suggestionsByEtapa = {
-    sugestao: suggestions.filter(s => s.etapa === 'sugestao'),
+    sugestao: [
+      ...suggestions.filter(s => s.etapa === 'sugestao'),
+      ...userSuggestions.filter(s => s.etapa === 'sugestao')
+    ],
     producao: suggestions.filter(s => s.etapa === 'producao'),
     prontas: suggestions.filter(s => s.etapa === 'prontas')
   };
 
   const SuggestionCard: React.FC<{ suggestion: VideoSuggestion }> = ({ suggestion }) => {
-    const formatDate = (dateString: string) => {
-      const date = new Date(dateString);
-      return date.toLocaleDateString('pt-BR', {
-        day: '2-digit',
-        month: '2-digit'
-      });
-    };
-
     const isVoted = userVotes.includes(suggestion.id);
     const isVoting = votingStates[suggestion.id];
     const canVote = user && (suggestion.etapa === 'sugestao' || suggestion.etapa === 'producao');
+    const isPending = suggestion.status === 'pending';
+    const isUserSuggestion = suggestion.user_id === user?.id;
+    
     return (
-      <div className="bg-slate-700/30 border border-slate-600/30 rounded-lg p-3 hover:bg-slate-600/20 transition-all duration-200 group">
-        <div className="flex items-start justify-between mb-2">
-          <h4 className="text-white font-medium text-xs leading-snug line-clamp-2 flex-1 pr-2">
-            {suggestion.title}
-          </h4>
-          {canVote && (
+      <div className={`border rounded-lg p-5 hover:bg-slate-600/20 transition-all duration-200 group ${
+        isPending ? 'bg-slate-700/20 border-slate-600/20' : 'bg-slate-700/30 border-slate-600/30'
+      }`}>
+        {/* Header with user info and vote button */}
+        <div className="flex items-start justify-between mb-3">
+          <div className="flex items-center space-x-2 flex-1">
+            <img
+              src="/src/images/avatar.jpg"
+              alt="User"
+              className="w-6 h-6 rounded-full object-cover"
+            />
+            <span className="text-slate-400 text-xs">
+              {isUserSuggestion ? 'Você' : 'Usuário'}
+            </span>
+          </div>
+          
+          {canVote && !isPending && (
             <button
               onClick={() => handleUpvote(suggestion.id)}
               disabled={isVoting}
@@ -195,22 +217,36 @@ const RequestLessonPage: React.FC = () => {
           )}
         </div>
         
-        <p className="text-slate-400 text-xs mb-2 line-clamp-2 leading-relaxed">
+        {/* Title */}
+        <div className="mb-3">
+          <h4 className="text-white font-semibold text-sm leading-snug line-clamp-2">
+            {suggestion.title}
+          </h4>
+        </div>
+        
+        {/* Pending warning */}
+        {isPending && isUserSuggestion && (
+          <div className="mb-3 p-2 bg-yellow-500/10 border border-yellow-500/20 rounded text-xs text-yellow-400">
+            ⏳ Aguardando aprovação
+          </div>
+        )}
+        
+        {/* Description */}
+        <p className="text-slate-400 text-xs mb-3 line-clamp-2 leading-relaxed">
           {suggestion.description}
         </p>
         
+        {/* Footer with category */}
         <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <span className="text-xs text-slate-400">
-              {suggestion.category}
+          <span className="text-xs px-2 py-1 bg-slate-600/30 text-slate-300 rounded">
+            {suggestion.category}
+          </span>
+          
+          {isPending && isUserSuggestion && (
+            <span className="text-xs text-slate-500">
+              Pendente
             </span>
-            <span className="text-xs text-slate-400">
-              •
-            </span>
-            <span className="text-xs text-slate-400">
-              {formatDate(suggestion.created_at)}
-            </span>
-          </div>
+          )}
         </div>
       </div>
     );
@@ -227,15 +263,15 @@ const RequestLessonPage: React.FC = () => {
       <div className="flex-1 min-w-0">
         <div className="p-4 mb-4">
           <div className="flex items-center space-x-2 mb-2">
-            <IconComponent className={`w-6 h-6 ${config.color}`} />
-            <h3 className="text-white font-semibold text-lg">{config.title}</h3>
+            <IconComponent className="w-7 h-7 text-[#ff7551]" />
+            <h3 className="text-white font-bold text-xl">{config.title}</h3>
             <span className={`text-xs px-2 py-1 rounded-full bg-slate-700/30 text-slate-400`}>
               {suggestions.length}
             </span>
           </div>
         </div>
         
-        <div className="space-y-2 max-h-96 overflow-y-auto scrollbar-hide">
+        <div className="space-y-3 max-h-96 overflow-y-auto scrollbar-hide">
           {suggestions.map((suggestion) => (
             <SuggestionCard key={suggestion.id} suggestion={suggestion} />
           ))}
@@ -282,6 +318,9 @@ const RequestLessonPage: React.FC = () => {
           <span>Sugerir Aula</span>
         </button>
       </div>
+
+      {/* Separator */}
+      <div className="w-full h-px bg-slate-600/30 mb-8"></div>
 
       {/* Kanban Board */}
       <div>

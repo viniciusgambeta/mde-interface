@@ -1020,5 +1020,28 @@ export const videoSuggestionsService = {
       console.error('Error fetching user votes:', error);
       return [];
     }
+  },
+
+  async getUserPendingSuggestions(userId: string): Promise<VideoSuggestion[]> {
+    if (!userId) return [];
+
+    try {
+      const { data, error } = await supabase
+        .from('video_suggestions')
+        .select('*')
+        .eq('user_id', userId)
+        .eq('status', 'pending')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching user pending suggestions:', error);
+        return [];
+      }
+
+      return data as VideoSuggestion[];
+    } catch (error) {
+      console.error('Error fetching user pending suggestions:', error);
+      return [];
+    }
   }
 };
