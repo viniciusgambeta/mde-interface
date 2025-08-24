@@ -205,13 +205,13 @@ const RequestLessonPage: React.FC = () => {
             <button
               onClick={() => handleUpvote(suggestion.id)}
               disabled={isVoting}
-              className={`flex items-center space-x-1 px-2 py-1 rounded text-xs font-medium transition-all duration-200 ${
+              className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                 isVoted 
                   ? 'bg-[#ff7551] text-white' 
                   : 'bg-slate-600/30 text-slate-400 hover:bg-slate-500/30 hover:text-white'
               } ${isVoting ? 'animate-pulse' : ''}`}
             >
-              <ThumbsUp className="w-3 h-3" />
+              <ThumbsUp className="w-4 h-4" />
               <span>{suggestion.votes || 0}</span>
             </button>
           )}
@@ -342,19 +342,6 @@ const RequestLessonPage: React.FC = () => {
 
       {/* Suggestion Form Modal */}
       {showForm && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-[#1f1d2b] border border-slate-700/30 rounded-xl w-full max-w-2xl animate-fade-in">
-            {/* Header */}
-            <div className="flex items-center justify-between p-6 border-b border-slate-700/30">
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-[#ff7551] rounded-full flex items-center justify-center">
-                  <Lightbulb className="w-5 h-5 text-white" />
-                </div>
-                <div>
-                  <h2 className="text-xl font-semibold text-white">Sugerir Nova Aula</h2>
-                  <p className="text-slate-400 text-sm">Compartilhe sua ideia com a comunidade</p>
-                </div>
-              </div>
               <button
                 onClick={() => setShowForm(false)}
                 className="p-2 rounded-lg hover:bg-slate-700/30 transition-colors"
@@ -394,9 +381,13 @@ const RequestLessonPage: React.FC = () => {
                       value={formData.title}
                       onChange={handleInputChange}
                       placeholder="Ex: React Hooks Avançados"
+                      maxLength={60}
                       className="w-full px-4 py-3 bg-slate-700/30 border border-slate-600/30 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#ff7551]/50 focus:border-transparent transition-all"
                       required
                     />
+                    <div className="text-right text-xs text-slate-500 mt-1">
+                      {formData.title.length}/60 caracteres
+                    </div>
                   </div>
 
                   {/* Category */}
@@ -431,10 +422,14 @@ const RequestLessonPage: React.FC = () => {
                     value={formData.description}
                     onChange={handleInputChange}
                     placeholder="Descreva o que você gostaria de aprender nesta aula. Seja específico sobre os tópicos que devem ser abordados..."
+                    maxLength={140}
                     rows={4}
                     className="w-full px-4 py-3 bg-slate-700/30 border border-slate-600/30 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#ff7551]/50 focus:border-transparent transition-all resize-none"
                     required
                   />
+                  <div className="text-right text-xs text-slate-500 mt-1">
+                    {formData.description.length}/140 caracteres
+                  </div>
                 </div>
 
                 {/* Submit Button */}
