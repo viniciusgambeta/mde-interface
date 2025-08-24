@@ -148,8 +148,8 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
       if (currentView === 'trending' || currentView === 'bookmark') {
         try {
           const [categoriesData, difficultiesData] = await Promise.all([
-            videoService.getCategories?.() || [],
-            videoService.getDifficultyLevels?.() || []
+            categoryService.getCategories(),
+            difficultyService.getDifficultyLevels()
           ]);
           setCategories(categoriesData);
           setDifficulties(difficultiesData);
@@ -421,7 +421,7 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
   const GridLayout: React.FC<{ videos: Video[]; title: string; description: string }> = ({ videos, title, description }) => (
     <div className="space-y-8">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold text-white mb-2">{title}</h1>
           <p className="text-slate-400">{description}</p>
@@ -438,7 +438,97 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
 
       {/* Filters */}
       <div className={`${showFilters ? 'block' : 'hidden lg:block'} space-y-4`}>
-        <div className="flex flex-wrap gap-4">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+          <div className="flex flex-wrap gap-4">
+            <FilterDropdown
+              label="Categoria"
+              value={filters.category}
+              options={categories}
+              onChange={(value) => updateFilter('category', value)}
+              icon={<Filter className="w-4 h-4" />}
+            />
+
+            <FilterDropdown
+              label="Nível"
+              value={filters.difficulty}
+              options={difficulties}
+              onChange={(value) => updateFilter('difficulty', value)}
+              icon={<BarChart3 className="w-4 h-4" />}
+            />
+
+            <FilterDropdown
+              label="Tipo"
+              value={filters.type}
+              options={[
+                { id: 'video', name: 'Vídeo' },
+                { id: 'prompt', name: 'Prompt' },
+                { id: 'live', name: 'Live' }
+              ]}
+              onChange={(value) => updateFilter('type', value)}
+              icon={<Play className="w-4 h-4" />}
+            />
+
+            {hasActiveFilters && (
+              <button
+                onClick={clearFilters}
+                className="flex items-center space-x-2 px-4 py-2 bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-500/30 rounded-lg transition-colors"
+              >
+                <X className="w-4 h-4" />
+                <span className="text-sm">Limpar Filtros</span>
+              </button>
+            )}
+          </div>
+
+          {/* Results Count */}
+          <div className="text-slate-400 text-sm whitespace-nowrap">
+            <span className="font-medium text-white">{videos.length}</span> aula{videos.length !== 1 ? 's' : ''} encontrada{videos.length !== 1 ? 's' : ''}
+            {hasActiveFilters && (
+              <span className="ml-1">de {filteredVideos.length} total</span>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Videos Grid */}
+      {videos.length > 0 ? (
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-6">
+          {videos.map((video, index) => (
+            <VideoCard 
+              key={video.id} 
+              video={video} 
+              delay={index * 50}
+              showToolIcons={false}
+            />
+          ))}
+        </div>
+      ) : (
+        <div className="text-center py-20">
+          <div className="w-16 h-16 bg-slate-700/30 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Bookmark className="w-8 h-8 text-slate-500" />
+          </div>
+          <h3 className="text-xl font-semibold text-white mb-2">
+            Nenhuma aula encontrada
+          </h3>
+          <p className="text-slate-400 max-w-md mx-auto">
+            {hasActiveFilters 
+              ? 'Tente ajustar os filtros para encontrar o que procura.'
+              : currentView === 'bookmark' 
+                ? 'Comece a salvar suas aulas favoritas clicando no ícone de bookmark nos vídeos.'
+                : 'Nenhuma aula disponível no momento.'
+            }
+          </p>
+          {hasActiveFilters && (
+            <button
+              onClick={clearFilters}
+              className="mt-4 px-6 py-2 bg-[#ff7551] hover:bg-[#ff7551]/80 text-white rounded-lg transition-colors"
+            >
+              Limpar Filtros
+            </button>
+          )}
+        </div>
+      )}
+    </div>
+  );
           <FilterDropdown
             label="Categoria"
             value={filters.category}
@@ -543,7 +633,7 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
     );
   }
 
-  const VideoCard = ({ video, delay }: { video: Video; delay: number }) => {
+  const VideoCard = ({ video, delay, showToolIcons = true }: { video: Video; delay: number; showToolIcons?: boolean }) => {
     // Use local bookmark state if available, fallback to video data
     const bookmarkState = bookmarkStates[video.id];
     const isBookmarked = bookmarkState?.isBookmarked ?? video.is_bookmarked ?? false;
@@ -638,8 +728,8 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
           </div>
           </div>
 
-        {/* Tools Icons */}
-        {video.ferramentas && video.ferramentas.length > 0 && (
+        {/* Tools Icons - Only show if showToolIcons is true */}
+        {showToolIcons && video.ferramentas && video.ferramentas.length > 0 && (
           <div className="absolute -bottom-4 left-1/2 transform -translate-x-1/2">
             <div className="flex items-center space-x-1">
               {video.ferramentas.slice(0, 5).map((ferramenta, index) => (
@@ -738,7 +828,7 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
                 key={video.id} 
                 className="flex-shrink-0 w-64"
               >
-                <VideoCard video={video} delay={0} />
+                <VideoCard video={video} delay={0} showToolIcons={true} />
               </div>
             ))}
           </div>

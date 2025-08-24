@@ -1,4 +1,6 @@
 import { supabase } from './supabase';
+import type { Category } from './database';
+import type { DifficultyLevel } from './database';
 
 // Database types
 export interface Instructor {
