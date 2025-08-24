@@ -259,6 +259,9 @@ const FeaturedSection: React.FC<FeaturedSectionProps> = ({ onVideoSelect, onView
               <div className="w-full bg-green-500 hover:bg-green-600 text-white font-medium py-3 px-4 rounded-lg transition-colors flex items-center justify-center space-x-2">
                 <MessageCircle className="w-4 h-4" />
                 <span>Entrar no WhatsApp</span>
+              </div>
+            </div>
+            
             {/* Calendar Block */}
             <div className="flex-1 bg-[#1f1d2b]/90 backdrop-blur-sm border border-slate-700/30 rounded-xl p-6 flex flex-col justify-center items-center text-center group hover:scale-[1.02] transition-all duration-200 cursor-pointer"
                  onClick={handleCalendarClick}>
