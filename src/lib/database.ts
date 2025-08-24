@@ -103,6 +103,18 @@ export interface Coupon {
   updated_at: string;
 }
 
+export interface VideoSuggestion {
+  id: string;
+  title: string;
+  description: string;
+  category: string;
+  user_id?: string;
+  status: 'pending' | 'approved' | 'rejected';
+  etapa: 'sugestao' | 'producao' | 'prontas';
+  created_at: string;
+  updated_at: string;
+}
+
 export interface Video {
   id: string;
   title: string;
@@ -870,4 +882,57 @@ export const couponService = {
 
     return data as Coupon[];
   }
-}
+};
+
+// Video suggestions service
+export const videoSuggestionsService = {
+  async createSuggestion(suggestion: {
+    title: string;
+    description: string;
+    category: string;
+    user_id?: string;
+  }): Promise<boolean> {
+    try {
+      const { error } = await supabase
+        .from('video_suggestions')
+        .insert({
+          title: suggestion.title,
+          description: suggestion.description,
+          category: suggestion.category,
+          user_id: suggestion.user_id,
+          status: 'pending',
+          etapa: 'sugestao'
+        });
+
+      if (error) {
+        console.error('Error creating video suggestion:', error);
+        return false;
+      }
+
+      return true;
+    } catch (error) {
+      console.error('Error creating video suggestion:', error);
+      return false;
+    }
+  },
+
+  async getApprovedSuggestions(): Promise<VideoSuggestion[]> {
+    try {
+      const { data, error } = await supabase
+        .from('video_suggestions')
+        .select('*')
+        .eq('status', 'approved')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching approved suggestions:', error);
+        return [];
+      }
+
+      return data as VideoSuggestion[];
+    } catch (error) {
+      console.error('Error fetching approved suggestions:', error);
+      return [];
+    }
+  }
+};

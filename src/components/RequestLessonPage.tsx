@@ -1,19 +1,10 @@
 import React, { useState } from 'react';
 import { Send, ThumbsUp, Clock, CheckCircle, Lightbulb, Users, TrendingUp, Award } from 'lucide-react';
-
-interface LessonSuggestion {
-  id: string;
-  title: string;
-  category: string;
-  description: string;
-  votes: number;
-  author: string;
-  createdAt: string;
-  status: 'suggestion' | 'production' | 'ready';
-  hasVoted?: boolean;
-}
+import { useAuth } from '../contexts/AuthContext';
+import { videoSuggestionsService, type VideoSuggestion } from '../lib/database';
 
 const RequestLessonPage: React.FC = () => {
+  const { user } = useAuth();
   const [formData, setFormData] = useState({
     title: '',
     category: '',
@@ -22,87 +13,25 @@ const RequestLessonPage: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const [showForm, setShowForm] = useState(false);
+  const [suggestions, setSuggestions] = useState<VideoSuggestion[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // Mock data for suggestions
-  const [suggestions, setSuggestions] = useState<LessonSuggestion[]>([
-    {
-      id: '1',
-      title: 'React Server Components na Prática',
-      category: 'Programação',
-      description: 'Como implementar e otimizar React Server Components em aplicações reais',
-      votes: 47,
-      author: 'DevMaster',
-      createdAt: '2024-01-15',
-      status: 'suggestion',
-      hasVoted: false
-    },
-    {
-      id: '2',
-      title: 'Design System com Figma e Tokens',
-      category: 'Design',
-      description: 'Criando um design system completo usando Figma e design tokens',
-      votes: 32,
-      author: 'DesignPro',
-      createdAt: '2024-01-14',
-      status: 'suggestion',
-      hasVoted: true
-    },
-    {
-      id: '3',
-      title: 'Marketing de Conteúdo para Devs',
-      category: 'Marketing',
-      description: 'Estratégias de marketing de conteúdo específicas para desenvolvedores',
-      votes: 28,
-      author: 'MarketingGuru',
-      createdAt: '2024-01-13',
-      status: 'suggestion',
-      hasVoted: false
-    },
-    {
-      id: '4',
-      title: 'TypeScript Avançado: Utility Types',
-      category: 'Programação',
-      description: 'Dominando utility types e técnicas avançadas do TypeScript',
-      votes: 41,
-      author: 'TypeScriptNinja',
-      createdAt: '2024-01-12',
-      status: 'production',
-      hasVoted: false
-    },
-    {
-      id: '5',
-      title: 'UX Writing para Interfaces',
-      category: 'Design',
-      description: 'Como escrever textos que melhoram a experiência do usuário',
-      votes: 35,
-      author: 'UXWriter',
-      createdAt: '2024-01-11',
-      status: 'production',
-      hasVoted: false
-    },
-    {
-      id: '6',
-      title: 'Next.js 14: App Router Completo',
-      category: 'Programação',
-      description: 'Guia completo do novo App Router do Next.js 14',
-      votes: 89,
-      author: 'NextJSExpert',
-      createdAt: '2024-01-10',
-      status: 'ready',
-      hasVoted: false
-    },
-    {
-      id: '7',
-      title: 'Animações CSS Modernas',
-      category: 'Design',
-      description: 'Criando animações fluidas e performáticas com CSS puro',
-      votes: 56,
-      author: 'CSSAnimator',
-      createdAt: '2024-01-09',
-      status: 'ready',
-      hasVoted: false
-    }
-  ]);
+  // Load suggestions on component mount
+  React.useEffect(() => {
+    const loadSuggestions = async () => {
+      setLoading(true);
+      try {
+        const data = await videoSuggestionsService.getApprovedSuggestions();
+        setSuggestions(data);
+      } catch (error) {
+        console.error('Error loading suggestions:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadSuggestions();
+  }, []);
 
   const categories = [
     'Programação',
@@ -129,34 +58,34 @@ const RequestLessonPage: React.FC = () => {
 
     setIsSubmitting(true);
 
-    // Simulate API call
-    setTimeout(() => {
-      setIsSubmitting(false);
-      setSubmitSuccess(true);
-      setFormData({ title: '', category: '', description: '' });
-      
-      // Hide success message after 3 seconds
-      setTimeout(() => setSubmitSuccess(false), 3000);
-    }, 1000);
-  };
+    try {
+      const success = await videoSuggestionsService.createSuggestion({
+        title: formData.title,
+        description: formData.description,
+        category: formData.category,
+        user_id: user?.id
+      });
 
-  const handleVote = (suggestionId: string) => {
-    setSuggestions(prev => prev.map(suggestion => {
-      if (suggestion.id === suggestionId) {
-        const hasVoted = suggestion.hasVoted;
-        return {
-          ...suggestion,
-          votes: hasVoted ? suggestion.votes - 1 : suggestion.votes + 1,
-          hasVoted: !hasVoted
-        };
+      if (success) {
+        setSubmitSuccess(true);
+        setFormData({ title: '', category: '', description: '' });
+        
+        // Hide success message after 3 seconds
+        setTimeout(() => setSubmitSuccess(false), 3000);
+      } else {
+        // Handle error - you might want to show an error message
+        console.error('Failed to submit suggestion');
       }
-      return suggestion;
-    }));
+    } catch (error) {
+      console.error('Error submitting suggestion:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  const getStatusConfig = (status: string) => {
-    switch (status) {
-      case 'suggestion':
+  const getEtapaConfig = (etapa: string) => {
+    switch (etapa) {
+      case 'sugestao':
         return {
           title: 'Sugestões',
           icon: Lightbulb,
@@ -164,7 +93,7 @@ const RequestLessonPage: React.FC = () => {
           bgColor: 'bg-blue-500/10',
           borderColor: 'border-blue-500/20'
         };
-      case 'production':
+      case 'producao':
         return {
           title: 'Em Produção',
           icon: Clock,
@@ -172,7 +101,7 @@ const RequestLessonPage: React.FC = () => {
           bgColor: 'bg-yellow-500/10',
           borderColor: 'border-yellow-500/20'
         };
-      case 'ready':
+      case 'prontas':
         return {
           title: 'Prontas',
           icon: CheckCircle,
@@ -191,13 +120,13 @@ const RequestLessonPage: React.FC = () => {
     }
   };
 
-  const suggestionsByStatus = {
-    suggestion: suggestions.filter(s => s.status === 'suggestion'),
-    production: suggestions.filter(s => s.status === 'production'),
-    ready: suggestions.filter(s => s.status === 'ready')
+  const suggestionsByEtapa = {
+    sugestao: suggestions.filter(s => s.etapa === 'sugestao'),
+    producao: suggestions.filter(s => s.etapa === 'producao'),
+    prontas: suggestions.filter(s => s.etapa === 'prontas')
   };
 
-  const SuggestionCard: React.FC<{ suggestion: LessonSuggestion }> = ({ suggestion }) => {
+  const SuggestionCard: React.FC<{ suggestion: VideoSuggestion }> = ({ suggestion }) => {
     const formatDate = (dateString: string) => {
       const date = new Date(dateString);
       return date.toLocaleDateString('pt-BR', {
@@ -227,40 +156,23 @@ const RequestLessonPage: React.FC = () => {
               •
             </span>
             <span className="text-xs text-slate-400">
-              por {suggestion.author}
+              {formatDate(suggestion.created_at)}
             </span>
           </div>
           
-          {suggestion.status === 'suggestion' && (
-            <button
-              onClick={() => handleVote(suggestion.id)}
-              className={`flex items-center space-x-1 px-2 py-1 rounded transition-all duration-200 ${
-                suggestion.hasVoted
-                  ? 'bg-[#ff7551] text-white'
-                  : 'bg-slate-600/30 text-slate-400 hover:bg-[#ff7551]/20 hover:text-[#ff7551]'
-              }`}
-            >
-              <ThumbsUp className="w-3 h-3" />
-              <span className="text-xs font-medium">{suggestion.votes}</span>
-            </button>
-          )}
-          
-          {suggestion.status !== 'suggestion' && (
-            <div className="flex items-center space-x-1 text-slate-400">
-              <Users className="w-3 h-3" />
-              <span className="text-xs">{suggestion.votes}</span>
-            </div>
-          )}
+          <div className="flex items-center space-x-1 text-slate-400">
+            <span className="text-xs capitalize">{suggestion.status}</span>
+          </div>
         </div>
       </div>
     );
   };
 
   const KanbanColumn: React.FC<{ 
-    status: 'suggestion' | 'production' | 'ready';
-    suggestions: LessonSuggestion[];
-  }> = ({ status, suggestions }) => {
-    const config = getStatusConfig(status);
+    etapa: 'sugestao' | 'producao' | 'prontas';
+    suggestions: VideoSuggestion[];
+  }> = ({ etapa, suggestions }) => {
+    const config = getEtapaConfig(etapa);
     const IconComponent = config.icon;
 
     return (
@@ -289,6 +201,19 @@ const RequestLessonPage: React.FC = () => {
       </div>
     );
   };
+
+  if (loading) {
+    return (
+      <div className="w-full space-y-12">
+        <div className="text-left">
+          <h1 className="text-3xl font-bold text-white mb-4">Pedir Aula</h1>
+          <p className="text-slate-400 text-lg max-w-2xl">
+            Carregando sugestões...
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full space-y-12">
@@ -425,16 +350,16 @@ const RequestLessonPage: React.FC = () => {
       <div>
         <div className="grid lg:grid-cols-3 gap-6">
           <KanbanColumn 
-            status="suggestion" 
-            suggestions={suggestionsByStatus.suggestion} 
+            etapa="sugestao" 
+            suggestions={suggestionsByEtapa.sugestao} 
           />
           <KanbanColumn 
-            status="production" 
-            suggestions={suggestionsByStatus.production} 
+            etapa="producao" 
+            suggestions={suggestionsByEtapa.producao} 
           />
           <KanbanColumn 
-            status="ready" 
-            suggestions={suggestionsByStatus.ready} 
+            etapa="prontas" 
+            suggestions={suggestionsByEtapa.prontas} 
           />
         </div>
       </div>
