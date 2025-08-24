@@ -43,6 +43,7 @@ const RegistrationPage: React.FC = () => {
 
   // Redirect if user is already authenticated
   if (isAuthenticated && user) {
+    console.log('User is already authenticated, redirecting to home');
     return <Navigate to="/" replace />;
   }
 
@@ -76,6 +77,7 @@ const RegistrationPage: React.FC = () => {
         if (data) {
           // Check if user already registered
           if (data.cadastro_mde) {
+            console.log('User already has an account, redirecting to login');
             setEmailValid(false);
             setError('Este email já possui uma conta ativa.');
             setSubscriptionData(null);
@@ -85,6 +87,7 @@ const RegistrationPage: React.FC = () => {
               navigate('/login?message=account_exists&email=' + encodeURIComponent(formData.email));
             }, 2000);
           } else {
+            console.log('Email is valid and can register');
             setEmailValid(true);
             setSubscriptionData(data);
             // Auto-fill name if available and not already filled
@@ -93,6 +96,7 @@ const RegistrationPage: React.FC = () => {
             }
           }
         } else {
+          console.log('Email not found or subscription not active');
           setEmailValid(false);
           setError('Email não encontrado ou assinatura não está ativa.');
           setSubscriptionData(null);
@@ -196,6 +200,7 @@ const RegistrationPage: React.FC = () => {
       }
 
       // Success - show onboarding
+      console.log('Registration successful, showing onboarding for user:', authData.user.id);
       setNewUserId(authData.user.id);
       setShowOnboarding(true);
 
@@ -208,12 +213,14 @@ const RegistrationPage: React.FC = () => {
   };
 
   const handleOnboardingComplete = () => {
+    console.log('Onboarding completed, redirecting to login');
     // Redirect to login after onboarding
     navigate('/login?registered=true&email=' + encodeURIComponent(formData.email));
   };
 
   // Show onboarding if registration was successful
   if (showOnboarding && newUserId) {
+    console.log('Rendering onboarding flow for user:', newUserId);
     return (
       <OnboardingFlow 
         userId={newUserId}

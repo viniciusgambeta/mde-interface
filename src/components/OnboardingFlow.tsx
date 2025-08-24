@@ -124,11 +124,11 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ userId, userEmail, onCo
   };
 
   const handleSkipAvatar = () => {
-    setOnboardingData(prev => ({ 
-      ...prev, 
-      avatar_url: 'https://static.vecteezy.com/system/resources/previews/009/292/244/non_2x/default-avatar-icon-of-social-media-user-vector.jpg'
-    }));
-    handleNext();
+    if (currentStep < steps.length - 1) {
+      setCurrentStep(currentStep + 1);
+    } else {
+      handleComplete();
+    }
   };
 
   const handleComplete = async () => {
@@ -206,22 +206,6 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ userId, userEmail, onCo
               </div>
             </div>
 
-            <div className="flex space-x-4 justify-center mt-8">
-              <button
-                onClick={handleSkipAvatar}
-                className="px-6 py-3 text-slate-400 hover:text-white transition-colors"
-              >
-                Pular por agora
-              </button>
-              <button
-                onClick={handleNext}
-                disabled={isUploadingAvatar}
-                className="flex items-center space-x-2 px-8 py-3 bg-[#ff7551] hover:bg-[#ff7551]/80 text-white font-medium rounded-lg transition-colors disabled:opacity-50"
-              >
-                <span>Continuar</span>
-                <ArrowRight className="w-4 h-4" />
-              </button>
-            </div>
           </div>
         );
 
@@ -444,7 +428,27 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ userId, userEmail, onCo
         </div>
 
         {/* Footer */}
-        {steps[currentStep] !== 'avatar' && (
+        <div className="p-6 border-t border-slate-700/30">
+          {currentStep === 0 ? (
+            /* Avatar step footer */
+            <div className="flex space-x-4 justify-center">
+              <button
+                onClick={handleSkipAvatar}
+                className="px-6 py-3 text-slate-400 hover:text-white transition-colors"
+              >
+                Pular por agora
+              </button>
+              <button
+                onClick={handleNext}
+                disabled={isUploadingAvatar}
+                className="flex items-center space-x-2 px-8 py-3 bg-[#ff7551] hover:bg-[#ff7551]/80 text-white font-medium rounded-lg transition-colors disabled:opacity-50"
+              >
+                <span>Continuar</span>
+                <ArrowRight className="w-4 h-4" />
+              </button>
+            </div>
+          ) : (
+            /* Other steps footer */
           <div className="p-6 border-t border-slate-700/30 flex justify-between">
             <button
               onClick={handleBack}
@@ -477,7 +481,8 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ userId, userEmail, onCo
               )}
             </button>
           </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );
