@@ -1,7 +1,7 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { ChevronRight, ChevronLeft, Play, Clock, Bookmark, Filter, X, BarChart3, User, ChevronDown } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { videoService, type Video } from '../lib/database';
+import { videoService, categoryService, difficultyService, type Video } from '../lib/database';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 
