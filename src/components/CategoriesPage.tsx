@@ -451,11 +451,12 @@ const VideoCard: React.FC<{
           src={video.thumbnail_url || 'https://images.pexels.com/photos/11035380/pexels-photo-11035380.jpeg?auto=compress&cs=tinysrgb&w=320&h=480&fit=crop'}
           alt={video.title}
           className="w-full h-full object-cover transition-all duration-300 group-hover:brightness-75"
+          className="w-full h-full object-cover transition-all duration-300 group-hover:brightness-75 group-hover:scale-105"
           draggable={false}
         />
         
         {/* Hover Overlay */}
-        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors duration-300" />
+        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all duration-300" />
         
         {/* Duration Badge */}
         <div className="absolute bottom-3 right-3 bg-black/80 text-white text-xs px-2 py-1 rounded flex items-center space-x-1">

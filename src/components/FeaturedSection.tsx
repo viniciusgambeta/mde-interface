@@ -1,11 +1,22 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ExternalLink, ChevronLeft, ChevronRight, TrendingUp, Gift, ThumbsUp, Users } from 'lucide-react';
+import { ExternalLink, ChevronLeft, ChevronRight, Calendar, Clock, MapPin, Plus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { featuredContentService, type FeaturedContent } from '../lib/database';
 
 interface FeaturedSectionProps {
   onVideoSelect: (video: any) => void;
   onViewChange?: (view: string) => void;
+}
+
+interface UpcomingEvent {
+  id: string;
+  title: string;
+  description: string;
+  date: string;
+  time: string;
+  duration: string;
+  link: string;
+  type: 'live' | 'workshop' | 'webinar';
 }
 
 const FeaturedSection: React.FC<FeaturedSectionProps> = ({ onVideoSelect, onViewChange = () => {} }) => {
@@ -15,6 +26,39 @@ const FeaturedSection: React.FC<FeaturedSectionProps> = ({ onVideoSelect, onView
   const [loading, setLoading] = React.useState(true);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
+  // Mock data for upcoming events
+  const upcomingEvents: UpcomingEvent[] = [
+    {
+      id: '1',
+      title: 'TypeScript na Prática',
+      description: 'Workshop completo sobre TypeScript avançado com projetos reais',
+      date: '2024-01-25',
+      time: '20:00',
+      duration: '2h',
+      link: 'https://meet.google.com/abc-defg-hij',
+      type: 'workshop'
+    },
+    {
+      id: '2',
+      title: 'React Server Components',
+      description: 'Live sobre as novidades do React 18 e Server Components',
+      date: '2024-01-28',
+      time: '19:30',
+      duration: '1h30',
+      link: 'https://youtube.com/live/example',
+      type: 'live'
+    },
+    {
+      id: '3',
+      title: 'Design System com Figma',
+      description: 'Webinar sobre criação de design systems escaláveis',
+      date: '2024-02-02',
+      time: '18:00',
+      duration: '1h',
+      link: 'https://zoom.us/j/example',
+      type: 'webinar'
+    }
+  ];
   React.useEffect(() => {
     const loadFeaturedContent = async () => {
       try {
@@ -83,6 +127,39 @@ const FeaturedSection: React.FC<FeaturedSectionProps> = ({ onVideoSelect, onView
     goToSlide(newIndex);
   };
 
+  const formatEventDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('pt-BR', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric'
+    });
+  };
+
+  const getEventTypeConfig = (type: string) => {
+    switch (type) {
+      case 'live':
+        return { color: 'bg-red-500', label: 'Live' };
+      case 'workshop':
+        return { color: 'bg-blue-500', label: 'Workshop' };
+      case 'webinar':
+        return { color: 'bg-purple-500', label: 'Webinar' };
+      default:
+        return { color: 'bg-gray-500', label: 'Evento' };
+    }
+  };
+
+  const addAllEventsToCalendar = () => {
+    const calendarUrl = 'https://calendar.google.com/calendar/render?action=TEMPLATE';
+    const events = upcomingEvents.map(event => {
+      const startDate = new Date(`${event.date}T${event.time}:00`);
+      const endDate = new Date(startDate.getTime() + (parseInt(event.duration) * 60 * 60 * 1000));
+      
+      return `&text=${encodeURIComponent(event.title)}&dates=${startDate.toISOString().replace(/[-:]/g, '').split('.')[0]}Z/${endDate.toISOString().replace(/[-:]/g, '').split('.')[0]}Z&details=${encodeURIComponent(event.description + '\n\nLink: ' + event.link)}`;
+    }).join('');
+    
+    window.open(calendarUrl + events, '_blank');
+  };
   if (loading) {
     return (
       <section className="mb-16 w-full">
@@ -232,80 +309,79 @@ const FeaturedSection: React.FC<FeaturedSectionProps> = ({ onVideoSelect, onView
           )}
         </div>
 
-        {/* Platform Indicators - Right Side */}
+        {/* Upcoming Events - Right Side */}
         <div className="w-full lg:w-[35%] h-[280px] sm:h-[320px] lg:h-[380px]">
-          <div className="grid grid-cols-1 gap-4 h-full">
-            {/* Most Watched Video of the Week */}
-            <button
-              onClick={() => {
-                // Navigate to a specific popular video - you can replace this with actual video data
-                const mockVideo = {
-                  id: 'mock-react-hooks',
-                  title: 'React Hooks Avançados',
-                  slug: 'react-hooks-avancados',
-                  tipo: 'video'
-                };
-                onVideoSelect(mockVideo);
-              }}
-              className="bg-[#1f1d2b]/90 backdrop-blur-sm border border-slate-700/30 rounded-xl p-3 hover:bg-slate-700/20 transition-all duration-200 animate-fade-in text-left w-full"
-            >
-              <div className="flex items-center space-x-3 mb-2">
-                <div className="w-10 h-10 bg-[#ff7551]/20 rounded-full flex items-center justify-center">
-                  <TrendingUp className="w-5 h-5 text-[#ff7551]" />
-                </div>
-                <div>
-                  <h3 className="text-white font-medium">React Hooks Avançados - 2.4K views</h3>
-                  <p className="text-slate-400 text-sm">Mais Assistida da Semana</p>
-                </div>
+          <div className="bg-[#1f1d2b]/90 backdrop-blur-sm border border-slate-700/30 rounded-xl p-6 h-full flex flex-col">
+            {/* Header */}
+            <div className="flex items-center space-x-3 mb-6">
+              <div className="w-10 h-10 bg-[#ff7551]/20 rounded-full flex items-center justify-center">
+                <Calendar className="w-5 h-5 text-[#ff7551]" />
               </div>
-            </button>
-
-            {/* Latest Discount */}
-            <button
-              onClick={() => onViewChange('discounts')}
-              className="bg-[#1f1d2b]/90 backdrop-blur-sm border border-slate-700/30 rounded-xl p-3 hover:bg-slate-700/20 transition-all duration-200 animate-fade-in text-left w-full"
-              style={{ animationDelay: '100ms' }}
-            >
-              <div className="flex items-center space-x-3 mb-2">
-                <div className="w-10 h-10 bg-[#ff7551]/20 rounded-full flex items-center justify-center">
-                  <Gift className="w-5 h-5 text-[#ff7551]" />
-                </div>
-                <div>
-                  <h3 className="text-white font-medium">Figma Pro - 50% OFF até 31/01</h3>
-                  <p className="text-slate-400 text-sm">Último Desconto</p>
-                </div>
-              </div>
-            </button>
-
-            {/* Next Live Event */}
-            <div className="bg-[#1f1d2b]/90 backdrop-blur-sm border border-slate-700/30 rounded-xl p-3 hover:bg-slate-700/20 transition-all duration-200 animate-fade-in" style={{ animationDelay: '200ms' }}>
-              <div className="flex items-center space-x-3 mb-2">
-                <div className="w-10 h-10 bg-[#ff7551]/20 rounded-full flex items-center justify-center">
-                  <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
-                </div>
-                <div>
-                  <h3 className="text-white font-medium">TypeScript na Prática - Amanhã às 20h</h3>
-                  <p className="text-slate-400 text-sm">Próximo Evento ao Vivo</p>
-                </div>
+              <div>
+                <h3 className="text-white font-semibold text-lg">Próximos Eventos</h3>
+                <p className="text-slate-400 text-sm">Não perca nenhuma live!</p>
               </div>
             </div>
 
-            {/* Most Voted Suggestion */}
-            <button
-              onClick={() => onViewChange('request-lesson')}
-              className="bg-[#1f1d2b]/90 backdrop-blur-sm border border-slate-700/30 rounded-xl p-3 hover:bg-slate-700/20 transition-all duration-200 animate-fade-in text-left w-full"
-              style={{ animationDelay: '300ms' }}
-            >
-              <div className="flex items-center space-x-3 mb-2">
-                <div className="w-10 h-10 bg-[#ff7551]/20 rounded-full flex items-center justify-center">
-                  <ThumbsUp className="w-5 h-5 text-[#ff7551]" />
-                </div>
-                <div>
-                  <h3 className="text-white font-medium">Next.js 14 App Router - 47 votos</h3>
-                  <p className="text-slate-400 text-sm">Sugestão Mais Votada</p>
-                </div>
-              </div>
-            </button>
+            {/* Events List */}
+            <div className="flex-1 space-y-4 overflow-y-auto">
+              {upcomingEvents.map((event, index) => {
+                const typeConfig = getEventTypeConfig(event.type);
+                return (
+                  <div
+                    key={event.id}
+                    className="group cursor-pointer animate-fade-in"
+                    style={{ animationDelay: `${index * 100}ms` }}
+                    onClick={() => window.open(event.link, '_blank')}
+                  >
+                    <div className="bg-slate-700/30 hover:bg-slate-600/30 border border-slate-600/30 rounded-lg p-4 transition-all duration-200 hover:scale-[1.02]">
+                      {/* Event Header */}
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="flex-1">
+                          <div className="flex items-center space-x-2 mb-2">
+                            <span className={`text-xs px-2 py-1 rounded-full text-white font-medium ${typeConfig.color}`}>
+                              {typeConfig.label}
+                            </span>
+                          </div>
+                          <h4 className="text-white font-medium text-sm leading-tight group-hover:text-[#ff7551] transition-colors">
+                            {event.title}
+                          </h4>
+                        </div>
+                        <ExternalLink className="w-4 h-4 text-slate-400 group-hover:text-[#ff7551] transition-colors flex-shrink-0 ml-2" />
+                      </div>
+
+                      {/* Event Details */}
+                      <div className="space-y-2">
+                        <div className="flex items-center space-x-2 text-xs text-slate-400">
+                          <Calendar className="w-3 h-3" />
+                          <span>{formatEventDate(event.date)}</span>
+                        </div>
+                        <div className="flex items-center space-x-2 text-xs text-slate-400">
+                          <Clock className="w-3 h-3" />
+                          <span>{event.time} • {event.duration}</span>
+                        </div>
+                      </div>
+
+                      {/* Event Description */}
+                      <p className="text-slate-400 text-xs mt-2 line-clamp-2 leading-relaxed">
+                        {event.description}
+                      </p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Add to Calendar Button */}
+            <div className="mt-4 pt-4 border-t border-slate-600/30">
+              <button
+                onClick={addAllEventsToCalendar}
+                className="w-full flex items-center justify-center space-x-2 px-4 py-3 bg-[#ff7551] hover:bg-[#ff7551]/80 text-white font-medium rounded-lg transition-all duration-200 transform hover:scale-[1.02]"
+              >
+                <Plus className="w-4 h-4" />
+                <span className="text-sm">Adicionar ao Google Calendar</span>
+              </button>
+            </div>
           </div>
         </div>
       </div>
