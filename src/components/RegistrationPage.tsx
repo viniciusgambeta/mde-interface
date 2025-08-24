@@ -493,12 +493,21 @@ const RegistrationPage: React.FC = () => {
           <p className="text-slate-400 text-sm">
             Já tem uma conta?{' '}
             <button
-              onClick={() => navigate('/login')}
+              onClick={() => navigate('/')}
               className="text-[#ff7551] hover:text-[#ff7551]/80 font-medium transition-colors"
             >
               Entrar
             </button>
           </p>
+          <div className="mt-3">
+            <button
+              type="button"
+              onClick={() => navigate('/redefinir-senha')}
+              className="text-slate-400 hover:text-[#ff7551] text-sm transition-colors"
+            >
+              Esqueci minha senha
+            </button>
+          </div>
         </div>
       </div>
     </div>

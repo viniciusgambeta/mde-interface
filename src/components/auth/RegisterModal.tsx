@@ -211,6 +211,18 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose, onSwitch
               Entrar
             </button>
           </p>
+          <div className="mt-3">
+            <button
+              type="button"
+              onClick={() => {
+                onClose();
+                window.location.href = '/redefinir-senha';
+              }}
+              className="text-slate-400 hover:text-[#ff7551] text-sm transition-colors"
+            >
+              Esqueci minha senha
+            </button>
+          </div>
         </div>
       </div>
     </div>

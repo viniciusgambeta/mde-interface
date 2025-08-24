@@ -163,6 +163,21 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onSwitchToRegi
             <p className="text-slate-400 text-xs mb-1">Primeira vez? Crie sua conta gratuitamente!</p>
             <p className="text-slate-300 text-xs">Acesso completo a todos os recursos da plataforma.</p>
           </div>
+
+          {/* Forgot Password Link */}
+          <div className="text-center">
+            <button
+              type="button"
+              onClick={() => {
+                onClose();
+                // Navigate to password reset page
+                window.location.href = '/redefinir-senha';
+              }}
+              className="text-slate-400 hover:text-[#ff7551] text-sm transition-colors"
+            >
+              Esqueci minha senha
+            </button>
+          </div>
         </form>
 
         {/* Footer */}

@@ -165,7 +165,7 @@ const Header: React.FC<HeaderProps> = ({ sidebarCollapsed, onSidebarToggle, onVi
               onClick={() => navigate('/registro')}
               className="text-white hover:text-black transition-colors font-medium"
             >
-              Voltar ao vídeo →
+              Voltar ao vídeo
             </button>
           </div>
         )}
