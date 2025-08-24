@@ -501,7 +501,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video, onBack }) => {
                           href={material.url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="flex items-center space-x-3 p-3 bg-slate-700/30 rounded-lg hover:bg-slate-600/30 transition-colors cursor-pointer"
+                          className="flex items-center space-x-3 px-3 py-4 bg-slate-700/30 rounded-lg hover:bg-slate-600/30 transition-colors cursor-pointer"
                         >
                           <Download className="w-5 h-5 text-slate-400" />
                           <div className="flex-1">
@@ -543,7 +543,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video, onBack }) => {
                          <img 
                            src={ferramenta.icone} 
                            alt={ferramenta.nome}
-                           className="w-8 h-8 object-contain rounded"
+                           className="w-10 h-10 object-contain rounded"
                            onError={(e) => {
                              // Fallback to ExternalLink icon if image fails to load
                              const target = e.target as HTMLImageElement;
@@ -552,7 +552,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video, onBack }) => {
                              if (fallbackIcon) fallbackIcon.style.display = 'block';
                            }}
                          />
-                         <ExternalLink className="w-8 h-8 text-slate-400 hidden rounded" />
+                         <ExternalLink className="w-10 h-10 text-slate-400 hidden rounded" />
                        </a>
                      );
                    })}
