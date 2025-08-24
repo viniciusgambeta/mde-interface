@@ -27,6 +27,12 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onSwitchToRegi
       if (email) {
         setEmail(email);
       }
+    } else if (searchParams.get('message') === 'account_exists') {
+      setError('Este email já possui uma conta ativa. Faça login para continuar.');
+      const email = searchParams.get('email');
+      if (email) {
+        setEmail(email);
+      }
     }
   }, [searchParams]);
 

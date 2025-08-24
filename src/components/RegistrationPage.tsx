@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams, Navigate } from 'react-router-dom';
 import { Eye, EyeOff, Mail, Lock, User, Loader2, CheckCircle, AlertCircle } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import { useAuth } from '../contexts/AuthContext';
+import OnboardingFlow from './OnboardingFlow';
 
 interface SubscriptionData {
   'ID da assinatura': string;
@@ -13,6 +15,7 @@ interface SubscriptionData {
 
 const RegistrationPage: React.FC = () => {
   const navigate = useNavigate();
+  const { user, isAuthenticated } = useAuth();
   const [searchParams] = useSearchParams();
   
   // Get data from URL parameters
@@ -33,6 +36,15 @@ const RegistrationPage: React.FC = () => {
   const [validatingEmail, setValidatingEmail] = useState(false);
   const [emailValid, setEmailValid] = useState<boolean | null>(null);
   const [subscriptionData, setSubscriptionData] = useState<SubscriptionData | null>(null);
+
+  // New states for onboarding
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [newUserId, setNewUserId] = useState<string | null>(null);
+
+  // Redirect if user is already authenticated
+  if (isAuthenticated && user) {
+    return <Navigate to="/" replace />;
+  }
 
   // Validate email against subscriptions table when email changes
   useEffect(() => {
@@ -65,8 +77,13 @@ const RegistrationPage: React.FC = () => {
           // Check if user already registered
           if (data.cadastro_mde) {
             setEmailValid(false);
-            setError('Este email já possui uma conta cadastrada.');
+            setError('Este email já possui uma conta ativa.');
             setSubscriptionData(null);
+            
+            // Redirect to login after 2 seconds
+            setTimeout(() => {
+              navigate('/login?message=account_exists&email=' + encodeURIComponent(formData.email));
+            }, 2000);
           } else {
             setEmailValid(true);
             setSubscriptionData(data);
@@ -178,8 +195,9 @@ const RegistrationPage: React.FC = () => {
         // Don't fail the registration for this, just log it
       }
 
-      // Success - redirect to login
-      navigate('/login?registered=true&email=' + encodeURIComponent(formData.email));
+      // Success - show onboarding
+      setNewUserId(authData.user.id);
+      setShowOnboarding(true);
 
     } catch (error) {
       console.error('Registration exception:', error);
@@ -188,6 +206,22 @@ const RegistrationPage: React.FC = () => {
       setIsSubmitting(false);
     }
   };
+
+  const handleOnboardingComplete = () => {
+    // Redirect to login after onboarding
+    navigate('/login?registered=true&email=' + encodeURIComponent(formData.email));
+  };
+
+  // Show onboarding if registration was successful
+  if (showOnboarding && newUserId) {
+    return (
+      <OnboardingFlow 
+        userId={newUserId}
+        userEmail={formData.email}
+        onComplete={handleOnboardingComplete}
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#1f1d2b] via-[#1f1d2b] to-black flex items-center justify-center p-4">
