@@ -821,13 +821,21 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
         <ScrollableVideoRow title={getViewTitle(currentView)} videos={videos} scrollRef={latestScrollRef} />
       ) : (
         <>
-          <ScrollableVideoRow title="Últimos Vídeos" videos={videos.slice(0, 12)} scrollRef={latestScrollRef} />
+          <ScrollableVideoRow title="Últimos Vídeos" videos={videos.slice(0, 10)} scrollRef={latestScrollRef} />
       
-          <ScrollableVideoRow title="Tutoriais" videos={videos.filter(v => v.category?.slug === 'programming')} scrollRef={tutorialsScrollRef} />
+          <ScrollableVideoRow title="Inteligência Artificial" videos={videos.filter(v => v.category?.slug === 'ai' || v.category?.name.toLowerCase().includes('inteligência artificial') || v.category?.name.toLowerCase().includes('ia'))} scrollRef={tutorialsScrollRef} />
           
-          <ScrollableVideoRow title="Design" videos={videos.filter(v => v.category?.slug === 'design')} scrollRef={designScrollRef} />
+          <ScrollableVideoRow title="Automações" videos={videos.filter(v => v.category?.slug === 'automation' || v.category?.name.toLowerCase().includes('automação') || v.category?.name.toLowerCase().includes('automacao'))} scrollRef={designScrollRef} />
           
-          <ScrollableVideoRow title="Marketing" videos={videos.filter(v => v.category?.slug === 'marketing')} scrollRef={marketingScrollRef} />
+          <ScrollableVideoRow title="Eventos ao Vivo" videos={videos.filter(v => v.tipo === 'live')} scrollRef={marketingScrollRef} />
+          
+          <ScrollableVideoRow title="Prompts" videos={videos.filter(v => v.tipo === 'prompt')} scrollRef={latestScrollRef} />
+          
+          <ScrollableVideoRow title="WhatsApp" videos={videos.filter(v => v.category?.slug === 'whatsapp' || v.category?.name.toLowerCase().includes('whatsapp'))} scrollRef={tutorialsScrollRef} />
+          
+          <ScrollableVideoRow title="Aulas Básicas" videos={videos.filter(v => v.difficulty_level?.slug === 'basic' || v.difficulty_level?.name.toLowerCase().includes('básico') || v.difficulty_level?.name.toLowerCase().includes('basico') || v.difficulty_level?.name.toLowerCase().includes('iniciante'))} scrollRef={designScrollRef} />
+          
+          <ScrollableVideoRow title="Vibe Coding" videos={videos.filter(v => v.category?.slug === 'bolt' || v.category?.name.toLowerCase().includes('bolt') || v.category?.name.toLowerCase().includes('vibe'))} scrollRef={marketingScrollRef} />
         </>
       )}
     </section>
