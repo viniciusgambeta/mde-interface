@@ -181,41 +181,30 @@ const DiscountsPage: React.FC = () => {
           {/* Action Buttons */}
           <div className="flex space-x-3 mt-4">
             {hasCouponCode ? (
-              <>
-                <button
-                  onClick={() => handleToggleCard(coupon.id)}
-                  className={`flex-1 flex items-center justify-center space-x-2 py-3 px-4 rounded-lg font-medium transition-all duration-200 ${
-                    isExpanded
-                      ? 'bg-slate-600/30 text-slate-300 hover:bg-slate-500/30'
-                      : 'bg-slate-600/30 hover:bg-slate-500/30 text-slate-300 hover:text-white'
-                  }`}
+              <button
+                onClick={() => handleToggleCard(coupon.id)}
+                className={`w-full flex items-center justify-center space-x-2 py-3 px-4 rounded-lg font-medium transition-all duration-200 ${
+                  isExpanded
+                    ? 'bg-slate-600/30 text-slate-300 hover:bg-slate-500/30'
+                    : 'bg-slate-600/30 hover:bg-slate-500/30 text-slate-300 hover:text-white'
+                }`}
+              >
+                <span>{isExpanded ? 'Ocultar Cupom' : 'Ver Cupom'}</span>
+                <svg 
+                  className={`w-4 h-4 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} 
+                  fill="none" 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24"
                 >
-                  <span>{isExpanded ? 'Ocultar Cupom' : 'Ver Cupom'}</span>
-                  <svg 
-                    className={`w-4 h-4 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} 
-                    fill="none" 
-                    stroke="currentColor" 
-                    viewBox="0 0 24 24"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
-                </button>
-                
-                <a
-                  href={coupon.link}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex-1 flex items-center justify-center space-x-2 py-3 px-4 bg-slate-600/30 hover:bg-slate-500/30 text-slate-300 hover:text-white rounded-lg font-medium transition-all duration-200"
-                >
-                  <ExternalLink className="w-4 h-4" />
-                </a>
-              </>
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
             ) : (
               <a
                 href={coupon.link}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex-1 flex items-center justify-center space-x-2 py-3 px-4 bg-[#ff7551] hover:bg-[#ff7551]/80 text-white rounded-lg font-medium transition-all duration-200 transform hover:scale-105"
+                className="w-full flex items-center justify-center space-x-2 py-3 px-4 bg-slate-600/30 hover:bg-slate-500/30 text-slate-300 hover:text-white rounded-lg font-medium transition-all duration-200"
               >
                 <ExternalLink className="w-4 h-4" />
                 <span>Acessar Link</span>
