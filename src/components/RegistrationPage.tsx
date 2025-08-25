@@ -41,28 +41,44 @@ const RegistrationPage: React.FC = () => {
   // Check subscription when email changes
   useEffect(() => {
     const checkSubscription = async () => {
-      if (!formData.email || !formData.email.includes('@')) {
+      if (!formData.email || formData.email.length < 3 || !formData.email.includes('@')) {
         setEmailValid(null);
         setSubscriptionData(null);
         return;
       }
 
       try {
+        console.log('🔍 Checking subscription for email:', formData.email);
+        
         const { data, error } = await supabase
           .from('assinaturas')
-          .select('*')
+          .select(`
+            "ID da assinatura",
+            "Nome do cliente", 
+            "Email do cliente",
+            "Status da assinatura",
+            "Plano"
+          `)
           .eq('Email do cliente', formData.email.toLowerCase())
-          .eq('Status da assinatura', 'active')
-          .single();
+          .maybeSingle();
 
-        if (error || !data) {
+        console.log('📊 Subscription query result:', { data, error });
+
+        if (error) {
+          console.error('❌ Error checking subscription:', error);
+          setEmailValid(false);
+          setSubscriptionData(null);
+        } else if (!data) {
+          console.log('❌ No subscription found for email:', formData.email);
           setEmailValid(false);
           setSubscriptionData(null);
         } else {
+          console.log('✅ Subscription found:', data);
           setEmailValid(true);
           setSubscriptionData(data);
         }
       } catch (err) {
+        console.error('💥 Exception checking subscription:', err);
         setEmailValid(false);
         setSubscriptionData(null);
       }
@@ -196,11 +212,11 @@ const RegistrationPage: React.FC = () => {
 
   // Success Screen Component
   const SuccessScreen = () => (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center p-4">
-      <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/30 rounded-2xl shadow-2xl w-full max-w-md">
+    <div className="min-h-screen bg-gradient-to-b from-[#1f1d2b] via-[#1f1d2b] to-black flex items-center justify-center p-4">
+      <div className="bg-[#1f1d2b] border border-slate-700/30 rounded-xl w-full max-w-md">
         <div className="p-8 text-center">
-          <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
-            <CheckCircle className="w-8 h-8 text-green-400" />
+          <div className="w-20 h-20 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
+            <CheckCircle className="w-10 h-10 text-green-400" />
           </div>
           
           <h1 className="text-2xl font-bold text-white mb-4">
@@ -212,7 +228,7 @@ const RegistrationPage: React.FC = () => {
           </p>
           
           <button
-            onClick={() => navigate('/', { state: { email: formData.email } })}
+            onClick={() => navigate('/?registered=true&email=' + encodeURIComponent(formData.email))}
             className="w-full bg-[#ff7551] hover:bg-[#ff7551]/80 text-white font-medium py-3 rounded-lg transition-colors"
           >
             Ir para Login
@@ -226,15 +242,15 @@ const RegistrationPage: React.FC = () => {
   if (showSuccessScreen) {
     // Auto redirect after 5 seconds
     setTimeout(() => {
-      navigate('/', { state: { email: formData.email } });
+      navigate('/?registered=true&email=' + encodeURIComponent(formData.email));
     }, 5000);
     
     return <SuccessScreen />;
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center p-4">
-      <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/30 rounded-2xl shadow-2xl w-full max-w-md">
+    <div className="min-h-screen bg-gradient-to-b from-[#1f1d2b] via-[#1f1d2b] to-black flex items-center justify-center p-4">
+      <div className="bg-[#1f1d2b] border border-slate-700/30 rounded-xl w-full max-w-md">
         {/* Header */}
         <div className="p-6 border-b border-slate-700/30">
           <div className="flex items-center mb-4">
@@ -305,7 +321,7 @@ const RegistrationPage: React.FC = () => {
             {/* Email Validation Feedback */}
             {formData.email && emailValid === false && (
               <p className="text-red-400 text-xs mt-1">
-                Este email não possui assinatura ativa
+                Este email não foi encontrado ou não possui assinatura ativa
               </p>
             )}
             {emailValid === true && subscriptionData && (
