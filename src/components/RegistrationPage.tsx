@@ -198,8 +198,7 @@ const RegistrationPage: React.FC = () => {
           }
         }
 
-        // Force logout and show success screen
-        await supabase.auth.signOut();
+        // Show success screen without logging out
         setShowSuccessScreen(true);
       }
     } catch (err: any) {
@@ -224,14 +223,14 @@ const RegistrationPage: React.FC = () => {
           </h1>
           
           <p className="text-slate-300 mb-6">
-            Sua conta foi criada com sucesso. Você será redirecionado para a página de login em alguns segundos.
+            Sua conta foi criada com sucesso! Agora vamos personalizar seu perfil.
           </p>
           
           <button
-            onClick={() => navigate('/?registered=true&email=' + encodeURIComponent(formData.email))}
+            onClick={() => navigate('/')}
             className="w-full bg-[#ff7551] hover:bg-[#ff7551]/80 text-white font-medium py-3 rounded-lg transition-colors"
           >
-            Ir para Login
+            Continuar
           </button>
         </div>
       </div>
@@ -240,10 +239,10 @@ const RegistrationPage: React.FC = () => {
 
   // Show success screen after registration
   if (showSuccessScreen) {
-    // Auto redirect after 5 seconds
+    // Auto redirect after 3 seconds
     setTimeout(() => {
-      navigate('/?registered=true&email=' + encodeURIComponent(formData.email));
-    }, 5000);
+      navigate('/');
+    }, 3000);
     
     return <SuccessScreen />;
   }

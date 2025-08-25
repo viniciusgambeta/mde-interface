@@ -249,7 +249,7 @@ const ProfilePage: React.FC = () => {
 
   const presetAvatars = [
     '/src/images/avatar1.png',
-    '/src/images/avatar2.png',
+    '/src/images/avatar2.png', 
     '/src/images/avatar3.png'
   ];
 
