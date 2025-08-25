@@ -199,7 +199,7 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ userId, userEmail, onCo
             <p className="text-slate-400 mb-8">Escolha um avatar ou envie sua própria foto</p>
             
             {/* Avatar Selection Grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 max-w-2xl mx-auto">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-2xl mx-auto">
               {/* Preset Avatars */}
               {['/src/images/avatar1.png', '/src/images/avatar2.png', '/src/images/avatar3.png'].map((avatar, index) => (
                 <button
@@ -218,8 +218,8 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ userId, userEmail, onCo
                     className="w-28 h-28 rounded-2xl object-cover group-hover:opacity-80 transition-opacity"
                   />
                   {selectedPresetAvatar === avatar && (
-                    <div className="absolute inset-0 bg-[#ff7551]/20 rounded-2xl flex items-center justify-center">
-                      <CheckCircle className="w-8 h-8 text-[#ff7551]" />
+                    <div className="absolute inset-0 bg-black/60 rounded-2xl flex items-center justify-center">
+                      <CheckCircle className="w-8 h-8 text-white" />
                     </div>
                   )}
                 </button>
@@ -256,8 +256,8 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ userId, userEmail, onCo
                 </button>
                 
                 {avatarPreview && avatarMode === 'upload' && (
-                  <div className="absolute inset-0 bg-[#ff7551]/20 rounded-2xl flex items-center justify-center">
-                    <CheckCircle className="w-8 h-8 text-[#ff7551]" />
+                  <div className="absolute inset-0 bg-black/60 rounded-2xl flex items-center justify-center">
+                    <CheckCircle className="w-8 h-8 text-white" />
                   </div>
                 )}
                 
