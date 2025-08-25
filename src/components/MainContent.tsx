@@ -9,6 +9,7 @@ import VideoPlayer from './VideoPlayer';
 import PromptViewer from './PromptViewer';
 import DiscountsPage from './DiscountsPage';
 import BenchmarksPage from './BenchmarksPage';
+import BenchmarksPage from './BenchmarksPage';
 
 interface MainContentProps {
   currentView: string;
