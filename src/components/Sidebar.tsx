@@ -9,7 +9,8 @@ import {
   User,
   Menu,
   X,
-  Gift
+  Gift,
+  BarChart3
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -24,6 +25,7 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggle, currentView, onV
     { id: 'discover', label: 'Home', icon: Home },
     { id: 'trending', label: 'Trending', icon: TrendingUp },
     { id: 'categories', label: 'Categorias', icon: Grid3X3 },
+    { id: 'benchmarks', label: 'Benchmarks', icon: BarChart3 },
     { id: 'discounts', label: 'Descontos', icon: Gift },
     { id: 'bookmark', label: 'Salvos', icon: Bookmark },
     { id: 'profile', label: 'Minha Conta', icon: User },

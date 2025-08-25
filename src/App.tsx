@@ -244,6 +244,7 @@ function App() {
           <Route path="/" element={<AppLayout />} />
           <Route path="/trending" element={<AppLayout />} />
           <Route path="/categories" element={<AppLayout />} />
+          <Route path="/benchmarks" element={<AppLayout />} />
           <Route path="/bookmark" element={<AppLayout />} />
           <Route path="/discounts" element={<AppLayout />} />
           <Route path="/profile" element={<AppLayout />} />
