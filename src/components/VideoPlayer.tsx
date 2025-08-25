@@ -570,22 +570,31 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video, onBack }) => {
                      <button
                        key={version.id}
                        onClick={() => handleVersionChange(version)}
-                       className={`w-full text-left p-3 rounded-lg transition-colors ${
+                       className={`w-full text-left p-4 rounded-lg transition-colors ${
                          currentVideo.id === version.id
                            ? 'bg-[#ff7551] text-white'
                            : 'bg-slate-700/30 text-slate-300 hover:bg-slate-600/30'
                        }`}
                      >
-                       <div className="font-medium text-sm">
-                         {(version as any).version_name || version.title}
-                         {(version as any).is_main_version && (
-                           <span className="ml-2 text-xs bg-slate-600/50 text-slate-300 px-2 py-0.5 rounded">
-                             Original
-                           </span>
-                         )}
-                       </div>
-                       <div className="text-xs text-slate-400 mt-1">
-                         {formatDuration(version.duration_minutes)} • {formatViews(version.view_count)} views
+                       <div className="flex items-center space-x-3">
+                         <img
+                           src={version.thumbnail_url || 'https://images.pexels.com/photos/11035380/pexels-photo-11035380.jpeg?auto=compress&cs=tinysrgb&w=80&h=60&fit=crop'}
+                           alt={version.title}
+                           className="w-12 h-9 rounded object-cover flex-shrink-0"
+                         />
+                         <div className="flex-1 min-w-0">
+                           <div className="font-medium text-sm">
+                             {(version as any).version_name || version.title}
+                             {(version as any).is_main_version && (
+                               <span className="ml-2 text-xs bg-slate-600/50 text-slate-300 px-2 py-0.5 rounded">
+                                 Original
+                               </span>
+                             )}
+                           </div>
+                           <div className="text-xs text-slate-400 mt-1">
+                             {formatDuration(version.duration_minutes)}
+                           </div>
+                         </div>
                        </div>
                      </button>
                    ))}
