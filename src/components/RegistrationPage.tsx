@@ -17,6 +17,8 @@ const RegistrationPage: React.FC = () => {
   const navigate = useNavigate();
   const { user, isAuthenticated } = useAuth();
   const [searchParams] = useSearchParams();
+  const [emailValid, setEmailValid] = useState<boolean | null>(null);
+  const [subscriptionData, setSubscriptionData] = useState<SubscriptionData | null>(null);
   
   // Get data from URL parameters
   const urlName = searchParams.get('name') || '';
@@ -34,6 +36,7 @@ const RegistrationPage: React.FC = () => {
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [validatingEmail, setValidatingEmail] = useState(false);
+  
   // Debug function to test subscription query
   const debugSubscriptionQuery = async () => {
     console.log('🔍 Debug: Testing subscription query...');
