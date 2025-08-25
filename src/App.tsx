@@ -158,6 +158,7 @@ const AppLayout: React.FC = () => {
       'discover': '/',
       'trending': '/trending',
       'categories': '/categories',
+       'benchmarks': '/benchmarks',
       'bookmark': '/bookmark',
       'discounts': '/discounts',
       'profile': '/profile',
