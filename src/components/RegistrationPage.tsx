@@ -72,6 +72,40 @@ const RegistrationPage: React.FC = () => {
     return () => clearTimeout(timeoutId);
   }, [formData.email]);
 
+  // Check subscription when email changes
+  useEffect(() => {
+    const checkSubscription = async () => {
+      if (!formData.email || !formData.email.includes('@')) {
+        setEmailValid(null);
+        setSubscriptionData(null);
+        return;
+      }
+
+      try {
+        const { data, error } = await supabase
+          .from('assinaturas')
+          .select('*')
+          .eq('Email do cliente', formData.email.toLowerCase())
+          .eq('Status da assinatura', 'active')
+          .single();
+
+        if (error || !data) {
+          setEmailValid(false);
+          setSubscriptionData(null);
+        } else {
+          setEmailValid(true);
+          setSubscriptionData(data);
+        }
+      } catch (err) {
+        setEmailValid(false);
+        setSubscriptionData(null);
+      }
+    };
+
+    const timeoutId = setTimeout(checkSubscription, 500);
+    return () => clearTimeout(timeoutId);
+  }, [formData.email]);
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
