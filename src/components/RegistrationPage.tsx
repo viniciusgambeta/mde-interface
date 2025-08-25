@@ -34,9 +34,6 @@ const RegistrationPage: React.FC = () => {
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [validatingEmail, setValidatingEmail] = useState(false);
-  const [emailValid, setEmailValid] = useState<boolean | null>(null);
-  const [subscriptionData, setSubscriptionData] = useState<SubscriptionData | null>(null);
-
   // Debug function to test subscription query
   const debugSubscriptionQuery = async () => {
     console.log('🔍 Debug: Testing subscription query...');

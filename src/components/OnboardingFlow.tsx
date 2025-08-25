@@ -15,7 +15,6 @@ interface OnboardingData {
   tipo_trabalho?: string;
   porte_negocio?: string;
   instagram?: string;
-  linkedin?: string;
 }
 
 const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ userId, userEmail, onComplete }) => {
