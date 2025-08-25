@@ -242,6 +242,32 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ userId, userEmail, onCo
               
               {/* Avatar Selection */}
               {avatarMode === 'preset' ? (
+                <div className="grid grid-cols-4 gap-4">
+                  {/* Add preset avatar options here */}
+                </div>
+              ) : (
+                <div>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleAvatarChange}
+                    className="hidden"
+                  />
+                  <button
+                    onClick={handleAvatarClick}
+                    disabled={isUploadingAvatar}
+                    className="flex items-center space-x-2 px-6 py-3 bg-slate-600/30 hover:bg-slate-500/30 text-slate-300 rounded-lg transition-colors disabled:opacity-50"
+                  >
+                    {isUploadingAvatar ? (
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                    ) : (
+                      <Upload className="w-5 h-5" />
+                    )}
+                    <span>{isUploadingAvatar ? 'Enviando...' : 'Escolher Arquivo'}</span>
+                  </button>
+                </div>
+              )}
             </div>
 
           </div>
