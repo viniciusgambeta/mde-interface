@@ -321,113 +321,88 @@ const ProfilePage: React.FC = () => {
           <div className="space-y-4">
             <h4 className="text-white font-medium">Foto do Perfil</h4>
             
-            {/* Avatar Mode Selector */}
-            <div className="flex space-x-4">
-              <button
-                type="button"
-                onClick={() => setAvatarMode('preset')}
-                className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                  avatarMode === 'preset'
-                    ? 'bg-[#ff7551] text-white'
-                    : 'bg-slate-600/30 text-slate-400 hover:bg-slate-500/30'
-                }`}
-              >
-                Escolher Avatar
-              </button>
-              <button
-                type="button"
-                onClick={() => setAvatarMode('upload')}
-                className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                  avatarMode === 'upload'
-                    ? 'bg-[#ff7551] text-white'
-                    : 'bg-slate-600/30 text-slate-400 hover:bg-slate-500/30'
-                }`}
-              >
-                Enviar Foto
-              </button>
-            </div>
-
-            {/* Current Avatar Preview */}
-            <div className="flex justify-center">
-              <img
-                src={getCurrentAvatar()}
-                alt="Avatar atual"
-                className="w-24 h-24 rounded-xl object-cover border-2 border-slate-600/50"
-              />
-            </div>
-
-            {/* Avatar Selection */}
-            {avatarMode === 'preset' ? (
-              <div className="grid grid-cols-3 gap-4 max-w-md mx-auto">
-                {presetAvatars.map((avatar, index) => (
-                  <button
-                    key={avatar}
-                    type="button"
-                    onClick={() => handlePresetAvatarSelect(avatar)}
-                    className={`relative group transition-all duration-200 ${
-                      selectedPresetAvatar === avatar
-                        ? 'ring-2 ring-[#ff7551] scale-105'
-                        : 'hover:scale-105'
-                    }`}
-                  >
-                    <img
-                      src={avatar}
-                      alt={`Avatar ${index + 1}`}
-                      className="w-20 h-20 rounded-xl object-cover border-2 border-slate-600/30 group-hover:border-[#ff7551]/50 transition-colors"
-                    />
-                    {selectedPresetAvatar === avatar && (
-                      <div className="absolute inset-0 bg-[#ff7551]/20 rounded-xl flex items-center justify-center">
-                        <CheckCircle className="w-6 h-6 text-[#ff7551]" />
-                      </div>
-                    )}
-                  </button>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center space-y-4">
-                <div className="relative inline-block">
-                  <button
-                    type="button"
-                    onClick={handleAvatarClick}
-                    disabled={isUploadingAvatar}
-                    className="relative group"
-                  >
-                    <img
-                      src={avatarPreview || user.avatar || '/src/images/avatar.jpg'}
-                      alt="Avatar preview"
-                      className="w-24 h-24 rounded-xl object-cover border-2 border-slate-600/50 group-hover:border-[#ff7551]/50 transition-colors"
-                    />
-                    <div className="absolute inset-0 bg-black/50 rounded-xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                      {isUploadingAvatar ? (
-                        <Loader2 className="w-6 h-6 text-white animate-spin" />
-                      ) : (
-                        <Camera className="w-6 h-6 text-white" />
-                      )}
-                    </div>
-                  </button>
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/*"
-                    onChange={handleAvatarChange}
-                    className="hidden"
+            {/* Avatar Selection Grid */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 max-w-2xl mx-auto">
+              {/* Preset Avatars */}
+              {presetAvatars.map((avatar, index) => (
+                <button
+                  key={avatar}
+                  type="button"
+                  onClick={() => handlePresetAvatarSelect(avatar)}
+                  className={`relative group transition-all duration-200 ${
+                    selectedPresetAvatar === avatar
+                      ? 'ring-3 ring-[#ff7551] scale-105'
+                      : 'hover:scale-105'
+                  }`}
+                >
+                  <img
+                    src={avatar}
+                    alt={`Avatar ${index + 1}`}
+                    className="w-24 h-24 rounded-2xl object-cover group-hover:opacity-80 transition-opacity"
                   />
-                </div>
-                <div className="text-center">
-                  <button
-                    type="button"
-                    onClick={handleAvatarClick}
-                    disabled={isUploadingAvatar}
-                    className="text-sm text-slate-400 hover:text-[#ff7551] transition-colors disabled:opacity-50"
-                  >
-                    {isUploadingAvatar ? 'Enviando...' : 'Clique para alterar foto'}
-                  </button>
-                  <p className="text-slate-500 text-xs mt-1">
-                    JPG, PNG, GIF (máx. 5MB)
-                  </p>
-                </div>
+                  {selectedPresetAvatar === avatar && (
+                    <div className="absolute inset-0 bg-[#ff7551]/20 rounded-2xl flex items-center justify-center">
+                      <CheckCircle className="w-8 h-8 text-[#ff7551]" />
+                    </div>
+                  )}
+                </button>
+              ))}
+              
+              {/* Upload Option */}
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={handleAvatarClick}
+                  disabled={isUploadingAvatar}
+                  className={`w-24 h-24 rounded-2xl border-2 border-dashed border-slate-600/50 hover:border-[#ff7551]/50 bg-slate-700/30 hover:bg-slate-600/30 flex flex-col items-center justify-center transition-all duration-200 group ${
+                    avatarPreview && avatarMode === 'upload'
+                      ? 'ring-3 ring-[#ff7551] scale-105'
+                      : 'hover:scale-105'
+                  }`}
+                >
+                  {avatarPreview && avatarMode === 'upload' ? (
+                    <img
+                      src={avatarPreview}
+                      alt="Avatar personalizado"
+                      className="w-full h-full rounded-2xl object-cover"
+                    />
+                  ) : isUploadingAvatar ? (
+                    <Loader2 className="w-6 h-6 text-slate-400 animate-spin" />
+                  ) : (
+                    <>
+                      <Upload className="w-6 h-6 text-slate-400 group-hover:text-[#ff7551] transition-colors" />
+                      <span className="text-xs text-slate-400 group-hover:text-[#ff7551] transition-colors mt-1 text-center">
+                        Fazer Upload
+                      </span>
+                    </>
+                  )}
+                </button>
+                
+                {avatarPreview && avatarMode === 'upload' && (
+                  <div className="absolute inset-0 bg-[#ff7551]/20 rounded-2xl flex items-center justify-center">
+                    <CheckCircle className="w-8 h-8 text-[#ff7551]" />
+                  </div>
+                )}
+                
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleAvatarChange}
+                  className="hidden"
+                />
               </div>
-            )}
+            </div>
+            
+            {/* Upload Instructions */}
+            <div className="text-center">
+              <p className="text-slate-400 text-sm">
+                Escolha um dos avatares prontos ou faça upload da sua própria foto
+              </p>
+              <p className="text-slate-500 text-xs mt-1">
+                Formatos aceitos: JPG, PNG, GIF (máx. 5MB)
+              </p>
+            </div>
           </div>
 
           {/* Personal Information */}
