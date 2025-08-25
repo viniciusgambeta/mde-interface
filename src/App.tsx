@@ -22,6 +22,24 @@ const VideoDetailPage: React.FC = () => {
   const [video, setVideo] = React.useState<any>(null);
   const [loading, setLoading] = React.useState(true);
 
+  const handleVideoSelect = (selectedVideo: any) => {
+    console.log(`🚀 Navigating to ${selectedVideo.tipo || 'video'}:`, {
+      title: selectedVideo.title,
+      slug: selectedVideo.slug,
+      id: selectedVideo.id,
+      tipo: selectedVideo.tipo
+    });
+    
+    // Navigate to the appropriate URL based on content type
+    let urlPrefix = '/video/';
+    if (selectedVideo.tipo === 'prompt') {
+      urlPrefix = '/prompt/';
+    } else if (selectedVideo.tipo === 'live') {
+      urlPrefix = '/live/';
+    }
+    navigate(urlPrefix + selectedVideo.slug);
+  };
+
   React.useEffect(() => {
     const loadVideo = async () => {
       if (!slug) {

@@ -106,7 +106,7 @@ interface PromptViewerProps {
   onBack: () => void;
 }
 
-const PromptViewer: React.FC<PromptViewerProps> = ({ prompt, onBack }) => {
+const PromptViewer: React.FC<PromptViewerProps> = ({ prompt, onBack, onVideoSelect }) => {
   const { user } = useAuth();
   const [liked, setLiked] = useState(false);
   const [saved, setSaved] = useState(false);

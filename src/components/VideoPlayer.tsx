@@ -107,7 +107,7 @@ interface VideoPlayerProps {
   onBack: () => void;
 }
 
-const VideoPlayer: React.FC<VideoPlayerProps> = ({ video, onBack }) => {
+const VideoPlayer: React.FC<VideoPlayerProps> = ({ video, onBack, onVideoSelect }) => {
   const { user } = useAuth();
   const [liked, setLiked] = useState(false);
   const [saved, setSaved] = useState(false);

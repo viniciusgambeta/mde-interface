@@ -196,7 +196,7 @@ interface LiveViewerProps {
   onBack: () => void;
 }
 
-const LiveViewer: React.FC<LiveViewerProps> = ({ live, onBack }) => {
+const LiveViewer: React.FC<LiveViewerProps> = ({ live, onBack, onVideoSelect }) => {
   const { user } = useAuth();
   const [liked, setLiked] = useState(false);
   const [saved, setSaved] = useState(false);
