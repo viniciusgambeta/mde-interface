@@ -322,9 +322,11 @@ const ProfilePage: React.FC = () => {
             <h4 className="text-white font-medium text-left">Foto do Perfil</h4>
             
             {/* Avatar Selection Grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 max-w-2xl">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-2xl">
               {/* Preset Avatars */}
-              {presetAvatars.map((avatar, index) => (
+              {['https://images.pexels.com/photos/1680172/pexels-photo-1680172.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop', 
+                'https://images.pexels.com/photos/2889942/pexels-photo-2889942.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop', 
+                'https://images.pexels.com/photos/3370021/pexels-photo-3370021.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop'].map((avatar, index) => (
                 <button
                   key={avatar}
                   type="button"
@@ -341,8 +343,8 @@ const ProfilePage: React.FC = () => {
                     className="w-full h-full rounded-2xl object-cover group-hover:opacity-80 transition-opacity"
                   />
                   {selectedPresetAvatar === avatar && (
-                    <div className="absolute inset-0 bg-black/60 rounded-2xl flex items-center justify-center">
-                      <CheckCircle className="w-8 h-8 text-white" />
+                    <div className="absolute inset-0 bg-[#ff7551]/80 rounded-2xl flex items-center justify-center">
+                      <CheckCircle className="w-8 h-8 text-white" fill="currentColor" />
                     </div>
                   )}
                 </button>
@@ -379,8 +381,8 @@ const ProfilePage: React.FC = () => {
                 </button>
                 
                 {avatarPreview && avatarMode === 'upload' && (
-                  <div className="absolute inset-0 bg-black/60 rounded-2xl flex items-center justify-center">
-                    <CheckCircle className="w-8 h-8 text-white" />
+                  <div className="absolute inset-0 bg-[#ff7551]/80 rounded-2xl flex items-center justify-center">
+                    <CheckCircle className="w-8 h-8 text-white" fill="currentColor" />
                   </div>
                 )}
                 
@@ -395,7 +397,7 @@ const ProfilePage: React.FC = () => {
             </div>
             
             {/* Upload Instructions */}
-            <div className="text-left mt-6">
+            <div className="text-left mt-8">
               <p className="text-slate-400 text-sm">
                 Escolha um dos avatares prontos ou faça upload da sua própria foto
               </p>
