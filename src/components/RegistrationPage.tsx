@@ -1,4 +1,5 @@
   if (isAuthenticated && user) {
+    return (
             <label className="block text-sm font-medium text-slate-300 mb-2">
               Confirmar Senha
             </label>
