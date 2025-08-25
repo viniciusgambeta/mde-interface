@@ -105,7 +105,7 @@ const SuggestedVideos: React.FC<{ currentVideo: Video }> = ({ currentVideo }) =>
 interface VideoPlayerProps {
   video: Video;
   onBack: () => void;
-  onVideoSelect?: (video: Video) => void;
+  onVideoSelect: (video: Video) => void;
 }
 
 const VideoPlayer: React.FC<VideoPlayerProps> = ({ video, onBack, onVideoSelect }) => {
@@ -624,7 +624,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video, onBack, onVideoSelect 
                    {relatedVideos.map((relatedVideo) => (
                      <button
                        key={relatedVideo.id}
-                       onClick={() => onVideoSelect && onVideoSelect(relatedVideo)}
+                       onClick={() => onVideoSelect(relatedVideo)}
                        className="w-full text-left p-3 rounded-lg transition-colors bg-slate-700/30 text-slate-300 hover:bg-slate-600/30"
                      >
                        <div className="flex items-center space-x-3">
