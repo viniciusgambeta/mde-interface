@@ -3,7 +3,6 @@ import { useNavigate, useSearchParams, Navigate } from 'react-router-dom';
 import { Eye, EyeOff, Mail, Lock, User, Loader2, CheckCircle, AlertCircle } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
-import OnboardingFlow from './OnboardingFlow';
 
 interface SubscriptionData {
   'ID da assinatura': string;
@@ -36,6 +35,8 @@ const RegistrationPage: React.FC = () => {
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [validatingEmail, setValidatingEmail] = useState(false);
+  const [registrationSuccess, setRegistrationSuccess] = useState(false);
+  const [showSuccessScreen, setShowSuccessScreen] = useState(false);
   
   // Debug function to test subscription query
   const debugSubscriptionQuery = async () => {
@@ -84,7 +85,7 @@ const RegistrationPage: React.FC = () => {
   };
 
   // Redirect if user is already authenticated
-  if (isAuthenticated && user) {
+  if (isAuthenticated && user && !showSuccessScreen) {
     console.log('User is already authenticated, redirecting to home');
     return <Navigate to="/" replace />;
   }
@@ -274,14 +275,15 @@ const RegistrationPage: React.FC = () => {
         console.warn('Could not update subscription record, but user was created successfully');
       }
 
-      // Success - show onboarding
-      console.log('Registration successful, logging out and redirecting to login');
+      // Success - show success screen
+      console.log('Registration successful, showing success screen');
       
       // Logout the user immediately after registration
       await supabase.auth.signOut();
       
-      // Redirect to login with success message
-      navigate('/?registered=true&email=' + encodeURIComponent(formData.email));
+      // Show success screen
+      setRegistrationSuccess(true);
+      setShowSuccessScreen(true);
 
     } catch (error) {
       console.error('Registration exception:', error);
@@ -290,6 +292,61 @@ const RegistrationPage: React.FC = () => {
       setIsSubmitting(false);
     }
   };
+
+  // Success Screen Component
+  const SuccessScreen = () => (
+    <div className="min-h-screen bg-gradient-to-b from-[#1f1d2b] via-[#1f1d2b] to-black flex items-center justify-center p-4">
+      <div className="bg-[#1f1d2b] border border-slate-700/30 rounded-xl w-full max-w-md">
+        {/* Header */}
+        <div className="p-6 border-b border-slate-700/30 text-center">
+          <img
+            src="/logo1_branco.png"
+            alt="Me dá um Exemplo"
+            className="h-16 w-auto mx-auto mb-4"
+          />
+        </div>
+
+        {/* Success Content */}
+        <div className="p-8 text-center space-y-6">
+          <div className="w-20 h-20 bg-green-500/20 rounded-full flex items-center justify-center mx-auto">
+            <CheckCircle className="w-10 h-10 text-green-400" />
+          </div>
+          
+          <div>
+            <h2 className="text-2xl font-bold text-white mb-2">
+              Conta Criada com Sucesso!
+            </h2>
+            <p className="text-slate-400">
+              Sua conta foi criada e está pronta para uso.
+            </p>
+          </div>
+
+          <div className="p-4 bg-slate-700/20 rounded-lg">
+            <p className="text-slate-400 text-sm">
+              Você será redirecionado para a página de login em instantes para fazer seu primeiro acesso.
+            </p>
+          </div>
+
+          <button
+            onClick={() => navigate('/?registered=true&email=' + encodeURIComponent(formData.email))}
+            className="w-full bg-[#ff7551] hover:bg-[#ff7551]/80 text-white font-medium py-4 rounded-lg transition-colors"
+          >
+            Ir para Login
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+
+  // Show success screen if registration was successful
+  if (showSuccessScreen) {
+    // Auto-redirect after 5 seconds
+    setTimeout(() => {
+      navigate('/?registered=true&email=' + encodeURIComponent(formData.email));
+    }, 5000);
+    
+    return <SuccessScreen />;
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#1f1d2b] via-[#1f1d2b] to-black flex items-center justify-center p-4">
@@ -451,15 +508,6 @@ const RegistrationPage: React.FC = () => {
             ) : (
               <span>Criar Conta</span>
             )}
-          </button>
-
-          {/* Debug Button - Remove this after testing */}
-          <button
-            type="button"
-            onClick={debugSubscriptionQuery}
-            className="w-full bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 rounded-lg transition-colors text-sm"
-          >
-            🔍 Debug: Testar Consulta
           </button>
 
           {/* Info */}
