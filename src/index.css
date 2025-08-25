@@ -250,6 +250,11 @@ body {
   }
 }
 
+/* Custom max-width override */
+.max-w-2xl {
+  max-width: 30rem;
+}
+
 /* Video Player Enhancements */
 .video-overlay {
   background: linear-gradient(
