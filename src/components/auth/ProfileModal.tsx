@@ -224,6 +224,9 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) => {
 
           {/* Premium Status */}
           <div className="p-4 bg-slate-700/20 rounded-lg">
+            <div className="flex items-center justify-between">
+              <div>
+                <h4 className="text-white font-medium">Status da Conta</h4>
                 <p className="text-slate-400 text-sm">
                   {user.isPremium ? 'Você tem acesso premium' : 'Conta gratuita'}
                 </p>

@@ -341,20 +341,11 @@ const PromptViewer: React.FC<PromptViewerProps> = ({ prompt, onBack }) => {
           {/* Creator Info & Actions */}
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3 pl-[5px]">
-              <div className="relative">
-                <img
-                  src={currentPrompt.instructor?.avatar_url || '/avatar1.png'}
-                  alt={currentPrompt.instructor?.name || 'Instrutor'}
-                  className="w-16 h-16 rounded-2xl object-cover"
-                />
-                {currentPrompt.instructor?.is_verified && (
-                  <div className="absolute -bottom-1 -left-1 w-6 h-6 bg-[#ff7551] rounded-full flex items-center justify-center border-2 border-[#1f1d2b]">
-                    <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                    </svg>
-                  </div>
-                )}
-              </div>
+              <img
+                src={currentPrompt.instructor?.avatar_url || '/avatar1.png'}
+                alt={currentPrompt.instructor?.name || 'Instrutor'}
+                className="w-16 h-16 rounded-lg object-cover"
+              />
               <div>
                 <div className="flex items-center space-x-1">
                   <span className="text-white font-semibold text-xl pl-1">{currentPrompt.instructor?.name || 'Instrutor'}</span>
@@ -365,7 +356,7 @@ const PromptViewer: React.FC<PromptViewerProps> = ({ prompt, onBack }) => {
                       href={`https://instagram.com/${currentPrompt.instructor.social_instagram}`} 
                       target="_blank" 
                       rel="noopener noreferrer"
-                      className="text-[#ff7551] hover:text-[#ff7551]/80 text-xs transition-colors"
+                      className="text-slate-400 hover:text-[#ff7551] text-xs transition-colors"
                     >
                       @{currentPrompt.instructor.social_instagram}
                     </a>
