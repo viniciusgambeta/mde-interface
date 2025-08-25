@@ -452,19 +452,6 @@ const VideoCard: React.FC<{
           </div>
         )}
         
-        {/* Play Button on Hover */}
-        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-          <div className="w-16 h-16 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center transform scale-75 group-hover:scale-100 transition-transform duration-300 shadow-lg">
-            {video.tipo === 'prompt' ? (
-              <svg className="w-7 h-7 text-slate-800" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-            ) : (
-              <Play className="w-7 h-7 text-slate-800 ml-1" fill="currentColor" />
-            )}
-          </div>
-        </div>
-        
         {/* Live Badge */}
         {video.tipo === 'live' && (
           <div className="absolute top-3 right-3 z-10 flex items-center space-x-1 bg-red-500 text-white text-xs px-2.5 py-1 rounded font-medium">
