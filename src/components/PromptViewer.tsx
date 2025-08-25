@@ -493,10 +493,10 @@ const PromptViewer: React.FC<PromptViewerProps> = ({ prompt, onBack }) => {
                       .sort((a, b) => a.order_index - b.order_index)
                       .map((material) => (
                         <a
-                         className={`w-full text-left p-3 rounded-lg transition-colors ${
+                          key={material.id}
                           href={material.url}
                           target="_blank"
-                             className="w-20 h-15 rounded object-cover flex-shrink-0"
+                          rel="noopener noreferrer"
                           className="flex items-center space-x-3 px-3 py-4 bg-slate-700/30 rounded-lg hover:bg-slate-600/30 transition-colors cursor-pointer"
                         >
                           <svg className="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -527,36 +527,36 @@ const PromptViewer: React.FC<PromptViewerProps> = ({ prompt, onBack }) => {
                       <button
                         key={version.id}
                         onClick={() => handleVersionChange(version)}
-                       className={`w-full text-left p-4 rounded-lg transition-colors ${
+                        className={`w-full text-left p-4 rounded-lg transition-colors ${
                           currentPrompt.id === version.id
                             ? 'bg-[#ff7551] text-white'
                             : 'bg-slate-700/30 text-slate-300 hover:bg-slate-600/30'
                         }`}
                       >
-                       <div className="flex items-center space-x-3">
-                         <img
-                           src={version.thumbnail_url || 'https://images.pexels.com/photos/11035380/pexels-photo-11035380.jpeg?auto=compress&cs=tinysrgb&w=80&h=60&fit=crop'}
-                           alt={version.title}
-                           className="w-16 h-12 rounded object-cover flex-shrink-0"
-                         />
-                         <div className="flex-1 min-w-0">
-                           <div className="font-medium text-sm">
-                             {(version as any).version_name || version.title}
-                             {(version as any).is_main_version && (
-                               <span className="ml-2 text-xs bg-slate-600/50 text-slate-300 px-2 py-0.5 rounded">
-                                 Original
-                               </span>
-                             )}
-                           </div>
-                           <div className="text-xs text-slate-400 mt-1">
-                             {version.tipo}
-                           </div>
-                         </div>
-                         <div className="flex-shrink-0">
-                           <svg className="w-5 h-5 text-[#ff7551]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                           </svg>
-                         </div>
+                        <div className="flex items-center space-x-3">
+                          <img
+                            src={version.thumbnail_url || 'https://images.pexels.com/photos/11035380/pexels-photo-11035380.jpeg?auto=compress&cs=tinysrgb&w=80&h=60&fit=crop'}
+                            alt={version.title}
+                            className="w-16 h-12 rounded object-cover flex-shrink-0"
+                          />
+                          <div className="flex-1 min-w-0">
+                            <div className="font-medium text-sm">
+                              {(version as any).version_name || version.title}
+                              {(version as any).is_main_version && (
+                                <span className="ml-2 text-xs bg-slate-600/50 text-slate-300 px-2 py-0.5 rounded">
+                                  Original
+                                </span>
+                              )}
+                            </div>
+                            <div className="text-xs text-slate-400 mt-1">
+                              {version.tipo}
+                            </div>
+                          </div>
+                          <div className="flex-shrink-0">
+                            <svg className="w-5 h-5 text-[#ff7551]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                            </svg>
+                          </div>
                         </div>
                       </button>
                     ))}
