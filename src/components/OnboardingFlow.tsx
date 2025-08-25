@@ -199,7 +199,7 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ userId, userEmail, onCo
             <p className="text-slate-400 mb-8">Escolha um avatar ou envie sua própria foto</p>
             
             {/* Avatar Selection Grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-2xl mx-auto">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 max-w-2xl mx-auto">
               {/* Preset Avatars */}
               {['/src/images/avatar1.png', '/src/images/avatar2.png', '/src/images/avatar3.png'].map((avatar, index) => (
                 <button

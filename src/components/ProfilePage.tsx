@@ -322,7 +322,7 @@ const ProfilePage: React.FC = () => {
             <h4 className="text-white font-medium text-left">Foto do Perfil</h4>
             
             {/* Avatar Selection Grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-2xl">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 max-w-2xl">
               {/* Preset Avatars */}
               {presetAvatars.map((avatar, index) => (
                 <button
@@ -395,7 +395,7 @@ const ProfilePage: React.FC = () => {
             </div>
             
             {/* Upload Instructions */}
-            <div className="text-left mt-4">
+            <div className="text-left mt-6">
               <p className="text-slate-400 text-sm">
                 Escolha um dos avatares prontos ou faça upload da sua própria foto
               </p>
