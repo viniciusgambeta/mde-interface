@@ -37,10 +37,6 @@ const RegistrationPage: React.FC = () => {
   const [emailValid, setEmailValid] = useState<boolean | null>(null);
   const [subscriptionData, setSubscriptionData] = useState<SubscriptionData | null>(null);
 
-  // New states for onboarding
-  const [showOnboarding, setShowOnboarding] = useState(false);
-  const [newUserId, setNewUserId] = useState<string | null>(null);
-
   // Debug function to test subscription query
   const debugSubscriptionQuery = async () => {
     console.log('🔍 Debug: Testing subscription query...');
@@ -279,9 +275,13 @@ const RegistrationPage: React.FC = () => {
       }
 
       // Success - show onboarding
-      console.log('Registration successful, showing onboarding for user:', authData.user.id);
-      setNewUserId(authData.user.id);
-      setShowOnboarding(true);
+      console.log('Registration successful, logging out and redirecting to login');
+      
+      // Logout the user immediately after registration
+      await supabase.auth.signOut();
+      
+      // Redirect to login with success message
+      navigate('/?registered=true&email=' + encodeURIComponent(formData.email));
 
     } catch (error) {
       console.error('Registration exception:', error);
@@ -290,24 +290,6 @@ const RegistrationPage: React.FC = () => {
       setIsSubmitting(false);
     }
   };
-
-  const handleOnboardingComplete = () => {
-    console.log('Onboarding completed, redirecting to login');
-    // Redirect to login after onboarding
-    navigate('/?registered=true&email=' + encodeURIComponent(formData.email));
-  };
-
-  // Show onboarding if registration was successful
-  if (showOnboarding && newUserId) {
-    console.log('Rendering onboarding flow for user:', newUserId);
-    return (
-      <OnboardingFlow 
-        userId={newUserId}
-        userEmail={formData.email}
-        onComplete={handleOnboardingComplete}
-      />
-    );
-  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#1f1d2b] via-[#1f1d2b] to-black flex items-center justify-center p-4">

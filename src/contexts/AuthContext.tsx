@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { supabase } from '../lib/supabase';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
+import OnboardingFlow from '../components/OnboardingFlow';
 
 interface User {
   id: string;
@@ -19,6 +20,8 @@ interface AuthContextType {
   register: (name: string, email: string, password: string) => Promise<boolean>;
   logout: () => Promise<void>;
   updateProfile: (data: Partial<User>) => Promise<boolean>;
+  needsOnboarding: boolean;
+  completeOnboarding: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -38,6 +41,7 @@ interface AuthProviderProps {
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [needsOnboarding, setNeedsOnboarding] = useState(false);
 
   // Convert Supabase user to our User type
   const convertUser = (supabaseUser: SupabaseUser): User => {
@@ -70,6 +74,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         if (session?.user && mounted) {
           const convertedUser = convertUser(session.user);
           setUser(convertedUser);
+          
+          // Check if user needs onboarding
+          checkOnboardingStatus(session.user.id);
         }
       } catch (error) {
         console.error('💥 Error initializing auth:', error);
@@ -90,9 +97,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         if (event === 'SIGNED_IN' && session?.user) {
           const convertedUser = convertUser(session.user);
           setUser(convertedUser);
+          
+          // Check if user needs onboarding on login
+          checkOnboardingStatus(session.user.id);
           setIsLoading(false);
         } else if (event === 'SIGNED_OUT') {
           setUser(null);
+          setNeedsOnboarding(false);
           setIsLoading(false);
         } else if (event === 'TOKEN_REFRESHED' && session?.user) {
           if (!user) {
@@ -111,6 +122,53 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       subscription.unsubscribe();
     };
   }, []);
+
+  // Check if user needs onboarding
+  const checkOnboardingStatus = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('onboarding_completed')
+        .eq('id', userId)
+        .maybeSingle();
+
+      if (error) {
+        console.error('Error checking onboarding status:', error);
+        return;
+      }
+
+      // If no profile exists or onboarding not completed, show onboarding
+      const needsOnboarding = !data || !data.onboarding_completed;
+      setNeedsOnboarding(needsOnboarding);
+      console.log('Onboarding status:', { needsOnboarding, profileData: data });
+    } catch (error) {
+      console.error('Exception checking onboarding status:', error);
+    }
+  };
+
+  const completeOnboarding = async () => {
+    if (!user) return;
+    
+    try {
+      // Mark onboarding as completed in profiles table
+      const { error } = await supabase
+        .from('profiles')
+        .upsert({
+          id: user.id,
+          name: user.name,
+          onboarding_completed: true
+        });
+
+      if (error) {
+        console.error('Error completing onboarding:', error);
+      } else {
+        setNeedsOnboarding(false);
+        console.log('Onboarding completed successfully');
+      }
+    } catch (error) {
+      console.error('Exception completing onboarding:', error);
+    }
+  };
 
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
@@ -206,11 +264,21 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     register,
     logout,
     updateProfile
+    needsOnboarding,
+    completeOnboarding
   };
 
   return (
     <AuthContext.Provider value={value}>
-      {children}
+      {needsOnboarding && user ? (
+        <OnboardingFlow 
+          userId={user.id}
+          userEmail={user.email}
+          onComplete={completeOnboarding}
+        />
+      ) : (
+        children
+      )}
     </AuthContext.Provider>
   );
 };
