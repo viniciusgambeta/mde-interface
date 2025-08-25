@@ -319,17 +319,17 @@ const ProfilePage: React.FC = () => {
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Avatar Selection Section */}
           <div className="space-y-4">
-            <h4 className="text-white font-medium">Foto do Perfil</h4>
+            <h4 className="text-white font-medium text-left">Foto do Perfil</h4>
             
             {/* Avatar Selection Grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 max-w-2xl mx-auto">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 max-w-2xl">
               {/* Preset Avatars */}
               {presetAvatars.map((avatar, index) => (
                 <button
                   key={avatar}
                   type="button"
                   onClick={() => handlePresetAvatarSelect(avatar)}
-                  className={`relative group transition-all duration-200 ${
+                  className={`relative group transition-all duration-200 w-24 h-24 ${
                     selectedPresetAvatar === avatar
                       ? 'ring-3 ring-[#ff7551] scale-105'
                       : 'hover:scale-105'
@@ -338,10 +338,10 @@ const ProfilePage: React.FC = () => {
                   <img
                     src={avatar}
                     alt={`Avatar ${index + 1}`}
-                    className="w-24 h-24 rounded-2xl object-cover group-hover:opacity-80 transition-opacity"
+                    className="w-full h-full rounded-2xl object-cover group-hover:opacity-80 transition-opacity"
                   />
                   {selectedPresetAvatar === avatar && (
-                    <div className="absolute inset-0 bg-[#ff7551]/20 rounded-2xl flex items-center justify-center">
+                    <div className="absolute inset-0 bg-[#ff7551]/20 rounded-2xl flex items-center justify-center w-full h-full">
                       <CheckCircle className="w-8 h-8 text-[#ff7551]" />
                     </div>
                   )}
@@ -349,12 +349,12 @@ const ProfilePage: React.FC = () => {
               ))}
               
               {/* Upload Option */}
-              <div className="relative">
+              <div className="relative w-24 h-24">
                 <button
                   type="button"
                   onClick={handleAvatarClick}
                   disabled={isUploadingAvatar}
-                  className={`w-24 h-24 rounded-2xl border-2 border-dashed border-slate-600/50 hover:border-[#ff7551]/50 bg-slate-700/30 hover:bg-slate-600/30 flex flex-col items-center justify-center transition-all duration-200 group ${
+                  className={`w-full h-full rounded-2xl border-2 border-dashed border-slate-600/50 hover:border-[#ff7551]/50 bg-slate-700/30 hover:bg-slate-600/30 flex flex-col items-center justify-center transition-all duration-200 group ${
                     avatarPreview && avatarMode === 'upload'
                       ? 'ring-3 ring-[#ff7551] scale-105'
                       : 'hover:scale-105'
@@ -364,7 +364,7 @@ const ProfilePage: React.FC = () => {
                     <img
                       src={avatarPreview}
                       alt="Avatar personalizado"
-                      className="w-full h-full rounded-2xl object-cover"
+                      className="w-full h-full rounded-xl object-cover"
                     />
                   ) : isUploadingAvatar ? (
                     <Loader2 className="w-6 h-6 text-slate-400 animate-spin" />
@@ -379,7 +379,7 @@ const ProfilePage: React.FC = () => {
                 </button>
                 
                 {avatarPreview && avatarMode === 'upload' && (
-                  <div className="absolute inset-0 bg-[#ff7551]/20 rounded-2xl flex items-center justify-center">
+                  <div className="absolute inset-0 bg-[#ff7551]/20 rounded-2xl flex items-center justify-center w-full h-full">
                     <CheckCircle className="w-8 h-8 text-[#ff7551]" />
                   </div>
                 )}
@@ -395,7 +395,7 @@ const ProfilePage: React.FC = () => {
             </div>
             
             {/* Upload Instructions */}
-            <div className="text-center">
+            <div className="text-left">
               <p className="text-slate-400 text-sm">
                 Escolha um dos avatares prontos ou faça upload da sua própria foto
               </p>
