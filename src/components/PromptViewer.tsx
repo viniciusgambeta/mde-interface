@@ -348,15 +348,15 @@ const PromptViewer: React.FC<PromptViewerProps> = ({ prompt, onBack, onVideoSele
               />
               <div>
                 <div className="flex items-center space-x-1">
-                  <span className="text-white font-semibold text-xl pl-1">{currentPrompt.instructor?.name || 'Instrutor'}</span>
+                  <span className="text-white font-semibold text-xl pl-1 mb-1">{currentPrompt.instructor?.name || 'Instrutor'}</span>
                 </div>
-                <div className="flex items-center mt-0.5 pl-[3px]">
+                <div className="flex items-center mt-0 pl-[3px]">
                   {currentPrompt.instructor?.social_instagram && (
                     <a 
                       href={`https://instagram.com/${currentPrompt.instructor.social_instagram}`} 
                       target="_blank" 
                       rel="noopener noreferrer"
-                      className="text-slate-400 hover:text-[#ff7551] text-xs transition-colors"
+                      className="text-[#ff7551] hover:text-[#ff7551]/80 text-xs transition-colors"
                     >
                       @{currentPrompt.instructor.social_instagram}
                     </a>

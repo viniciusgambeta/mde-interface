@@ -468,15 +468,15 @@ const LiveViewer: React.FC<LiveViewerProps> = ({ live, onBack, onVideoSelect }) 
               />
               <div>
                 <div className="flex items-center space-x-1">
-                  <span className="text-white font-semibold text-xl pl-1">{currentLive.instructor?.name || 'Instrutor'}</span>
+                  <span className="text-white font-semibold text-xl pl-1 mb-1">{currentLive.instructor?.name || 'Instrutor'}</span>
                 </div>
-                <div className="flex items-center mt-0.5 pl-[3px]">
+                <div className="flex items-center mt-0 pl-[3px]">
                   {currentLive.instructor?.social_instagram && (
                     <a 
                       href={`https://instagram.com/${currentLive.instructor.social_instagram}`} 
                       target="_blank" 
                       rel="noopener noreferrer"
-                      className="text-slate-400 hover:text-[#ff7551] text-xs transition-colors"
+                      className="text-[#ff7551] hover:text-[#ff7551]/80 text-xs transition-colors"
                     >
                       @{currentLive.instructor.social_instagram}
                     </a>
