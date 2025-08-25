@@ -197,12 +197,12 @@ const Header: React.FC<HeaderProps> = ({ sidebarCollapsed, onSidebarToggle, onVi
                   value={searchQuery}
                   onChange={handleSearchInputChange}
                   onFocus={() => searchQuery.length >= 2 && setShowSearchResults(true)}
-                  className="w-80 md:w-96 focus:w-[28rem] md:focus:w-[40rem] pl-12 pr-12 py-3 text-base bg-slate-700/30 border border-slate-600/30 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#ff7551]/50 focus:border-transparent transition-all duration-300"
+                  className="w-96 md:w-[32rem] focus:w-[36rem] md:focus:w-[48rem] pl-12 pr-12 py-4 text-lg bg-slate-700/30 border border-slate-600/30 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#ff7551]/50 focus:border-transparent transition-all duration-300"
                 />
                 {searchQuery && (
                   <button
                     onClick={clearSearch}
-                    className="absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-white transition-colors"
+                    className="absolute right-5 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-white transition-colors"
                   >
                     <X className="w-5 h-5" />
                   </button>
@@ -211,7 +211,7 @@ const Header: React.FC<HeaderProps> = ({ sidebarCollapsed, onSidebarToggle, onVi
 
               {/* Search Results Dropdown */}
               {showSearchResults && (
-                <div className="absolute top-full left-0 mt-2 w-[28rem] md:w-[40rem] bg-[#1f1d2b] border border-slate-700/30 rounded-lg shadow-xl z-[99999] max-h-[28rem] overflow-y-auto">
+                <div className="absolute top-full left-0 mt-2 w-[36rem] md:w-[48rem] bg-[#1f1d2b] border border-slate-700/30 rounded-lg shadow-xl z-[99999] max-h-[28rem] overflow-y-auto">
                   {isSearching ? (
                     <div className="p-6 text-center">
                       <div className="text-slate-400 text-base">Procurando...</div>
