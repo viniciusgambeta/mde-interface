@@ -725,7 +725,7 @@ const LiveViewer: React.FC<LiveViewerProps> = ({ live, onBack }) => {
                         <button
                           key={version.id}
                           onClick={() => handleVersionChange(version)}
-                         className={`w-full text-left p-4 rounded-lg transition-colors ${
+                         className={`w-full text-left p-3 rounded-lg transition-colors ${
                             currentLive.id === version.id
                               ? 'bg-[#ff7551] text-white'
                               : 'bg-slate-700/30 text-slate-300 hover:bg-slate-600/30'
@@ -735,7 +735,7 @@ const LiveViewer: React.FC<LiveViewerProps> = ({ live, onBack }) => {
                            <img
                              src={version.thumbnail_url || 'https://images.pexels.com/photos/11035380/pexels-photo-11035380.jpeg?auto=compress&cs=tinysrgb&w=80&h=60&fit=crop'}
                              alt={version.title}
-                             className="w-16 h-12 rounded object-cover flex-shrink-0"
+                             className="w-20 h-15 rounded object-cover flex-shrink-0"
                            />
                            <div className="flex-1 min-w-0">
                              <div className="font-medium text-sm">

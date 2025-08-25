@@ -493,10 +493,10 @@ const PromptViewer: React.FC<PromptViewerProps> = ({ prompt, onBack }) => {
                       .sort((a, b) => a.order_index - b.order_index)
                       .map((material) => (
                         <a
-                          key={material.id}
+                         className={`w-full text-left p-3 rounded-lg transition-colors ${
                           href={material.url}
                           target="_blank"
-                          rel="noopener noreferrer"
+                             className="w-20 h-15 rounded object-cover flex-shrink-0"
                           className="flex items-center space-x-3 px-3 py-4 bg-slate-700/30 rounded-lg hover:bg-slate-600/30 transition-colors cursor-pointer"
                         >
                           <svg className="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
