@@ -222,12 +222,9 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) => {
             </p>
           </div>
 
-          {/* Premium Status */}
-          <div className="p-4 bg-slate-700/20 rounded-lg">
                 <p className="text-slate-400 text-sm">
                   {user.isPremium ? 'Você tem acesso premium' : 'Conta gratuita'}
                 </p>
-              </div>
               {!user.isPremium && (
                 <button
                   type="button"
@@ -236,7 +233,6 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) => {
                   Upgrade
                 </button>
               )}
-            </div>
           </div>
 
           {/* Submit Button */}
@@ -257,6 +253,7 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) => {
               </>
             )}
           </button>
+        </form>
         </form>
       </div>
     </div>
