@@ -9,6 +9,7 @@ import PromptViewer from './components/PromptViewer';
 import LiveViewer from './components/LiveViewer';
 import RegistrationPage from './components/RegistrationPage';
 import PasswordResetPage from './components/PasswordResetPage';
+import PrivacyPolicyPage from './components/PrivacyPolicyPage';
 import Footer from './components/Footer';
 import { AuthProvider } from './contexts/AuthContext';
 import { VideoProvider } from './contexts/VideoContext';
@@ -254,6 +255,7 @@ function App() {
           <Route path="/live/:slug" element={<AppLayout />} />
           <Route path="/registro" element={<RegistrationPage />} />
           <Route path="/redefinir-senha" element={<PasswordResetPage />} />
+          <Route path="/privacidade" element={<PrivacyPolicyPage />} />
           
           {/* Catch all route - redirect to home */}
           <Route path="*" element={<AppLayout />} />
