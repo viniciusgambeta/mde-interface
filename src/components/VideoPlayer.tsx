@@ -351,11 +351,11 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video, onBack, onVideoSelect 
               <img
                 src={currentVideo.instructor?.avatar_url || '/avatar1.png'}
                 alt={currentVideo.instructor?.name || 'Instrutor'}
-                className="w-16 h-16 rounded-lg object-cover"
+                className="w-16 h-16 rounded-xl object-cover"
               />
               <div>
                 <div className="flex items-center space-x-1">
-                  <span className="text-white font-semibold text-xl pl-1 mb-1">{currentVideo.instructor?.name || 'Instrutor'}</span>
+                  <span className="text-white font-semibold text-xl pl-1" style={{ marginBottom: '-3px' }}>{currentVideo.instructor?.name || 'Instrutor'}</span>
                 </div>
                 <div className="flex items-center mt-0 pl-[3px]">
                   {currentVideo.instructor?.social_instagram && (

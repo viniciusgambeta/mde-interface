@@ -464,11 +464,11 @@ const LiveViewer: React.FC<LiveViewerProps> = ({ live, onBack, onVideoSelect }) 
               <img
                 src={currentLive.instructor?.avatar_url || '/avatar1.png'}
                 alt={currentLive.instructor?.name || 'Instrutor'}
-                className="w-16 h-16 rounded-lg object-cover"
+                className="w-16 h-16 rounded-xl object-cover"
               />
               <div>
                 <div className="flex items-center space-x-1">
-                  <span className="text-white font-semibold text-xl pl-1 mb-1">{currentLive.instructor?.name || 'Instrutor'}</span>
+                  <span className="text-white font-semibold text-xl pl-1" style={{ marginBottom: '-3px' }}>{currentLive.instructor?.name || 'Instrutor'}</span>
                 </div>
                 <div className="flex items-center mt-0 pl-[3px]">
                   {currentLive.instructor?.social_instagram && (
