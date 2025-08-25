@@ -113,6 +113,14 @@ export interface VideoSuggestion {
   etapa: 'sugestao' | 'producao' | 'prontas';
   created_at: string;
   updated_at: string;
+  votes?: number;
+}
+
+export interface VideoRelated {
+  id: string;
+  video_id: string;
+  related_video_id: string;
+  created_at: string;
 }
 
 export interface Video {
@@ -146,6 +154,7 @@ export interface Video {
   materials?: VideoMaterial[];
   ferramentas?: FerramentaLink[];
   versions?: Video[];
+  related_videos?: Video[];
   is_bookmarked?: boolean;
   is_upvoted?: boolean;
 }
@@ -777,6 +786,64 @@ export const videoService = {
     }
 
     return data as Video;
+  },
+
+  // Get related videos for a video
+  async getRelatedVideos(videoId: string, userId?: string): Promise<Video[]> {
+    if (!videoId) return [];
+
+    try {
+      const { data, error } = await supabase
+        .from('video_relateds')
+        .select(`
+          related_video:videos(
+            *,
+            instructor:instructors(*),
+            category:categories(*),
+            difficulty_level:difficulty_levels(*),
+            materials:video_materials(*),
+            ferramentas:video_ferramentas(
+              ferramenta:ferramentas_links(*)
+            )
+          )
+        `)
+        .eq('video_id', videoId)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching related videos:', error);
+        return [];
+      }
+
+      // Extract videos from the nested structure
+      const relatedVideos = (data || [])
+        .map(item => item.related_video)
+        .filter(Boolean) as Video[];
+
+      // Transform ferramentas data structure
+      relatedVideos.forEach(video => {
+        if (video.ferramentas) {
+          video.ferramentas = (video.ferramentas as any[]).map((item: any) => item.ferramenta).filter(Boolean);
+        }
+      });
+
+      // If user is provided, check bookmark status for each related video
+      if (userId && relatedVideos.length > 0) {
+        const bookmarkStatuses = await this.getBookmarkStatuses(
+          relatedVideos.map(v => v.id), 
+          userId
+        );
+        
+        relatedVideos.forEach(video => {
+          video.is_bookmarked = bookmarkStatuses[video.id] || false;
+        });
+      }
+
+      return relatedVideos;
+    } catch (error) {
+      console.error('Error fetching related videos:', error);
+      return [];
+    }
   },
 
   // Refresh video counts from database
