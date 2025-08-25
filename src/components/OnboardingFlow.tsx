@@ -177,11 +177,15 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ userId, userEmail, onCo
         console.error('Error updating user profile:', profileError);
       }
 
+      // Redirect to home page
+      window.location.href = '/';
+      
       onComplete();
     } catch (error) {
       console.error('Error completing onboarding:', error);
       // Don't block the user, just proceed
       console.warn('Onboarding data save failed, but allowing user to continue');
+      window.location.href = '/';
       onComplete();
     } finally {
       setIsLoading(false);
@@ -199,33 +203,28 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ userId, userEmail, onCo
             <p className="text-slate-400 mb-8">Escolha um avatar ou envie sua própria foto</p>
             
             {/* Avatar Selection Grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 max-w-lg mx-auto">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 max-w-2xl mx-auto">
               {/* Preset Avatars */}
               {[
-                '/src/images/avatar1.png',
-                '/src/images/avatar2.png',
-                '/src/images/avatar3.png'
+                '/avatar1.png',
+                '/avatar2.png',
+                '/avatar3.png'
               ].map((avatar, index) => (
                 <button
                   key={avatar}
                   type="button"
                   onClick={() => handlePresetAvatarSelect(avatar)}
-                  className={`relative group transition-all duration-200 w-24 h-24 rounded-2xl overflow-hidden ${
+                  className={`relative group transition-all duration-200 w-20 h-20 sm:w-24 sm:h-24 rounded-2xl overflow-hidden border-2 ${
                     selectedPresetAvatar === avatar
-                      ? 'ring-3 ring-[#ff7551] scale-105'
-                      : 'hover:scale-105'
+                      ? 'border-[#ff7551] scale-105'
+                      : 'border-transparent hover:scale-105 hover:border-slate-500/50'
                   }`}
                 >
                   <img
                     src={avatar}
                     alt={`Avatar ${index + 1}`}
-                    className="w-24 h-24 rounded-2xl object-cover group-hover:opacity-80 transition-opacity"
+                    className="w-full h-full rounded-xl object-cover group-hover:opacity-80 transition-opacity"
                   />
-                  {selectedPresetAvatar === avatar && (
-                    <div className="absolute inset-0 bg-[#ff7551]/90 flex items-center justify-center">
-                      <CheckCircle className="w-8 h-8 text-white" fill="currentColor" />
-                    </div>
-                  )}
                 </button>
               ))}
               
@@ -235,9 +234,9 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ userId, userEmail, onCo
                   type="button"
                   onClick={handleAvatarClick}
                   disabled={isUploadingAvatar}
-                  className={`w-24 h-24 rounded-2xl border-2 border-dashed border-slate-600/50 hover:border-[#ff7551]/50 bg-slate-700/30 hover:bg-slate-600/30 flex flex-col items-center justify-center transition-all duration-200 group ${
+                  className={`w-20 h-20 sm:w-24 sm:h-24 rounded-2xl border-2 border-dashed border-slate-600/50 hover:border-[#ff7551]/50 bg-slate-700/30 hover:bg-slate-600/30 flex flex-col items-center justify-center transition-all duration-200 group ${
                     avatarPreview && avatarMode === 'upload'
-                      ? 'ring-3 ring-[#ff7551] scale-105'
+                      ? 'border-[#ff7551] scale-105'
                       : 'hover:scale-105'
                   }`}
                 >
@@ -245,25 +244,19 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ userId, userEmail, onCo
                     <img
                       src={avatarPreview}
                       alt="Avatar personalizado"
-                      className="w-24 h-24 rounded-2xl object-cover"
+                      className="w-full h-full rounded-xl object-cover"
                     />
                   ) : isUploadingAvatar ? (
                     <Loader2 className="w-6 h-6 text-slate-400 animate-spin" />
                   ) : (
                     <>
-                      <Upload className="w-6 h-6 text-slate-400 group-hover:text-[#ff7551] transition-colors" />
-                      <span className="text-xs text-slate-400 group-hover:text-[#ff7551] transition-colors mt-1 text-center">
+                      <Upload className="w-4 h-4 sm:w-5 sm:h-5 text-slate-400 group-hover:text-[#ff7551] transition-colors" />
+                      <span className="text-xs text-slate-400 group-hover:text-[#ff7551] transition-colors mt-1 text-center leading-tight">
                         Fazer Upload
                       </span>
                     </>
                   )}
                 </button>
-                
-                {avatarPreview && avatarMode === 'upload' && (
-                  <div className="absolute inset-0 bg-[#ff7551]/90 flex items-center justify-center">
-                    <CheckCircle className="w-8 h-8 text-white" fill="currentColor" />
-                  </div>
-                )}
                 
                 <input
                   ref={fileInputRef}

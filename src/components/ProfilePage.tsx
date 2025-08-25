@@ -322,47 +322,41 @@ const ProfilePage: React.FC = () => {
             <h4 className="text-white font-medium text-left">Foto do Perfil</h4>
             
             {/* Avatar Selection Grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-2xl">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 max-w-2xl">
               {/* Preset Avatars */}
               {[
-                'https://images.pexels.com/photos/1680172/pexels-photo-1680172.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop',
-                'https://images.pexels.com/photos/2889942/pexels-photo-2889942.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop',
-                'https://images.pexels.com/photos/3370021/pexels-photo-3370021.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop',
-                'https://images.pexels.com/photos/1870163/pexels-photo-1870163.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop'
+                '/avatar1.png',
+                '/avatar2.png',
+                '/avatar3.png'
               ].map((avatar, index) => (
                 <button
                   key={avatar}
                   type="button"
                   onClick={() => handlePresetAvatarSelect(avatar)}
-                  className={`relative group transition-all duration-200 w-24 h-24 rounded-2xl overflow-hidden ${
+                  className={`relative group transition-all duration-200 w-20 h-20 sm:w-24 sm:h-24 rounded-2xl overflow-hidden border-2 ${
                     selectedPresetAvatar === avatar
-                      ? 'ring-3 ring-[#ff7551] scale-105'
-                      : 'hover:scale-105'
+                      ? 'border-[#ff7551] scale-105'
+                      : 'border-transparent hover:scale-105 hover:border-slate-500/50'
                   }`}
                 >
                   <img
                     src={avatar}
                     alt={`Avatar ${index + 1}`}
-                    className="w-full h-full rounded-2xl object-cover group-hover:opacity-80 transition-opacity"
+                    className="w-full h-full rounded-xl object-cover group-hover:opacity-80 transition-opacity"
                   />
-                  {selectedPresetAvatar === avatar && (
-                    <div className="absolute inset-0 bg-[#ff7551]/90 flex items-center justify-center">
-                      <CheckCircle className="w-8 h-8 text-white" fill="currentColor" />
-                    </div>
-                  )}
                 </button>
               ))}
               
               {/* Upload Option */}
-              <div className="relative w-24 h-24">
+              <div className="relative w-20 h-20 sm:w-24 sm:h-24">
                 <button
                   type="button"
                   onClick={handleAvatarClick}
                   disabled={isUploadingAvatar}
-                  className={`w-full h-full rounded-2xl border-2 border-dashed border-slate-600/50 hover:border-[#ff7551]/50 bg-slate-700/30 hover:bg-slate-600/30 flex flex-col items-center justify-center transition-all duration-200 group ${
+                  className={`w-full h-full rounded-2xl border-2 border-dashed transition-all duration-200 group ${
                     avatarPreview && avatarMode === 'upload'
-                      ? 'ring-3 ring-[#ff7551] scale-105'
-                      : 'hover:scale-105'
+                      ? 'border-[#ff7551] scale-105 bg-slate-600/30'
+                      : 'border-slate-600/50 hover:border-[#ff7551]/50 bg-slate-700/30 hover:bg-slate-600/30 hover:scale-105'
                   }`}
                 >
                   {avatarPreview && avatarMode === 'upload' ? (
@@ -374,20 +368,14 @@ const ProfilePage: React.FC = () => {
                   ) : isUploadingAvatar ? (
                     <Loader2 className="w-6 h-6 text-slate-400 animate-spin" />
                   ) : (
-                    <>
-                      <Upload className="w-6 h-6 text-slate-400 group-hover:text-[#ff7551] transition-colors" />
-                      <span className="text-xs text-slate-400 group-hover:text-[#ff7551] transition-colors mt-1 text-center">
+                    <div className="flex flex-col items-center justify-center">
+                      <Upload className="w-4 h-4 sm:w-5 sm:h-5 text-slate-400 group-hover:text-[#ff7551] transition-colors" />
+                      <span className="text-xs text-slate-400 group-hover:text-[#ff7551] transition-colors mt-1 text-center leading-tight">
                         Fazer Upload
                       </span>
-                    </>
+                    </div>
                   )}
                 </button>
-                
-                {avatarPreview && avatarMode === 'upload' && (
-                  <div className="absolute inset-0 bg-[#ff7551]/90 flex items-center justify-center">
-                    <CheckCircle className="w-8 h-8 text-white" fill="currentColor" />
-                  </div>
-                )}
                 
                 <input
                   ref={fileInputRef}
