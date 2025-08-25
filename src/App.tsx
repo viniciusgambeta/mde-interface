@@ -117,8 +117,8 @@ const AppLayout: React.FC = () => {
         case 'discover': return baseTitle + 'Home';
         case 'trending': return baseTitle + 'Trending';
         case 'categories': return baseTitle + 'Categorias';
-        case 'bookmark': return baseTitle + 'Salvos';
         case 'discounts': return baseTitle + 'Descontos';
+        case 'bookmark': return baseTitle + 'Salvos';
         case 'profile': return baseTitle + 'Minha Conta';
         case 'request-lesson': return baseTitle + 'Pedir Aula';
         case 'help': return baseTitle + 'Ajuda';
@@ -158,7 +158,6 @@ const AppLayout: React.FC = () => {
       'discover': '/',
       'trending': '/trending',
       'categories': '/categories',
-       'benchmarks': '/benchmarks',
       'bookmark': '/bookmark',
       'discounts': '/discounts',
       'profile': '/profile',
@@ -245,7 +244,6 @@ function App() {
           <Route path="/" element={<AppLayout />} />
           <Route path="/trending" element={<AppLayout />} />
           <Route path="/categories" element={<AppLayout />} />
-          <Route path="/benchmarks" element={<AppLayout />} />
           <Route path="/bookmark" element={<AppLayout />} />
           <Route path="/discounts" element={<AppLayout />} />
           <Route path="/profile" element={<AppLayout />} />
