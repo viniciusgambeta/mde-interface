@@ -271,7 +271,7 @@ const ProfilePage: React.FC = () => {
             <img
               src={getCurrentAvatar()}
               alt={user.name}
-              className="w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 rounded-xl object-cover border-2 sm:border-4 border-[#ff7551]/50"
+              className="w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 rounded-2xl object-cover"
             />
           </div>
 

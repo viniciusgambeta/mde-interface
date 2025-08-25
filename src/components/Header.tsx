@@ -322,7 +322,7 @@ const Header: React.FC<HeaderProps> = ({ sidebarCollapsed, onSidebarToggle, onVi
                     <img
                       src={user?.avatar || '/src/images/avatar.jpg'}
                       alt="User"
-                     className="w-12 h-12 rounded-lg object-cover border-2 border-[#ff7551]/50"
+                     className="w-12 h-12 rounded-2xl object-cover"
                     />
                   </div>
                   <ChevronDown className={`w-5 h-5 text-slate-400 transition-transform duration-200 ${showUserMenu ? 'rotate-180' : ''}`} />
