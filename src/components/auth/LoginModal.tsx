@@ -57,8 +57,11 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onSwitchToRegi
     if (success) {
       console.log('✅ Login successful, closing modal');
       onClose();
+      // Clear form
       setEmail('');
       setPassword('');
+      setError('');
+      setSuccess('');
     } else {
       console.log('❌ Login failed, showing error');
       setError('Email ou senha incorretos');

@@ -135,8 +135,8 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ userId, userEmail, onCo
     setIsLoading(true);
 
     try {
-      // Update subscription data with onboarding info
-      const { error } = await supabase
+      // Update subscription data with onboarding info (optional)
+      const { error: subscriptionError } = await supabase
         .from('assinaturas')
         .update({
           avatar_usuario: onboardingData.avatar_url || 'https://static.vecteezy.com/system/resources/previews/009/292/244/non_2x/default-avatar-icon-of-social-media-user-vector.jpg',
@@ -149,10 +149,23 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ userId, userEmail, onCo
         })
         .eq('user_id', userId);
 
-      if (error) {
-        console.error('Error updating onboarding data:', error);
-        // Continue anyway, but show warning
-        console.warn('Could not save onboarding data, but proceeding with login');
+      if (subscriptionError) {
+        console.error('Error updating subscription onboarding data:', subscriptionError);
+        console.warn('Could not save subscription onboarding data, but continuing');
+      }
+      
+      // Update user profile with onboarding data
+      const { error: profileError } = await supabase.auth.updateUser({
+        data: {
+          name: onboardingData.avatar_url ? undefined : undefined, // Keep existing name
+          avatar_url: onboardingData.avatar_url,
+          onboarding_completed: true,
+          onboarding_data: onboardingData
+        }
+      });
+
+      if (profileError) {
+        console.error('Error updating user profile:', profileError);
       }
 
       onComplete();
