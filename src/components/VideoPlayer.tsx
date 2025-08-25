@@ -119,7 +119,6 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video, onBack, onVideoSelect 
   const [likeLoading, setLikeLoading] = useState(false);
   const [selectedVersion, setSelectedVersion] = useState<Video | null>(null);
   const [showVersionDropdown, setShowVersionDropdown] = useState(false);
-  const [relatedVideos, setRelatedVideos] = useState<Video[]>([]);
 
   const handleVersionChange = async (version: Video) => {
     setSelectedVersion(version);
@@ -174,12 +173,6 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video, onBack, onVideoSelect 
       const updatedVideoData = { ...currentVideoData, versions: versionResult.versions };
       setVideoData(updatedVideoData);
       console.log('VideoPlayer: Updated videoData with versions:', updatedVideoData.versions?.length || 0);
-      
-      // Load related videos
-      console.log('VideoPlayer: Loading related videos for video ID:', currentVideoData.id);
-      const relatedVideosData = await videoService.getRelatedVideos(currentVideoData.id, user?.id);
-      setRelatedVideos(relatedVideosData);
-      console.log('VideoPlayer: Loaded related videos:', relatedVideosData.length);
       
       // Set bookmark and like status
       if (user) {
@@ -601,44 +594,6 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video, onBack, onVideoSelect 
                            </div>
                            <div className="text-xs text-slate-400 mt-1">
                              {formatDuration(version.duration_minutes)}
-                           </div>
-                         </div>
-                         <div className="flex-shrink-0">
-                           <svg className="w-5 h-5 text-[#ff7551]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                           </svg>
-                         </div>
-                       </div>
-                     </button>
-                   ))}
-                 </div>
-               </div>
-             )}
-             
-             {/* Related Videos - Only show if there are related videos */}
-             {relatedVideos.length > 0 && (
-               <div className="mt-12">
-                 <h3 className="text-white font-semibold mb-4">Aulas relacionadas</h3>
-                 
-                 <div className="space-y-2">
-                   {relatedVideos.map((relatedVideo) => (
-                     <button
-                       key={relatedVideo.id}
-                       onClick={() => onVideoSelect(relatedVideo)}
-                       className="w-full text-left p-3 rounded-lg transition-colors bg-slate-700/30 text-slate-300 hover:bg-slate-600/30"
-                     >
-                       <div className="flex items-center space-x-3">
-                         <img
-                           src={relatedVideo.thumbnail_url || 'https://images.pexels.com/photos/11035380/pexels-photo-11035380.jpeg?auto=compress&cs=tinysrgb&w=80&h=60&fit=crop'}
-                           alt={relatedVideo.title}
-                           className="w-20 h-15 rounded object-cover flex-shrink-0"
-                         />
-                         <div className="flex-1 min-w-0">
-                           <div className="font-medium text-sm">
-                             {relatedVideo.title}
-                           </div>
-                           <div className="text-xs text-slate-400 mt-1">
-                             {formatDuration(relatedVideo.duration_minutes)}
                            </div>
                          </div>
                          <div className="flex-shrink-0">

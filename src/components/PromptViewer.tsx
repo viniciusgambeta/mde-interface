@@ -118,7 +118,6 @@ const PromptViewer: React.FC<PromptViewerProps> = ({ prompt, onBack, onVideoSele
   const [copied, setCopied] = useState(false);
   const [selectedVersion, setSelectedVersion] = useState<Video | null>(null);
   const [showVersionDropdown, setShowVersionDropdown] = useState(false);
-  const [relatedVideos, setRelatedVideos] = useState<Video[]>([]);
 
   useEffect(() => {
     // Initialize variables at the beginning of useEffect
@@ -156,12 +155,6 @@ const PromptViewer: React.FC<PromptViewerProps> = ({ prompt, onBack, onVideoSele
       const updatedPromptData = { ...currentPromptData, versions: versionResult.versions };
       setPromptData(updatedPromptData);
       console.log('PromptViewer: Updated promptData with versions:', updatedPromptData.versions?.length || 0);
-      
-      // Load related videos
-      console.log('PromptViewer: Loading related videos for prompt ID:', currentPromptData.id);
-      const relatedVideosData = await videoService.getRelatedVideos(currentPromptData.id, user?.id);
-      setRelatedVideos(relatedVideosData);
-      console.log('PromptViewer: Loaded related videos:', relatedVideosData.length);
       
       // Set bookmark and like status
       if (user) {
