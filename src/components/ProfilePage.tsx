@@ -1,20 +1,90 @@
-import React, { useState, useRef } from 'react';
-import { User, Mail, Camera, Save, Loader2, Upload, Shield, Calendar, Star } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { User, Mail, Camera, Save, Loader2, Upload, Shield, Calendar, Star, Phone, Instagram, Briefcase, Target, BarChart3, CheckCircle } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 
 const ProfilePage: React.FC = () => {
   const { user, updateProfile } = useAuth();
-  const [name, setName] = useState(user?.name || '');
-  const [email, setEmail] = useState(user?.email || '');
+  const [formData, setFormData] = useState({
+    name: user?.name || '',
+    phone: '',
+    bio: '',
+    instagram: '',
+    experiencia_ia: '',
+    objetivo_principal: '',
+    tipo_trabalho: '',
+    porte_negocio: ''
+  });
   const [isLoading, setIsLoading] = useState(false);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
   const [success, setSuccess] = useState(false);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const [selectedPresetAvatar, setSelectedPresetAvatar] = useState<string | null>(null);
+  const [avatarMode, setAvatarMode] = useState<'preset' | 'upload'>('preset');
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Load user data from assinaturas table
+  useEffect(() => {
+    const loadUserData = async () => {
+      if (!user) return;
+
+      try {
+        const { data, error } = await supabase
+          .from('assinaturas')
+          .select('*')
+          .eq('user_id', user.id)
+          .maybeSingle();
+
+        if (error) {
+          console.error('Error loading user data:', error);
+          return;
+        }
+
+        if (data) {
+          setFormData({
+            name: data['Nome do cliente'] || user.name || '',
+            phone: data['Telefone do cliente']?.toString() || '',
+            bio: data.bio || '',
+            instagram: data.instagram || '',
+            experiencia_ia: data.experiencia_ia || '',
+            objetivo_principal: data.objetivo_principal || '',
+            tipo_trabalho: data.tipo_trabalho || '',
+            porte_negocio: data.porte_negocio || ''
+          });
+
+          // Set current avatar
+          if (data.avatar_usuario) {
+            const presetAvatars = ['/src/images/avatar1.png', '/src/images/avatar2.png', '/src/images/avatar3.png'];
+            if (presetAvatars.includes(data.avatar_usuario)) {
+              setSelectedPresetAvatar(data.avatar_usuario);
+              setAvatarMode('preset');
+            } else {
+              setAvatarPreview(data.avatar_usuario);
+              setAvatarMode('upload');
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Exception loading user data:', error);
+      }
+    };
+
+    loadUserData();
+  }, [user]);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
 
   const handleAvatarClick = () => {
     fileInputRef.current?.click();
+  };
+
+  const handlePresetAvatarSelect = (avatarPath: string) => {
+    setSelectedPresetAvatar(avatarPath);
+    setAvatarPreview(null);
+    setAvatarMode('preset');
   };
 
   const handleAvatarChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -40,6 +110,8 @@ const ProfilePage: React.FC = () => {
       const reader = new FileReader();
       reader.onload = (e) => {
         setAvatarPreview(e.target?.result as string);
+        setSelectedPresetAvatar(null);
+        setAvatarMode('upload');
       };
       reader.readAsDataURL(file);
 
@@ -75,8 +147,7 @@ const ProfilePage: React.FC = () => {
         .from('avatars')
         .getPublicUrl(fileName);
 
-      // Update user profile with new avatar URL
-      await updateProfile({ avatar: publicUrl });
+      setAvatarPreview(publicUrl);
 
     } catch (error) {
       console.error('Error uploading avatar:', error);
@@ -92,14 +163,66 @@ const ProfilePage: React.FC = () => {
     setIsLoading(true);
     setSuccess(false);
 
-    const updated = await updateProfile({ name });
-    
-    if (updated) {
+    try {
+      // Determine final avatar URL
+      let finalAvatarUrl = user?.avatar || '/src/images/avatar.jpg';
+      
+      if (avatarMode === 'preset' && selectedPresetAvatar) {
+        finalAvatarUrl = selectedPresetAvatar;
+      } else if (avatarMode === 'upload' && avatarPreview) {
+        finalAvatarUrl = avatarPreview;
+      }
+
+      // Update user profile in auth
+      const authUpdateData: any = {
+        name: formData.name,
+        avatar_url: finalAvatarUrl
+      };
+
+      const { error: authError } = await supabase.auth.updateUser({
+        data: authUpdateData
+      });
+
+      if (authError) {
+        console.error('Error updating auth profile:', authError);
+        throw authError;
+      }
+
+      // Update assinaturas table
+      const { error: subscriptionError } = await supabase
+        .from('assinaturas')
+        .update({
+          'Nome do cliente': formData.name,
+          'Telefone do cliente': formData.phone ? parseInt(formData.phone) : null,
+          avatar_usuario: finalAvatarUrl,
+          experiencia_ia: formData.experiencia_ia,
+          objetivo_principal: formData.objetivo_principal,
+          tipo_trabalho: formData.tipo_trabalho,
+          porte_negocio: formData.porte_negocio,
+          instagram: formData.instagram
+        })
+        .eq('user_id', user?.id);
+
+      if (subscriptionError) {
+        console.error('Error updating subscription data:', subscriptionError);
+        // Don't throw error, just log it
+      }
+
+      // Update local auth context
+      await updateProfile({ 
+        name: formData.name, 
+        avatar: finalAvatarUrl 
+      });
+
       setSuccess(true);
       setTimeout(() => setSuccess(false), 3000);
+
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      alert('Erro ao atualizar perfil. Tente novamente.');
+    } finally {
+      setIsLoading(false);
     }
-    
-    setIsLoading(false);
   };
 
   if (!user) {
@@ -114,7 +237,21 @@ const ProfilePage: React.FC = () => {
     );
   }
 
-  const currentAvatar = avatarPreview || user.avatar || '/src/images/avatar.jpg';
+  const getCurrentAvatar = () => {
+    if (avatarMode === 'preset' && selectedPresetAvatar) {
+      return selectedPresetAvatar;
+    }
+    if (avatarMode === 'upload' && avatarPreview) {
+      return avatarPreview;
+    }
+    return user.avatar || '/src/images/avatar.jpg';
+  };
+
+  const presetAvatars = [
+    '/src/images/avatar1.png',
+    '/src/images/avatar2.png',
+    '/src/images/avatar3.png'
+  ];
 
   return (
     <div className="space-y-6 sm:space-y-8">
@@ -132,27 +269,9 @@ const ProfilePage: React.FC = () => {
           {/* Avatar Section */}
           <div className="relative">
             <img
-              src={currentAvatar}
+              src={getCurrentAvatar()}
               alt={user.name}
-              className="w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 rounded-full object-cover border-2 sm:border-4 border-[#ff7551]/50"
-            />
-            <button 
-              onClick={handleAvatarClick}
-              disabled={isUploadingAvatar}
-              className="absolute -bottom-1 -right-1 sm:-bottom-2 sm:-right-2 w-6 h-6 sm:w-8 sm:h-8 bg-[#ff7551] rounded-full flex items-center justify-center hover:bg-[#ff7551]/80 transition-colors disabled:opacity-50"
-            >
-              {isUploadingAvatar ? (
-                <Loader2 className="w-3 h-3 sm:w-4 sm:h-4 text-white animate-spin" />
-              ) : (
-                <Camera className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
-              )}
-            </button>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              onChange={handleAvatarChange}
-              className="hidden"
+              className="w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 rounded-xl object-cover border-2 sm:border-4 border-[#ff7551]/50"
             />
           </div>
 
@@ -180,107 +299,340 @@ const ProfilePage: React.FC = () => {
               </div>
             </div>
           </div>
-
         </div>
-
       </div>
+
+      {/* Success Message */}
+      {success && (
+        <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-green-500/10 border border-green-500/20 rounded-lg animate-fade-in">
+          <div className="flex items-center space-x-2">
+            <CheckCircle className="w-5 h-5 text-green-400" />
+            <p className="text-green-400 text-sm">Perfil atualizado com sucesso!</p>
+          </div>
+        </div>
+      )}
 
       {/* Edit Profile Form */}
       <div className="bg-slate-700/30 border border-slate-600/30 rounded-xl p-4 sm:p-6 lg:p-8">
-        <div className="flex items-center justify-between mb-6">
-          <h3 className="text-lg sm:text-xl font-semibold text-white">Editar Informações</h3>
-          
-          {/* Avatar Upload Section */}
-          <div className="flex flex-col items-center space-y-2">
-            <div className="relative group">
-              <img
-                src={currentAvatar}
-                alt={user.name}
-                className="w-16 h-16 sm:w-20 sm:h-20 rounded-full object-cover border-2 border-slate-600/50 group-hover:border-[#ff7551]/50 transition-colors cursor-pointer"
-                onClick={handleAvatarClick}
-              />
-              <div 
-                className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
-                onClick={handleAvatarClick}
-              >
-                {isUploadingAvatar ? (
-                  <Loader2 className="w-6 h-6 text-white animate-spin" />
-                ) : (
-                  <Camera className="w-6 h-6 text-white" />
-                )}
-              </div>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                onChange={handleAvatarChange}
-                className="hidden"
-              />
-            </div>
-            <div className="text-center">
+        <h3 className="text-lg sm:text-xl font-semibold text-white mb-6">Editar Informações</h3>
+
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Avatar Selection Section */}
+          <div className="space-y-4">
+            <h4 className="text-white font-medium">Foto do Perfil</h4>
+            
+            {/* Avatar Mode Selector */}
+            <div className="flex space-x-4">
               <button
-                onClick={handleAvatarClick}
-                disabled={isUploadingAvatar}
-                className="text-xs text-slate-400 hover:text-[#ff7551] transition-colors disabled:opacity-50"
+                type="button"
+                onClick={() => setAvatarMode('preset')}
+                className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                  avatarMode === 'preset'
+                    ? 'bg-[#ff7551] text-white'
+                    : 'bg-slate-600/30 text-slate-400 hover:bg-slate-500/30'
+                }`}
               >
-                {isUploadingAvatar ? 'Enviando...' : 'Alterar foto'}
+                Escolher Avatar
               </button>
-              <p className="text-slate-500 text-xs mt-1">
-                JPG, PNG, GIF (máx. 5MB)
-              </p>
+              <button
+                type="button"
+                onClick={() => setAvatarMode('upload')}
+                className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                  avatarMode === 'upload'
+                    ? 'bg-[#ff7551] text-white'
+                    : 'bg-slate-600/30 text-slate-400 hover:bg-slate-500/30'
+                }`}
+              >
+                Enviar Foto
+              </button>
             </div>
-          </div>
-        </div>
 
-        {success && (
-          <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-green-500/10 border border-green-500/20 rounded-lg">
-            <p className="text-green-400 text-sm">Perfil atualizado com sucesso!</p>
-          </div>
-        )}
+            {/* Current Avatar Preview */}
+            <div className="flex justify-center">
+              <img
+                src={getCurrentAvatar()}
+                alt="Avatar atual"
+                className="w-24 h-24 rounded-xl object-cover border-2 border-slate-600/50"
+              />
+            </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
-          <div className="grid sm:grid-cols-2 gap-4 sm:gap-6">
-            {/* Name Field */}
-            <div>
-              <label className="block text-sm font-medium text-slate-300 mb-2">
-                Nome Completo
-              </label>
-              <div className="relative">
-                <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
-                <input
-                  type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 bg-slate-700/30 border border-slate-600/30 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#ff7551]/50 focus:border-transparent transition-all"
-                  placeholder="Seu nome completo"
+            {/* Avatar Selection */}
+            {avatarMode === 'preset' ? (
+              <div className="grid grid-cols-3 gap-4 max-w-md mx-auto">
+                {presetAvatars.map((avatar, index) => (
+                  <button
+                    key={avatar}
+                    type="button"
+                    onClick={() => handlePresetAvatarSelect(avatar)}
+                    className={`relative group transition-all duration-200 ${
+                      selectedPresetAvatar === avatar
+                        ? 'ring-2 ring-[#ff7551] scale-105'
+                        : 'hover:scale-105'
+                    }`}
+                  >
+                    <img
+                      src={avatar}
+                      alt={`Avatar ${index + 1}`}
+                      className="w-20 h-20 rounded-xl object-cover border-2 border-slate-600/30 group-hover:border-[#ff7551]/50 transition-colors"
+                    />
+                    {selectedPresetAvatar === avatar && (
+                      <div className="absolute inset-0 bg-[#ff7551]/20 rounded-xl flex items-center justify-center">
+                        <CheckCircle className="w-6 h-6 text-[#ff7551]" />
+                      </div>
+                    )}
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center space-y-4">
+                <div className="relative inline-block">
+                  <button
+                    type="button"
+                    onClick={handleAvatarClick}
+                    disabled={isUploadingAvatar}
+                    className="relative group"
+                  >
+                    <img
+                      src={avatarPreview || user.avatar || '/src/images/avatar.jpg'}
+                      alt="Avatar preview"
+                      className="w-24 h-24 rounded-xl object-cover border-2 border-slate-600/50 group-hover:border-[#ff7551]/50 transition-colors"
+                    />
+                    <div className="absolute inset-0 bg-black/50 rounded-xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                      {isUploadingAvatar ? (
+                        <Loader2 className="w-6 h-6 text-white animate-spin" />
+                      ) : (
+                        <Camera className="w-6 h-6 text-white" />
+                      )}
+                    </div>
+                  </button>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleAvatarChange}
+                    className="hidden"
+                  />
+                </div>
+                <div className="text-center">
+                  <button
+                    type="button"
+                    onClick={handleAvatarClick}
+                    disabled={isUploadingAvatar}
+                    className="text-sm text-slate-400 hover:text-[#ff7551] transition-colors disabled:opacity-50"
+                  >
+                    {isUploadingAvatar ? 'Enviando...' : 'Clique para alterar foto'}
+                  </button>
+                  <p className="text-slate-500 text-xs mt-1">
+                    JPG, PNG, GIF (máx. 5MB)
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Personal Information */}
+          <div className="space-y-6">
+            <h4 className="text-white font-medium border-b border-slate-600/30 pb-2">Informações Pessoais</h4>
+            
+            <div className="grid sm:grid-cols-2 gap-4 sm:gap-6">
+              {/* Name Field */}
+              <div>
+                <label className="block text-sm font-medium text-slate-300 mb-2">
+                  Nome Completo *
+                </label>
+                <div className="relative">
+                  <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <input
+                    type="text"
+                    name="name"
+                    value={formData.name}
+                    onChange={handleInputChange}
+                    className="w-full pl-10 pr-4 py-3 bg-slate-700/30 border border-slate-600/30 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#ff7551]/50 focus:border-transparent transition-all"
+                    placeholder="Seu nome completo"
+                    disabled={isLoading}
+                    required
+                  />
+                </div>
+              </div>
+
+              {/* Phone Field */}
+              <div>
+                <label className="block text-sm font-medium text-slate-300 mb-2">
+                  Telefone
+                </label>
+                <div className="relative">
+                  <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <input
+                    type="tel"
+                    name="phone"
+                    value={formData.phone}
+                    onChange={handleInputChange}
+                    className="w-full pl-10 pr-4 py-3 bg-slate-700/30 border border-slate-600/30 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#ff7551]/50 focus:border-transparent transition-all"
+                    placeholder="(11) 99999-9999"
+                    disabled={isLoading}
+                  />
+                </div>
+              </div>
+
+              {/* Email Field (Read-only) */}
+              <div className="sm:col-span-2">
+                <label className="block text-sm font-medium text-slate-300 mb-2">
+                  Email
+                </label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <input
+                    type="email"
+                    value={user.email}
+                    readOnly
+                    className="w-full pl-10 pr-4 py-3 bg-slate-700/30 border border-slate-600/30 rounded-lg text-slate-400 placeholder-slate-400 cursor-not-allowed"
+                    placeholder="seu@email.com"
+                  />
+                </div>
+                <p className="text-slate-500 text-xs mt-1">
+                  O email não pode ser alterado após o cadastro
+                </p>
+              </div>
+
+              {/* Instagram Field */}
+              <div>
+                <label className="block text-sm font-medium text-slate-300 mb-2">
+                  Instagram
+                </label>
+                <div className="relative">
+                  <Instagram className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <input
+                    type="text"
+                    name="instagram"
+                    value={formData.instagram}
+                    onChange={handleInputChange}
+                    className="w-full pl-10 pr-4 py-3 bg-slate-700/30 border border-slate-600/30 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#ff7551]/50 focus:border-transparent transition-all"
+                    placeholder="@seu_usuario"
+                    disabled={isLoading}
+                  />
+                </div>
+              </div>
+
+              {/* Bio Field */}
+              <div>
+                <label className="block text-sm font-medium text-slate-300 mb-2">
+                  Bio
+                </label>
+                <textarea
+                  name="bio"
+                  value={formData.bio}
+                  onChange={handleInputChange}
+                  rows={3}
+                  className="w-full px-4 py-3 bg-slate-700/30 border border-slate-600/30 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#ff7551]/50 focus:border-transparent transition-all resize-none"
+                  placeholder="Conte um pouco sobre você..."
                   disabled={isLoading}
                 />
               </div>
             </div>
+          </div>
 
-            {/* Email Field */}
-            <div>
-              <label className="block text-sm font-medium text-slate-300 mb-2">
-                Email
-              </label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
-                <input
-                  type="email"
-                  value={email}
-                  readOnly
-                  className="w-full pl-10 pr-4 py-3 bg-slate-700/30 border border-slate-600/30 rounded-lg text-slate-400 placeholder-slate-400 cursor-not-allowed"
-                  placeholder="seu@email.com"
-                />
+          {/* Professional Information */}
+          <div className="space-y-6">
+            <h4 className="text-white font-medium border-b border-slate-600/30 pb-2">Informações Profissionais</h4>
+            
+            <div className="grid sm:grid-cols-2 gap-4 sm:gap-6">
+              {/* Experience with AI */}
+              <div>
+                <label className="block text-sm font-medium text-slate-300 mb-2">
+                  Experiência com IA
+                </label>
+                <div className="relative">
+                  <BarChart3 className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <select
+                    name="experiencia_ia"
+                    value={formData.experiencia_ia}
+                    onChange={handleInputChange}
+                    className="w-full pl-10 pr-4 py-3 bg-slate-700/30 border border-slate-600/30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-[#ff7551]/50 focus:border-transparent transition-all"
+                    disabled={isLoading}
+                  >
+                    <option value="">Selecione...</option>
+                    <option value="avancado">Avançado</option>
+                    <option value="intermediario">Intermediário</option>
+                    <option value="iniciante">Iniciante</option>
+                    <option value="zero">Zero experiência</option>
+                  </select>
+                </div>
               </div>
-              <p className="text-slate-500 text-xs mt-1">
-                O email não pode ser alterado após o cadastro
-              </p>
+
+              {/* Main Objective */}
+              <div>
+                <label className="block text-sm font-medium text-slate-300 mb-2">
+                  Objetivo Principal
+                </label>
+                <div className="relative">
+                  <Target className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <select
+                    name="objetivo_principal"
+                    value={formData.objetivo_principal}
+                    onChange={handleInputChange}
+                    className="w-full pl-10 pr-4 py-3 bg-slate-700/30 border border-slate-600/30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-[#ff7551]/50 focus:border-transparent transition-all"
+                    disabled={isLoading}
+                  >
+                    <option value="">Selecione...</option>
+                    <option value="monetizar">Monetizar com serviços de automação e IA</option>
+                    <option value="melhorar_processos">Melhorar processos do meu negócio</option>
+                    <option value="produtividade">Aumentar produtividade pessoal ou da equipe</option>
+                    <option value="aprender">Aprender por curiosidade / desenvolvimento pessoal</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Work Type */}
+              <div>
+                <label className="block text-sm font-medium text-slate-300 mb-2">
+                  Tipo de Trabalho
+                </label>
+                <div className="relative">
+                  <Briefcase className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <select
+                    name="tipo_trabalho"
+                    value={formData.tipo_trabalho}
+                    onChange={handleInputChange}
+                    className="w-full pl-10 pr-4 py-3 bg-slate-700/30 border border-slate-600/30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-[#ff7551]/50 focus:border-transparent transition-all"
+                    disabled={isLoading}
+                  >
+                    <option value="">Selecione...</option>
+                    <option value="empresa_propria">Empresa própria (empreendedor)</option>
+                    <option value="agencia">Agência de marketing / consultoria</option>
+                    <option value="colaborador">Empresa como colaborador (CLT/PJ)</option>
+                    <option value="autonomo">Profissional autônomo/freelancer</option>
+                    <option value="estudando">Ainda estudando / em transição de carreira</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Business Size */}
+              <div>
+                <label className="block text-sm font-medium text-slate-300 mb-2">
+                  Porte do Negócio
+                </label>
+                <div className="relative">
+                  <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <select
+                    name="porte_negocio"
+                    value={formData.porte_negocio}
+                    onChange={handleInputChange}
+                    className="w-full pl-10 pr-4 py-3 bg-slate-700/30 border border-slate-600/30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-[#ff7551]/50 focus:border-transparent transition-all"
+                    disabled={isLoading}
+                  >
+                    <option value="">Selecione...</option>
+                    <option value="pequeno">Pequeno (até 10 pessoas)</option>
+                    <option value="medio">Médio (11 a 50 pessoas)</option>
+                    <option value="grande">Grande (mais de 50 pessoas)</option>
+                    <option value="sozinho">Trabalho sozinho(a)</option>
+                  </select>
+                </div>
+              </div>
             </div>
           </div>
 
           {/* Submit Button */}
-          <div className="flex justify-end pt-2">
+          <div className="flex justify-end pt-4">
             <button
               type="submit"
               disabled={isLoading}

@@ -21,6 +21,8 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ userId, userEmail, onCo
   const [currentStep, setCurrentStep] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const [selectedPresetAvatar, setSelectedPresetAvatar] = useState<string | null>(null);
+  const [avatarMode, setAvatarMode] = useState<'preset' | 'upload'>('preset');
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   
@@ -37,6 +39,13 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ userId, userEmail, onCo
 
   const handleAvatarClick = () => {
     fileInputRef.current?.click();
+  };
+
+  const handlePresetAvatarSelect = (avatarPath: string) => {
+    setSelectedPresetAvatar(avatarPath);
+    setAvatarPreview(null);
+    setAvatarMode('preset');
+    setOnboardingData(prev => ({ ...prev, avatar_url: avatarPath }));
   };
 
   const handleAvatarChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -62,6 +71,8 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ userId, userEmail, onCo
       const reader = new FileReader();
       reader.onload = (e) => {
         setAvatarPreview(e.target?.result as string);
+        setSelectedPresetAvatar(null);
+        setAvatarMode('upload');
       };
       reader.readAsDataURL(file);
 
@@ -144,7 +155,6 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ userId, userEmail, onCo
           tipo_trabalho: onboardingData.tipo_trabalho,
           porte_negocio: onboardingData.porte_negocio,
           instagram: onboardingData.instagram,
-          linkedin: onboardingData.linkedin
         })
         .eq('user_id', userId);
 
@@ -186,39 +196,52 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ userId, userEmail, onCo
         return (
           <div className="text-center space-y-6">
             <h2 className="text-2xl font-bold text-white mb-2">Vamos personalizar seu perfil!</h2>
-            <p className="text-slate-400 mb-8">Adicione uma foto para que outros possam te reconhecer</p>
+            <p className="text-slate-400 mb-8">Escolha um avatar ou envie sua própria foto</p>
+            
+            {/* Avatar Mode Selector */}
+            <div className="flex justify-center space-x-4 mb-6">
+              <button
+                type="button"
+                onClick={() => setAvatarMode('preset')}
+                className={`px-6 py-3 rounded-lg font-medium transition-colors ${
+                  avatarMode === 'preset'
+                    ? 'bg-[#ff7551] text-white'
+                    : 'bg-slate-600/30 text-slate-400 hover:bg-slate-500/30'
+                }`}
+              >
+                Escolher Avatar
+              </button>
+              <button
+                type="button"
+                onClick={() => setAvatarMode('upload')}
+                className={`px-6 py-3 rounded-lg font-medium transition-colors ${
+                  avatarMode === 'upload'
+                    ? 'bg-[#ff7551] text-white'
+                    : 'bg-slate-600/30 text-slate-400 hover:bg-slate-500/30'
+                }`}
+              >
+                Enviar Foto
+              </button>
+            </div>
             
             <div className="flex flex-col items-center space-y-6">
-              <div className="relative">
+              {/* Current Avatar Preview */}
+              <div className="relative mb-4">
                 <img
-                  src={avatarPreview || 'https://static.vecteezy.com/system/resources/previews/009/292/244/non_2x/default-avatar-icon-of-social-media-user-vector.jpg'}
+                  src={
+                    avatarMode === 'preset' && selectedPresetAvatar 
+                      ? selectedPresetAvatar
+                      : avatarMode === 'upload' && avatarPreview
+                      ? avatarPreview
+                      : 'https://static.vecteezy.com/system/resources/previews/009/292/244/non_2x/default-avatar-icon-of-social-media-user-vector.jpg'
+                  }
                   alt="Avatar preview"
-                  className="w-32 h-32 rounded-full object-cover border-4 border-[#ff7551]/50"
-                />
-                <button 
-                  onClick={handleAvatarClick}
-                  disabled={isUploadingAvatar}
-                  className="absolute -bottom-2 -right-2 w-12 h-12 bg-[#ff7551] rounded-full flex items-center justify-center hover:bg-[#ff7551]/80 transition-colors disabled:opacity-50"
-                >
-                  {isUploadingAvatar ? (
-                    <Loader2 className="w-6 h-6 text-white animate-spin" />
-                  ) : (
-                    <Camera className="w-6 h-6 text-white" />
-                  )}
-                </button>
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  onChange={handleAvatarChange}
-                  className="hidden"
+                  className="w-32 h-32 rounded-xl object-cover border-4 border-[#ff7551]/50"
                 />
               </div>
               
-              <div className="text-center">
-                <p className="text-slate-300 text-sm mb-2">Clique na câmera para adicionar sua foto</p>
-                <p className="text-slate-500 text-xs">JPG, PNG ou GIF (máx. 5MB)</p>
-              </div>
+              {/* Avatar Selection */}
+              {avatarMode === 'preset' ? (
             </div>
 
           </div>
@@ -367,19 +390,6 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ userId, userEmail, onCo
                   value={onboardingData.instagram || ''}
                   onChange={(e) => setOnboardingData(prev => ({ ...prev, instagram: e.target.value }))}
                   placeholder="seu_usuario"
-                  className="w-full px-4 py-3 bg-slate-700/30 border border-slate-600/30 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#ff7551]/50 focus:border-transparent transition-all"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-slate-300 mb-2">
-                  LinkedIn (URL completa)
-                </label>
-                <input
-                  type="url"
-                  value={onboardingData.linkedin || ''}
-                  onChange={(e) => setOnboardingData(prev => ({ ...prev, linkedin: e.target.value }))}
-                  placeholder="https://linkedin.com/in/seu-perfil"
                   className="w-full px-4 py-3 bg-slate-700/30 border border-slate-600/30 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#ff7551]/50 focus:border-transparent transition-all"
                 />
               </div>
