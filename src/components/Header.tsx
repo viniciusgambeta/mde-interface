@@ -197,7 +197,7 @@ const Header: React.FC<HeaderProps> = ({ sidebarCollapsed, onSidebarToggle, onVi
                   value={searchQuery}
                   onChange={handleSearchInputChange}
                   onFocus={() => searchQuery.length >= 2 && setShowSearchResults(true)}
-                  className="w-96 md:w-[32rem] focus:w-[36rem] md:focus:w-[48rem] pl-12 pr-12 py-4 text-lg bg-slate-700/30 border border-slate-600/30 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#ff7551]/50 focus:border-transparent transition-all duration-300"
+                  className="w-[28rem] md:w-[40rem] focus:w-[32rem] md:focus:w-[56rem] pl-12 pr-12 py-4 text-lg bg-slate-700/30 border border-slate-600/30 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#ff7551]/50 focus:border-transparent transition-all duration-300"
                 />
                 {searchQuery && (
                   <button
@@ -211,7 +211,7 @@ const Header: React.FC<HeaderProps> = ({ sidebarCollapsed, onSidebarToggle, onVi
 
               {/* Search Results Dropdown */}
               {showSearchResults && (
-                <div className="absolute top-full left-0 mt-2 w-[36rem] md:w-[48rem] bg-[#1f1d2b] border border-slate-700/30 rounded-lg shadow-xl z-[99999] max-h-[28rem] overflow-y-auto">
+                <div className="absolute top-full left-0 mt-2 w-[32rem] md:w-[56rem] bg-[#1f1d2b] border border-slate-700/30 rounded-lg shadow-xl z-[99999] max-h-[28rem] overflow-y-auto">
                   {isSearching ? (
                     <div className="p-6 text-center">
                       <div className="text-slate-400 text-base">Procurando...</div>
@@ -316,7 +316,6 @@ const Header: React.FC<HeaderProps> = ({ sidebarCollapsed, onSidebarToggle, onVi
                 >
                   <div className="hidden sm:block text-right">
                     <div className="text-white font-medium text-base group-hover:text-[#ff7551] transition-colors">{user?.name}</div>
-                    <div className="text-slate-400 text-sm">{user?.isPremium ? 'Premium Member' : 'Free Member'}</div>
                   </div>
                   <div className="relative">
                     <img
