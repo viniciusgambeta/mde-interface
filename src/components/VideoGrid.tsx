@@ -164,42 +164,7 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
       try {
         console.log('Loading category-specific videos...');
         
-        // Load all categories first to get the correct slugs
-        const allCategories = await categoryService.getCategories();
-        console.log('Available categories:', allCategories.map(c => ({ name: c.name, slug: c.slug })));
-        
-        // Find category slugs by name (case insensitive)
-        const findCategorySlug = (searchTerms: string[]) => {
-          for (const term of searchTerms) {
-            const category = allCategories.find(c => 
-              c.name.toLowerCase().includes(term.toLowerCase()) ||
-              c.slug.toLowerCase().includes(term.toLowerCase())
-            );
-            if (category) {
-              console.log(`Found category for "${term}":`, category.name, category.slug);
-              return category.slug;
-            }
-          }
-          console.log(`No category found for terms:`, searchTerms);
-          return null;
-        };
-        
-        // Load videos for each category
-        const [
-          aiCategorySlug,
-          automationCategorySlug,
-          whatsappCategorySlug,
-          basicCategorySlug,
-          boltCategorySlug
-        ] = [
-          findCategorySlug(['inteligência artificial', 'inteligencia artificial', 'ia']),
-          findCategorySlug(['automação', 'automacao', 'automações', 'automation']),
-          findCategorySlug(['whatsapp', 'whats app']),
-          findCategorySlug(['básico', 'basico', 'aulas básicas', 'aulas basicas']),
-          findCategorySlug(['bolt', 'vibe', 'coding'])
-        ];
-        
-        // Load videos for each category in parallel
+        // Load videos for each category using known slugs
         const [
           aiData,
           automationData,
@@ -208,13 +173,21 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
           boltData,
           allVideosData
         ] = await Promise.all([
-          aiCategorySlug ? videoService.getVideosByCategory(aiCategorySlug, 10, user?.id) : Promise.resolve([]),
-          automationCategorySlug ? videoService.getVideosByCategory(automationCategorySlug, 10, user?.id) : Promise.resolve([]),
-          whatsappCategorySlug ? videoService.getVideosByCategory(whatsappCategorySlug, 10, user?.id) : Promise.resolve([]),
-          basicCategorySlug ? videoService.getVideosByCategory(basicCategorySlug, 10, user?.id) : Promise.resolve([]),
-          boltCategorySlug ? videoService.getVideosByCategory(boltCategorySlug, 10, user?.id) : Promise.resolve([]),
+          videoService.getVideosByCategory('inteligencia-artificial', 10, user?.id),
+          videoService.getVideosByCategory('automacao', 10, user?.id),
+          videoService.getVideosByCategory('whatsapp', 10, user?.id),
+          videoService.getVideosByCategory('basico', 10, user?.id),
+          videoService.getVideosByCategory('bolt', 10, user?.id),
           videoService.getVideos({ limit: 50, userId: user?.id })
         ]);
+        
+        console.log('Category videos loaded with slugs:', {
+          'inteligencia-artificial': aiData.length,
+          'automacao': automationData.length,
+          'whatsapp': whatsappData.length,
+          'basico': basicData.length,
+          'bolt': boltData.length
+        });
         
         // Set category videos
         setAiVideos(aiData);
@@ -226,16 +199,6 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
         // Set live and prompt videos from all videos
         setLiveVideos(allVideosData.filter(v => v.tipo === 'live'));
         setPromptVideos(allVideosData.filter(v => v.tipo === 'prompt'));
-        
-        console.log('Category videos loaded:', {
-          ai: aiData.length,
-          automation: automationData.length,
-          whatsapp: whatsappData.length,
-          basic: basicData.length,
-          bolt: boltData.length,
-          live: allVideosData.filter(v => v.tipo === 'live').length,
-          prompt: allVideosData.filter(v => v.tipo === 'prompt').length
-        });
         
         setCategoriesLoaded(true);
       } catch (error) {
