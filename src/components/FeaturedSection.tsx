@@ -271,15 +271,15 @@ const FeaturedSection: React.FC<FeaturedSectionProps> = ({ onVideoSelect, onView
                 {/* Content */}
                 <div className="relative z-10 h-full flex items-center pl-6 pr-4 py-4">
                   <div className="max-w-full">
-                    <h3 className="text-white font-semibold text-xl mb-2 leading-tight">
+                    <h3 className="text-white font-semibold text-2xl mb-2 leading-tight">
                       {highlight.nome}
                     </h3>
                     {highlight.descricao && (
-                      <p className="text-slate-200 text-base mb-3 leading-relaxed">
+                      <p className="text-slate-200/70 text-sm mb-3 leading-relaxed">
                         {highlight.descricao}
                       </p>
                     )}
-                    <div className="flex items-center space-x-2 text-white group-hover:text-slate-200 transition-colors">
+                    <div className="flex items-center space-x-2 text-[#ff7551] group-hover:text-[#ff7551]/80 transition-colors">
                       <span className="text-base font-medium">{highlight.titulo_botao}</span>
                       <svg className="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
