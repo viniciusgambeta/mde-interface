@@ -28,9 +28,6 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
   const [difficulties, setDifficulties] = useState<any[]>([]);
   
   const latestScrollRef = useRef<HTMLDivElement>(null);
-  const tutorialsScrollRef = useRef<HTMLDivElement>(null);
-  const designScrollRef = useRef<HTMLDivElement>(null);
-  const marketingScrollRef = useRef<HTMLDivElement>(null);
   const aiScrollRef = useRef<HTMLDivElement>(null);
   const automationScrollRef = useRef<HTMLDivElement>(null);
   const liveScrollRef = useRef<HTMLDivElement>(null);
@@ -38,6 +35,16 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
   const whatsappScrollRef = useRef<HTMLDivElement>(null);
   const basicScrollRef = useRef<HTMLDivElement>(null);
   const boltScrollRef = useRef<HTMLDivElement>(null);
+
+  // Category-specific videos
+  const [aiVideos, setAiVideos] = useState<Video[]>([]);
+  const [automationVideos, setAutomationVideos] = useState<Video[]>([]);
+  const [whatsappVideos, setWhatsappVideos] = useState<Video[]>([]);
+  const [basicVideos, setBasicVideos] = useState<Video[]>([]);
+  const [boltVideos, setBoltVideos] = useState<Video[]>([]);
+  const [liveVideos, setLiveVideos] = useState<Video[]>([]);
+  const [promptVideos, setPromptVideos] = useState<Video[]>([]);
+  const [categoriesLoaded, setCategoriesLoaded] = useState(false);
 
   // Setup realtime subscription for bookmarks - MUST be at top level
   useEffect(() => {
@@ -148,6 +155,96 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
 
     loadVideos();
   }, [currentView, user?.id]);
+
+  // Load category-specific videos for discover page
+  useEffect(() => {
+    const loadCategoryVideos = async () => {
+      if (currentView !== 'discover' || categoriesLoaded) return;
+      
+      try {
+        console.log('Loading category-specific videos...');
+        
+        // Load all categories first to get the correct slugs
+        const allCategories = await categoryService.getCategories();
+        console.log('Available categories:', allCategories.map(c => ({ name: c.name, slug: c.slug })));
+        
+        // Find category slugs by name (case insensitive)
+        const findCategorySlug = (searchTerms: string[]) => {
+          for (const term of searchTerms) {
+            const category = allCategories.find(c => 
+              c.name.toLowerCase().includes(term.toLowerCase()) ||
+              c.slug.toLowerCase().includes(term.toLowerCase())
+            );
+            if (category) {
+              console.log(`Found category for "${term}":`, category.name, category.slug);
+              return category.slug;
+            }
+          }
+          console.log(`No category found for terms:`, searchTerms);
+          return null;
+        };
+        
+        // Load videos for each category
+        const [
+          aiCategorySlug,
+          automationCategorySlug,
+          whatsappCategorySlug,
+          basicCategorySlug,
+          boltCategorySlug
+        ] = [
+          findCategorySlug(['inteligência artificial', 'inteligencia artificial', 'ia']),
+          findCategorySlug(['automação', 'automacao', 'automações', 'automation']),
+          findCategorySlug(['whatsapp', 'whats app']),
+          findCategorySlug(['básico', 'basico', 'aulas básicas', 'aulas basicas']),
+          findCategorySlug(['bolt', 'vibe', 'coding'])
+        ];
+        
+        // Load videos for each category in parallel
+        const [
+          aiData,
+          automationData,
+          whatsappData,
+          basicData,
+          boltData,
+          allVideosData
+        ] = await Promise.all([
+          aiCategorySlug ? videoService.getVideosByCategory(aiCategorySlug, 10, user?.id) : Promise.resolve([]),
+          automationCategorySlug ? videoService.getVideosByCategory(automationCategorySlug, 10, user?.id) : Promise.resolve([]),
+          whatsappCategorySlug ? videoService.getVideosByCategory(whatsappCategorySlug, 10, user?.id) : Promise.resolve([]),
+          basicCategorySlug ? videoService.getVideosByCategory(basicCategorySlug, 10, user?.id) : Promise.resolve([]),
+          boltCategorySlug ? videoService.getVideosByCategory(boltCategorySlug, 10, user?.id) : Promise.resolve([]),
+          videoService.getVideos({ limit: 50, userId: user?.id })
+        ]);
+        
+        // Set category videos
+        setAiVideos(aiData);
+        setAutomationVideos(automationData);
+        setWhatsappVideos(whatsappData);
+        setBasicVideos(basicData);
+        setBoltVideos(boltData);
+        
+        // Set live and prompt videos from all videos
+        setLiveVideos(allVideosData.filter(v => v.tipo === 'live'));
+        setPromptVideos(allVideosData.filter(v => v.tipo === 'prompt'));
+        
+        console.log('Category videos loaded:', {
+          ai: aiData.length,
+          automation: automationData.length,
+          whatsapp: whatsappData.length,
+          basic: basicData.length,
+          bolt: boltData.length,
+          live: allVideosData.filter(v => v.tipo === 'live').length,
+          prompt: allVideosData.filter(v => v.tipo === 'prompt').length
+        });
+        
+        setCategoriesLoaded(true);
+      } catch (error) {
+        console.error('Error loading category videos:', error);
+      }
+    };
+
+    loadCategoryVideos();
+  }, [currentView, user?.id, categoriesLoaded]);
 
   // Load filter options for trending and bookmark pages
   useEffect(() => {
@@ -814,76 +911,43 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
       
           <ScrollableVideoRow 
             title="Inteligência Artificial" 
-            videos={videos.filter(v => 
-              v.category?.name?.toLowerCase().includes('inteligência artificial') || 
-              v.category?.name?.toLowerCase().includes('inteligencia artificial') ||
-              v.category?.name?.toLowerCase().includes('ia') ||
-              v.category?.slug === 'ia' ||
-              v.category?.slug === 'inteligencia-artificial'
-            )} 
+            videos={aiVideos} 
             scrollRef={aiScrollRef} 
           />
           
           <ScrollableVideoRow 
             title="Automações" 
-            videos={videos.filter(v => 
-              v.category?.slug === 'automation' || 
-              v.category?.slug === 'automacao' ||
-              v.category?.slug === 'automacoes' ||
-              v.category?.name?.toLowerCase().includes('automação') || 
-              v.category?.name?.toLowerCase().includes('automacao') ||
-              v.category?.name?.toLowerCase().includes('automações')
-            )} 
+            videos={automationVideos} 
             scrollRef={automationScrollRef} 
           />
           
           <ScrollableVideoRow 
             title="Eventos ao Vivo" 
-            videos={videos.filter(v => v.tipo === 'live')} 
+            videos={liveVideos} 
             scrollRef={liveScrollRef} 
           />
           
           <ScrollableVideoRow 
             title="Prompts" 
-            videos={videos.filter(v => v.tipo === 'prompt')} 
+            videos={promptVideos} 
             scrollRef={promptScrollRef} 
           />
           
           <ScrollableVideoRow 
             title="WhatsApp" 
-            videos={videos.filter(v => 
-              v.category?.slug === 'whatsapp' || 
-              v.category?.slug === 'whats-app' ||
-              v.category?.name?.toLowerCase().includes('whatsapp') ||
-              v.category?.name?.toLowerCase().includes('whats app')
-            )} 
+            videos={whatsappVideos} 
             scrollRef={whatsappScrollRef} 
           />
           
           <ScrollableVideoRow 
             title="Aulas Básicas" 
-            videos={videos.filter(v => 
-              v.category?.slug === 'basico' || 
-              v.category?.slug === 'básico' ||
-              v.category?.slug === 'aulas-basicas' ||
-              v.category?.name?.toLowerCase().includes('básico') || 
-              v.category?.name?.toLowerCase().includes('basico') ||
-              v.category?.name?.toLowerCase().includes('aulas básicas') ||
-              v.category?.name?.toLowerCase().includes('aulas basicas')
-            )} 
+            videos={basicVideos} 
             scrollRef={basicScrollRef} 
           />
           
           <ScrollableVideoRow 
             title="Vibe Coding" 
-            videos={videos.filter(v => 
-              v.category?.slug === 'bolt' || 
-              v.category?.slug === 'vibe-coding' ||
-              v.category?.slug === 'coding' ||
-              v.category?.name?.toLowerCase().includes('bolt') || 
-              v.category?.name?.toLowerCase().includes('vibe') ||
-              v.category?.name?.toLowerCase().includes('coding')
-            )} 
+            videos={boltVideos} 
             scrollRef={boltScrollRef} 
           />
         </>
