@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, Heart, Bookmark, ThumbsUp, Users, Calendar, Clock, ExternalLink, BarChart3, MessageCircle, Phone, Instagram, Download, FileText } from 'lucide-react';
+import { ArrowLeft, Heart, Bookmark, ThumbsUp, Users, Calendar, Clock, ExternalLink, BarChart3, MessageCircle, Phone, Instagram, Download, FileText, Shield } from 'lucide-react';
 import { videoService, type Video } from '../lib/database';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -786,11 +786,11 @@ const LiveViewer: React.FC<LiveViewerProps> = ({ live, onBack, onVideoSelect }) 
           <div className="flex-1 flex items-center justify-center p-6">
             <div className="text-center">
               <div className="w-16 h-16 bg-slate-700/30 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Lock className="w-8 h-8 text-slate-500" />
+                <Shield className="w-8 h-8 text-slate-500" />
               </div>
               <h3 className="text-white font-medium mb-2">Materiais Bloqueados</h3>
               <p className="text-slate-400 text-sm text-center max-w-xs">
-                Os materiais e downloads estarão disponíveis após a live ir ao ar.
+                Os materiais estarão disponíveis após a live ir ao ar.
               </p>
             </div>
           </div>
