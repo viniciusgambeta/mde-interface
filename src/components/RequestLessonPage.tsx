@@ -188,19 +188,9 @@ const RequestLessonPage: React.FC = () => {
       <div className={`border rounded-lg p-6 hover:bg-slate-600/20 transition-all duration-200 group ${
         isPending ? 'bg-slate-700/20 border-slate-600/20' : 'bg-slate-700/30 border-slate-600/30'
       }`}>
-        {/* Header with user info and vote button */}
+        {/* Header with vote button */}
         <div className="flex items-start justify-between mb-3">
-          <div className="flex items-center space-x-2 flex-1">
-            <img
-              src={suggestion.user_avatar || '/avatar1.png'}
-              alt="User"
-              className="w-6 h-6 rounded-full object-cover"
-            />
-            <span className="text-slate-400 text-xs">
-              {isUserSuggestion ? 'Você' : (suggestion.user_name || 'Usuário Anônimo')}
-            </span>
-          </div>
-          
+          <div className="flex-1"></div>
           {canVote && !isPending && (
             <button
               onClick={() => handleUpvote(suggestion.id)}
@@ -236,17 +226,26 @@ const RequestLessonPage: React.FC = () => {
           {suggestion.description}
         </p>
         
+        {/* User info below description */}
+        <div className="flex items-center space-x-3 mb-4">
+          <img
+            src={suggestion.user_avatar || '/avatar1.png'}
+            alt="User"
+            className="w-8 h-8 rounded-lg object-cover"
+          />
+          <span className="text-slate-400 text-sm">
+            Sugerido por{' '}
+            <span className="font-bold text-slate-300">
+              {isUserSuggestion ? 'Você' : (suggestion.user_name || 'Usuário Anônimo')}
+            </span>
+          </span>
+        </div>
+        
         {/* Footer with category */}
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-start">
           <span className="text-sm px-3 py-1.5 bg-slate-600/30 text-slate-300 rounded">
             {suggestion.category}
           </span>
-          
-          {isPending && isUserSuggestion && (
-            <span className="text-sm text-slate-500">
-              Pendente
-            </span>
-          )}
         </div>
       </div>
     );
