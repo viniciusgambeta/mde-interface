@@ -188,28 +188,10 @@ const RequestLessonPage: React.FC = () => {
       <div className={`border rounded-lg p-6 hover:bg-slate-600/20 transition-all duration-200 group ${
         isPending ? 'bg-slate-700/20 border-slate-600/20' : 'bg-slate-700/30 border-slate-600/30'
       }`}>
-        {/* Header with vote button */}
-        <div className="flex items-start justify-between mb-3">
-          <div className="flex-1"></div>
-          {canVote && !isPending && (
-            <button
-              onClick={() => handleUpvote(suggestion.id)}
-              disabled={isVoting}
-              className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                isVoted 
-                  ? 'bg-[#ff7551] text-white' 
-                  : 'bg-slate-600/30 text-slate-400 hover:bg-slate-500/30 hover:text-white'
-              } ${isVoting ? 'animate-pulse' : ''}`}
-            >
-              <ThumbsUp className="w-4 h-4" />
-              <span>{suggestion.votes || 0}</span>
-            </button>
-          )}
-        </div>
         
         {/* Title */}
-        <div className="mb-3">
-          <h4 className="text-white font-semibold text-base leading-snug line-clamp-2">
+        <div className="mb-4">
+          <h4 className="text-white font-semibold text-lg leading-snug line-clamp-2">
             {suggestion.title}
           </h4>
         </div>
@@ -222,12 +204,12 @@ const RequestLessonPage: React.FC = () => {
         )}
         
         {/* Description */}
-        <p className="text-slate-400 text-sm mb-3 line-clamp-2 leading-relaxed">
+        <p className="text-slate-400 text-sm mb-4 line-clamp-2 leading-relaxed">
           {suggestion.description}
         </p>
         
-        {/* User info below description */}
-        <div className="flex items-center space-x-3 mb-4">
+        {/* User info */}
+        <div className="flex items-center space-x-3">
           <img
             src={suggestion.user_avatar || '/avatar1.png'}
             alt="User"
@@ -241,12 +223,21 @@ const RequestLessonPage: React.FC = () => {
           </span>
         </div>
         
-        {/* Footer with category */}
-        <div className="flex items-center justify-start">
-          <span className="text-sm px-3 py-1.5 bg-slate-600/30 text-slate-300 rounded">
-            {suggestion.category}
-          </span>
-        </div>
+        {/* Like button - positioned absolutely in bottom right */}
+        {canVote && !isPending && (
+          <button
+            onClick={() => handleUpvote(suggestion.id)}
+            disabled={isVoting}
+            className={`absolute bottom-4 right-4 flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+              isVoted 
+                ? 'bg-[#ff7551] text-white' 
+                : 'bg-slate-600/30 text-slate-400 hover:bg-slate-500/30 hover:text-white'
+            } ${isVoting ? 'animate-pulse' : ''}`}
+          >
+            <ThumbsUp className="w-4 h-4" />
+            <span>{suggestion.votes || 0}</span>
+          </button>
+        )}
       </div>
     );
   };
