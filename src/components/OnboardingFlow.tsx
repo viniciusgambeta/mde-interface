@@ -145,6 +145,9 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ userId, userEmail, onCo
     setIsLoading(true);
 
     try {
+      // First, mark onboarding as completed in the context to hide the flow immediately
+      onComplete();
+      
       // Update subscription data with onboarding info (optional)
       const { error: subscriptionError } = await supabase
         .from('assinaturas')
@@ -163,29 +166,36 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ userId, userEmail, onCo
         console.warn('Could not save subscription onboarding data, but continuing');
       }
       
+      // Update profiles table to mark onboarding as completed
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .upsert({
+          id: userId,
+          onboarding_completed: true,
+          onboarding_data: onboardingData
+        });
+
+      if (profileError) {
+        console.error('Error updating profile onboarding status:', profileError);
+      }
+      
       // Update user profile with onboarding data
-      const { error: profileError } = await supabase.auth.updateUser({
+      const { error: authError } = await supabase.auth.updateUser({
         data: {
-          name: onboardingData.avatar_url ? undefined : undefined, // Keep existing name
           avatar_url: onboardingData.avatar_url,
           onboarding_completed: true,
           onboarding_data: onboardingData
         }
       });
 
-      if (profileError) {
-        console.error('Error updating user profile:', profileError);
+      if (authError) {
+        console.error('Error updating user auth data:', authError);
       }
 
-      // Redirect to home page
-      window.location.href = '/';
-      
-      onComplete();
+      console.log('Onboarding completed successfully');
     } catch (error) {
       console.error('Error completing onboarding:', error);
-      // Don't block the user, just proceed
-      console.warn('Onboarding data save failed, but allowing user to continue');
-      window.location.href = '/';
+      // Even if there's an error, complete the onboarding to avoid infinite loop
       onComplete();
     } finally {
       setIsLoading(false);
