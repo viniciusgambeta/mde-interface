@@ -183,14 +183,35 @@ const RequestLessonPage: React.FC = () => {
     const canVote = user && (suggestion.etapa === 'sugestao' || suggestion.etapa === 'producao');
     const isPending = suggestion.status === 'pending';
     const isUserSuggestion = suggestion.user_id === user?.id;
+   
+   // Extract first name from full name
+   const getFirstName = (fullName: string) => {
+     return fullName.split(' ')[0];
+   };
     
     return (
       <div className={`relative border rounded-lg p-6 hover:bg-slate-600/20 transition-all duration-200 group ${
         isPending ? 'bg-slate-700/20 border-slate-600/20' : 'bg-slate-700/30 border-slate-600/30'
       }`}>
+       
+       {/* Like Button - Top Right */}
+       {canVote && !isPending && (
+         <button
+           onClick={() => handleUpvote(suggestion.id)}
+           disabled={isVoting}
+           className={`absolute top-4 right-4 flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+             isVoted 
+               ? 'bg-[#ff7551] text-white' 
+               : 'bg-slate-600/30 text-slate-400 hover:bg-slate-500/30 hover:text-white'
+           } ${isVoting ? 'animate-pulse' : ''}`}
+         >
+           <ThumbsUp className="w-4 h-4" />
+           <span>{suggestion.votes || 0}</span>
+         </button>
+       )}
         
         {/* Title */}
-        <div className="mb-4">
+       <div className="mb-4 pr-20">
           <h4 className="text-white font-semibold text-lg leading-snug line-clamp-2">
             {suggestion.title}
           </h4>
@@ -209,35 +230,19 @@ const RequestLessonPage: React.FC = () => {
         </p>
         
         {/* User info */}
-        <div className="flex items-center space-x-3 mb-4">
+       <div className="flex items-center space-x-3">
           <img
             src={suggestion.user_avatar || '/avatar1.png'}
             alt="User"
-            className="w-8 h-8 rounded-lg object-cover"
+           className="w-8 h-8 rounded-lg object-cover"
           />
           <span className="text-slate-400 text-sm">
             Sugerido por{' '}
             <span className="font-bold text-slate-300">
-              {isUserSuggestion ? 'Você' : (suggestion.user_name || 'Usuário Anônimo')}
+             {isUserSuggestion ? 'Você' : getFirstName(suggestion.user_name || 'Usuário Anônimo')}
             </span>
           </span>
         </div>
-        
-        {/* Like button - positioned in bottom right */}
-        {canVote && !isPending && (
-          <button
-            onClick={() => handleUpvote(suggestion.id)}
-            disabled={isVoting}
-            className={`absolute bottom-4 right-4 flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-              isVoted 
-                ? 'bg-[#ff7551] text-white' 
-                : 'bg-slate-600/30 text-slate-400 hover:bg-slate-500/30 hover:text-white'
-            } ${isVoting ? 'animate-pulse' : ''}`}
-          >
-            <ThumbsUp className="w-4 h-4" />
-            <span>{suggestion.votes || 0}</span>
-          </button>
-        )}
         
         {/* Like button - positioned absolutely in bottom right */}
         {canVote && !isPending && (
