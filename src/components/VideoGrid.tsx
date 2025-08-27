@@ -680,55 +680,53 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
             <h3 className="text-white font-medium leading-snug group-hover:text-[#ff7551] transition-colors text-xl">
               {video.title}
             </h3>
+            
+            {/* Tools Icons - Below title, aligned left */}
+            {showToolIcons && video.ferramentas && video.ferramentas.length > 0 && (
+              <div className="flex items-center space-x-2 mt-3">
+                {video.ferramentas.slice(0, 5).map((ferramenta, index) => (
+                  <div
+                    key={ferramenta.id}
+                    className="w-6 h-6 rounded-sm overflow-hidden flex items-center justify-center group/tool relative transition-all duration-200"
+                    title={ferramenta.nome}
+                  >
+                    <img 
+                      src={ferramenta.icone} 
+                      alt={ferramenta.nome}
+                      className="w-6 h-6 object-contain drop-shadow-lg filter brightness-90 contrast-110 transition-all duration-200 group-hover:brightness-100 group-hover:contrast-100"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.style.display = 'none';
+                        const fallback = target.nextElementSibling as HTMLElement;
+                        if (fallback) fallback.style.display = 'flex';
+                      }}
+                    />
+                    <div className="w-6 h-6 bg-slate-500 rounded-sm hidden items-center justify-center drop-shadow-lg filter brightness-90 contrast-110 transition-all duration-200 group-hover:brightness-100 group-hover:contrast-100">
+                      <span className="text-white text-xs font-bold">
+                        {ferramenta.nome.charAt(0).toUpperCase()}
+                      </span>
+                    </div>
+                    
+                    {/* Tooltip */}
+                    <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-slate-800 text-white text-xs rounded opacity-0 group-hover/tool:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
+                      {ferramenta.nome}
+                    </div>
+                  </div>
+                ))}
+                
+                {/* More indicator */}
+                {video.ferramentas.length > 5 && (
+                  <div className="w-6 h-6 rounded-sm bg-slate-600 flex items-center justify-center drop-shadow-lg text-slate-200 filter brightness-90 contrast-110 transition-all duration-200 group-hover:brightness-100 group-hover:contrast-100">
+                    <span className="text-slate-400 text-xs font-medium">
+                      +{video.ferramentas.length - 5}
+                    </span>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
           </div>
 
-        {/* Tools Icons - Only show if showToolIcons is true */}
-        {showToolIcons && video.ferramentas && video.ferramentas.length > 0 && (
-          <div className="absolute -bottom-4 left-1/2 transform -translate-x-1/2">
-            <div className="flex items-center space-x-1">
-              {video.ferramentas.slice(0, 5).map((ferramenta, index) => (
-                <div
-                  key={ferramenta.id}
-                  className="w-6 h-6 rounded-sm overflow-hidden flex items-center justify-center group/tool relative transition-all duration-200 group-hover:w-8 group-hover:h-8"
-                  style={{ zIndex: 5 - index }}
-                  title={ferramenta.nome}
-                >
-                  <img 
-                    src={ferramenta.icone} 
-                    alt={ferramenta.nome}
-                    className="w-6 h-6 object-contain drop-shadow-2xl filter brightness-75 contrast-125 transition-all duration-200 group-hover:w-8 group-hover:h-8 group-hover:filter-none"
-                    onError={(e) => {
-                      const target = e.target as HTMLImageElement;
-                      target.style.display = 'none';
-                      const fallback = target.nextElementSibling as HTMLElement;
-                      if (fallback) fallback.style.display = 'block';
-                    }}
-                  />
-                  <div className="w-6 h-6 bg-slate-500 rounded-sm hidden flex items-center justify-center drop-shadow-2xl filter brightness-75 contrast-125 transition-all duration-200 group-hover:w-8 group-hover:h-8 group-hover:filter-none">
-                    <span className="text-white text-xs font-bold">
-                      {ferramenta.nome.charAt(0).toUpperCase()}
-                    </span>
-                  </div>
-                  
-                  {/* Tooltip */}
-                  <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-slate-800 text-white text-xs rounded opacity-0 group-hover/tool:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
-                    {ferramenta.nome}
-                  </div>
-                </div>
-              ))}
-              
-              {/* More indicator */}
-              {video.ferramentas.length > 5 && (
-                <div className="w-6 h-6 rounded-sm bg-slate-600 flex items-center justify-center drop-shadow-2xl text-slate-200 filter brightness-75 contrast-125 transition-all duration-200 group-hover:w-8 group-hover:h-8 group-hover:filter-none" style={{ zIndex: 0 }}>
-                  <span className="text-slate-400 text-xs font-medium">
-                    +{video.ferramentas.length - 5}
-                  </span>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
         </div>
       </div>
     );
