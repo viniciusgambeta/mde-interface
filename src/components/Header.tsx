@@ -314,7 +314,7 @@ const Header: React.FC<HeaderProps> = ({ sidebarCollapsed, onSidebarToggle, onVi
                   onClick={() => setShowUserMenu(!showUserMenu)}
                   className="flex items-center space-x-4 p-3 rounded-lg hover:bg-slate-700/30 transition-colors group"
                 >
-                  <div className="hidden sm:block text-right">
+                  <div className="hidden sm:block text-right pl-3">
                     <div className="text-white font-medium text-base group-hover:text-[#ff7551] transition-colors">{user?.name}</div>
                   </div>
                   <div className="relative">

@@ -403,7 +403,7 @@ const ProfilePage: React.FC = () => {
               href="https://app.hub.la/user_subscriptions"
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center space-x-2 px-4 py-2 bg-[#ff7551] hover:bg-[#ff7551]/80 text-white font-medium rounded-lg transition-colors text-sm"
+              className="flex items-center space-x-2 px-6 py-3 bg-[#ff7551] hover:bg-[#ff7551]/80 text-white font-medium rounded-lg transition-colors text-base"
             >
               <ExternalLink className="w-4 h-4" />
               <span>Gerenciar Assinatura</span>
