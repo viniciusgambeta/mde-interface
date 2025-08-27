@@ -155,6 +155,43 @@ const Countdown: React.FC<{ targetDate: Date }> = ({ targetDate }) => {
           <div className="text-slate-400 text-sm">Seg</div>
         </div>
       </div>
+      
+      {/* Action Buttons */}
+      <div className="flex flex-col sm:flex-row gap-4 justify-center">
+        <a
+          href="https://youtube.com"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center justify-center space-x-2 px-6 py-3 bg-[#ff7551] hover:bg-[#ff7551]/80 text-white font-medium rounded-lg transition-colors"
+        >
+          <ExternalLink className="w-5 h-5" />
+          <span>Assistir no YouTube</span>
+        </a>
+        
+        <button
+          onClick={() => {
+            const startDate = new Date(targetDate);
+            const endDate = new Date(startDate.getTime() + (60 * 60 * 1000));
+            
+            const formatDate = (date: Date) => {
+              return date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+            };
+            
+            const title = encodeURIComponent('Live do Me dá um Exemplo');
+            const description = encodeURIComponent('Live do Me dá um Exemplo');
+            const startTime = formatDate(startDate);
+            const endTime = formatDate(endDate);
+            
+            const googleCalendarUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${startTime}/${endTime}&details=${description}&sf=true&output=xml`;
+            
+            window.open(googleCalendarUrl, '_blank');
+          }}
+          className="flex items-center justify-center space-x-2 px-6 py-3 bg-slate-700 hover:bg-slate-600 text-white font-medium rounded-lg transition-colors"
+        >
+          <Calendar className="w-5 h-5" />
+          <span>Adicionar ao Calendário</span>
+        </button>
+      </div>
     </div>
   );
 };
@@ -353,25 +390,7 @@ const LiveViewer: React.FC<LiveViewerProps> = ({ live, onBack, onVideoSelect }) 
   };
 
   const handleAddToCalendar = () => {
-    if (!liveDate) return;
-    
-    const startDate = new Date(liveDate);
-    const endDate = new Date(startDate.getTime() + (60 * 60 * 1000)); // 1 hour duration
-    
-    const formatDate = (date: Date) => {
-      return date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
-    };
-    
-    const title = encodeURIComponent(currentLive.title);
-    const description = encodeURIComponent(
-      `${currentLive.summary || currentLive.description || 'Live do Me dá um Exemplo'}\n\nAssistir em: ${currentLive.video_url || ''}`
-    );
-    const startTime = formatDate(startDate);
-    const endTime = formatDate(endDate);
-    
-    const googleCalendarUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${startTime}/${endTime}&details=${description}&sf=true&output=xml`;
-    
-    window.open(googleCalendarUrl, '_blank');
+    // Function moved to Countdown component
   };
 
   const formatViews = (count: number) => {
@@ -557,32 +576,7 @@ const LiveViewer: React.FC<LiveViewerProps> = ({ live, onBack, onVideoSelect }) 
 
           {/* Upcoming Live Countdown */}
           {isUpcoming ? (
-            <div className="space-y-6">
-              <Countdown targetDate={liveDate!} />
-              
-              {/* Action Buttons for upcoming live */}
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                {isYouTubeUrl && (
-                  <a
-                    href={currentLive.video_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center justify-center space-x-2 px-6 py-3 bg-[#ff7551] hover:bg-[#ff7551]/80 text-white font-medium rounded-lg transition-colors"
-                  >
-                    <ExternalLink className="w-5 h-5" />
-                    <span>Assistir no YouTube</span>
-                  </a>
-                )}
-                
-                <button
-                  onClick={handleAddToCalendar}
-                  className="flex items-center justify-center space-x-2 px-6 py-3 bg-slate-700 hover:bg-slate-600 text-white font-medium rounded-lg transition-colors"
-                >
-                  <Calendar className="w-5 h-5" />
-                  <span>Adicionar ao Calendário</span>
-                </button>
-              </div>
-            </div>
+            <Countdown targetDate={liveDate!} />
           ) : (
             /* Description - Only show if not upcoming */
             <div className="bg-slate-700/30 rounded-lg p-8">
@@ -622,7 +616,7 @@ const LiveViewer: React.FC<LiveViewerProps> = ({ live, onBack, onVideoSelect }) 
       </div>
 
       {/* Materials Section - Only show if there are materials or versions */}
-      {((currentLive.materials && currentLive.materials.length > 0) || (currentLive.ferramentas && currentLive.ferramentas.length > 0) || versionsToShow.length > 0) && (
+      {!isUpcoming && ((currentLive.materials && currentLive.materials.length > 0) || (currentLive.ferramentas && currentLive.ferramentas.length > 0) || versionsToShow.length > 0) && (
         <div className="w-full lg:w-96 border-l border-slate-700/30 flex flex-col">
           {/* Tab Header */}
           <div className="p-6 border-b border-slate-700/30">
@@ -780,8 +774,31 @@ const LiveViewer: React.FC<LiveViewerProps> = ({ live, onBack, onVideoSelect }) 
         </div>
       )}
 
-      {/* Suggested Lives - Always show as separate section if no materials */}
-      {!((currentLive.materials && currentLive.materials.length > 0) || (currentLive.ferramentas && currentLive.ferramentas.length > 0) || versionsToShow.length > 0) && (
+      {/* Materials Section for Upcoming Lives - Show locked state */}
+      {isUpcoming && (
+        <div className="w-full lg:w-96 border-l border-slate-700/30 flex flex-col">
+          {/* Tab Header */}
+          <div className="p-6 border-b border-slate-700/30">
+            <h3 className="text-white font-semibold">Materiais</h3>
+          </div>
+
+          {/* Locked Content */}
+          <div className="flex-1 flex items-center justify-center p-6">
+            <div className="text-center">
+              <div className="w-16 h-16 bg-slate-700/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Lock className="w-8 h-8 text-slate-500" />
+              </div>
+              <h3 className="text-white font-medium mb-2">Materiais Bloqueados</h3>
+              <p className="text-slate-400 text-sm text-center max-w-xs">
+                Os materiais e downloads estarão disponíveis após a live ir ao ar.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Suggested Lives - Show when no materials and not upcoming */}
+      {!isUpcoming && !((currentLive.materials && currentLive.materials.length > 0) || (currentLive.ferramentas && currentLive.ferramentas.length > 0) || versionsToShow.length > 0) && (
         <div className="w-full lg:w-96 border-l border-slate-700/30 flex flex-col">
           {/* Tab Header */}
           <div className="p-6 border-b border-slate-700/30">
