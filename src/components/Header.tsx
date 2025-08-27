@@ -184,7 +184,9 @@ const Header: React.FC<HeaderProps> = ({ sidebarCollapsed, onSidebarToggle, onVi
                 alt="Me dá um Exemplo"
                 className="h-20 w-auto group-hover:animate-discrete-pop"
                 style={{ margin: 0, padding: 0 }}
+              />
               <span className="text-white font-medium" style={{ paddingLeft: '12px' }}>
+              </span>
             </button>
 
             {/* Search Bar - Compact and expandable */}
