@@ -78,8 +78,8 @@ const RequestLessonPage: React.FC = () => {
         setFormData({ title: '', category: '', description: '' });
         setShowForm(false);
         
-        // Hide success message after 3 seconds
-        setTimeout(() => setSubmitSuccess(false), 3000);
+        // Hide success message after 5 seconds
+        setTimeout(() => setSubmitSuccess(false), 5000);
         
         // Reload suggestions to show new one if it gets approved
         const updatedSuggestions = await videoSuggestionsService.getApprovedSuggestions();
@@ -314,6 +314,21 @@ const RequestLessonPage: React.FC = () => {
         </button>
       </div>
 
+      {/* Success Message */}
+      {submitSuccess && (
+        <div className="mb-6 p-6 bg-green-500/10 border border-green-500/20 rounded-xl animate-fade-in">
+          <div className="flex items-center space-x-2">
+            <CheckCircle className="w-5 h-5 text-green-400" />
+            <div>
+              <p className="text-green-400 font-medium text-base">Sugestão enviada com sucesso!</p>
+              <p className="text-green-300 text-sm mt-1">
+                Sua sugestão passará por aprovação e depois entrará em votação entre os usuários.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Separator */}
       <div className="w-full h-px bg-slate-600/30 mb-8"></div>
 
@@ -380,7 +395,7 @@ const RequestLessonPage: React.FC = () => {
                       name="title"
                       value={formData.title}
                       onChange={handleInputChange}
-                      placeholder="Ex: React Hooks Avançados"
+                      placeholder="Nome da aula"
                       maxLength={60}
                       className="w-full px-4 py-3 bg-slate-700/30 border border-slate-600/30 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#ff7551]/50 focus:border-transparent transition-all"
                       required
@@ -399,10 +414,10 @@ const RequestLessonPage: React.FC = () => {
                       name="category"
                       value={formData.category}
                       onChange={handleInputChange}
-                      className="w-full px-4 py-3 bg-slate-700/30 border border-slate-600/30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-[#ff7551]/50 focus:border-transparent transition-all"
+                      className="w-full px-4 py-3 bg-slate-800/50 border border-slate-600/30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-[#ff7551]/50 focus:border-transparent transition-all"
                       required
                     >
-                      <option value="">Selecione uma categoria</option>
+                      <option value="">Categoria</option>
                       {categories.map((category) => (
                         <option key={category.id} value={category.name}>
                           {category.name}
@@ -421,7 +436,7 @@ const RequestLessonPage: React.FC = () => {
                     name="description"
                     value={formData.description}
                     onChange={handleInputChange}
-                    placeholder="Descreva o que você gostaria de aprender nesta aula. Seja específico sobre os tópicos que devem ser abordados..."
+                    placeholder="Descreva o que você gostaria de aprender..."
                     maxLength={140}
                     rows={4}
                     className="w-full px-4 py-3 bg-slate-700/30 border border-slate-600/30 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#ff7551]/50 focus:border-transparent transition-all resize-none"
