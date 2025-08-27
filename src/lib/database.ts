@@ -114,6 +114,8 @@ export interface VideoSuggestion {
   created_at: string;
   updated_at: string;
   votes?: number;
+  user_name?: string;
+  user_avatar?: string;
 }
 
 export interface VideoRelated {
@@ -1043,7 +1045,13 @@ export const videoSuggestionsService = {
     try {
       const { data, error } = await supabase
         .from('video_suggestions')
-        .select('*')
+        .select(`
+          *,
+          user_data:assinaturas!video_suggestions_assinatura_id_fkey(
+            "Nome do cliente",
+            avatar_usuario
+          )
+        `)
         .eq('status', 'approved')
         .order('created_at', { ascending: false });
 
@@ -1052,7 +1060,14 @@ export const videoSuggestionsService = {
         return [];
       }
 
-      return data as VideoSuggestion[];
+      // Transform data to include user info
+      const suggestions = data.map(suggestion => ({
+        ...suggestion,
+        user_name: suggestion.user_data?.['Nome do cliente'] || 'Usuário Anônimo',
+        user_avatar: suggestion.user_data?.avatar_usuario || '/avatar1.png'
+      }));
+
+      return suggestions as VideoSuggestion[];
     } catch (error) {
       console.error('Error fetching approved suggestions:', error);
       return [];
@@ -1151,7 +1166,13 @@ export const videoSuggestionsService = {
     try {
       const { data, error } = await supabase
         .from('video_suggestions')
-        .select('*')
+        .select(`
+          *,
+          user_data:assinaturas!video_suggestions_assinatura_id_fkey(
+            "Nome do cliente",
+            avatar_usuario
+          )
+        `)
         .eq('user_id', userId)
         .eq('status', 'pending')
         .order('created_at', { ascending: false });
@@ -1161,7 +1182,14 @@ export const videoSuggestionsService = {
         return [];
       }
 
-      return data as VideoSuggestion[];
+      // Transform data to include user info
+      const suggestions = data.map(suggestion => ({
+        ...suggestion,
+        user_name: suggestion.user_data?.['Nome do cliente'] || 'Usuário Anônimo',
+        user_avatar: suggestion.user_data?.avatar_usuario || '/avatar1.png'
+      }));
+
+      return suggestions as VideoSuggestion[];
     } catch (error) {
       console.error('Error fetching user pending suggestions:', error);
       return [];

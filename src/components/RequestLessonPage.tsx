@@ -192,12 +192,12 @@ const RequestLessonPage: React.FC = () => {
         <div className="flex items-start justify-between mb-3">
           <div className="flex items-center space-x-2 flex-1">
             <img
-              src="/src/images/avatar.jpg"
+              src={suggestion.user_avatar || '/avatar1.png'}
               alt="User"
               className="w-6 h-6 rounded-full object-cover"
             />
             <span className="text-slate-400 text-xs">
-              {isUserSuggestion ? 'Você' : 'Usuário'}
+              {isUserSuggestion ? 'Você' : (suggestion.user_name || 'Usuário Anônimo')}
             </span>
           </div>
           
