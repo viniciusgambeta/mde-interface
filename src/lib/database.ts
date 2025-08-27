@@ -719,17 +719,45 @@ export const videoService = {
     console.log('recordView: Recording view for video:', videoId, 'user:', userId);
 
     try {
+      // Prepare the insert data
+      const insertData: any = {
+        video_id: videoId,
+        watch_duration_seconds: watchDuration,
+        completed: watchDuration > 0
+      };
+
+      // Only add user_id if user is authenticated
+      if (userId) {
+        insertData.user_id = userId;
+      }
+
       const { error } = await supabase
         .from('video_views')
-        .insert({
-          video_id: videoId,
-          user_id: userId,
-          watch_duration_seconds: watchDuration,
-          completed: watchDuration > 0
-        });
+        .insert(insertData);
 
       if (error) {
-        console.error('recordView: Error inserting view:', error);
+        console.error('recordView: Error inserting view:', error.message);
+        
+        // If it's an RLS error and user is not authenticated, try without user_id
+        if (error.code === '42501' && !userId) {
+          console.log('recordView: Retrying view recording as anonymous user');
+          const { error: retryError } = await supabase
+            .from('video_views')
+            .insert({
+              video_id: videoId,
+              watch_duration_seconds: watchDuration,
+              completed: watchDuration > 0
+            });
+          
+          if (retryError) {
+            console.error('recordView: Retry failed:', retryError.message);
+            return false;
+          }
+          
+          console.log('recordView: Successfully recorded anonymous view');
+          return true;
+        }
+        
         return false;
       }
 
