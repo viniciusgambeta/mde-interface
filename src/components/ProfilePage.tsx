@@ -388,6 +388,30 @@ const ProfilePage: React.FC = () => {
         </div>
       </div>
 
+      {/* Subscription Management Section */}
+      <div className="bg-slate-700/30 border border-slate-600/30 rounded-xl p-4 sm:p-6 lg:p-8">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+          <div>
+            <h3 className="text-lg font-semibold text-white mb-2">Gerenciar Assinatura</h3>
+            <p className="text-slate-400 text-sm max-w-2xl">
+              A gestão da assinatura é feita através da Hubla. Por lá você pode alterar método de pagamento, cancelar ou modificar outras informações.
+            </p>
+          </div>
+          
+          <div className="mt-4 lg:mt-0">
+            <a
+              href="https://app.hub.la/user_subscriptions"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center space-x-2 px-4 py-2 bg-[#ff7551] hover:bg-[#ff7551]/80 text-white font-medium rounded-lg transition-colors text-sm"
+            >
+              <ExternalLink className="w-4 h-4" />
+              <span>Gerenciar Assinatura</span>
+            </a>
+          </div>
+        </div>
+      </div>
+
       {/* Success Message */}
       {success && (
         <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-green-500/10 border border-green-500/20 rounded-lg animate-fade-in">
@@ -717,8 +741,7 @@ const ProfilePage: React.FC = () => {
           </div>
         </form>
 
-
-      {/* Password Section */}
+        {/* Password Section */}
       <div className="bg-slate-700/30 border border-slate-600/30 rounded-xl p-4 sm:p-6 lg:p-8">
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-lg sm:text-xl font-semibold text-white">Segurança</h3>
@@ -872,21 +895,6 @@ const ProfilePage: React.FC = () => {
           </div>
         )}
       </div>
-        {/* Subscription Management */}
-        <div className="mt-4 lg:mt-0">
-          <a
-            href="https://app.hub.la/user_subscriptions"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center space-x-2 px-4 py-2 bg-[#ff7551] hover:bg-[#ff7551]/80 text-white font-medium rounded-lg transition-colors text-sm"
-          >
-            <ExternalLink className="w-4 h-4" />
-            <span>Gerenciar Assinatura</span>
-          </a>
-          <p className="text-slate-500 text-xs mt-2 max-w-xs">
-            A gestão da assinatura é feita através da Hubla. Por lá você pode alterar método de pagamento, cancelar ou modificar outras informações.
-          </p>
-        </div>
       </div>
     </div>
   );
