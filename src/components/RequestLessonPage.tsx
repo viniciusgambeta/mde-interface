@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Send, ThumbsUp, Clock, CheckCircle, Lightbulb, Users, TrendingUp, Award, Plus, X } from 'lucide-react';
+import { Send, ThumbsUp, Clock, CheckCircle, Lightbulb, Users, TrendingUp, Award, Plus, X, MessageSquare } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { videoSuggestionsService, categoryService, type VideoSuggestion, type Category } from '../lib/database';
 
