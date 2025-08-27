@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { User, Mail, Camera, Save, Loader2, Upload, Shield, Calendar, Star, Phone, Instagram, Briefcase, Target, BarChart3, CheckCircle } from 'lucide-react';
+import { User, Mail, Camera, Save, Loader2, Upload, Shield, Calendar, Star, Phone, Instagram, Briefcase, Target, BarChart3, CheckCircle, Lock, Eye, EyeOff, ExternalLink } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 
@@ -21,6 +21,18 @@ const ProfilePage: React.FC = () => {
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [selectedPresetAvatar, setSelectedPresetAvatar] = useState<string | null>(null);
   const [avatarMode, setAvatarMode] = useState<'preset' | 'upload'>('preset');
+  const [showPasswordSection, setShowPasswordSection] = useState(false);
+  const [passwordData, setPasswordData] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: ''
+  });
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [passwordLoading, setPasswordLoading] = useState(false);
+  const [passwordSuccess, setPasswordSuccess] = useState(false);
+  const [passwordError, setPasswordError] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Load user data from assinaturas table
@@ -225,6 +237,80 @@ const ProfilePage: React.FC = () => {
     }
   };
 
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setPasswordData(prev => ({ ...prev, [name]: value }));
+    setPasswordError('');
+  };
+
+  const handlePasswordSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setPasswordError('');
+    setPasswordSuccess(false);
+    setPasswordLoading(true);
+
+    // Validation
+    if (!passwordData.currentPassword || !passwordData.newPassword || !passwordData.confirmPassword) {
+      setPasswordError('Por favor, preencha todos os campos');
+      setPasswordLoading(false);
+      return;
+    }
+
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      setPasswordError('As senhas não coincidem');
+      setPasswordLoading(false);
+      return;
+    }
+
+    if (passwordData.newPassword.length < 6) {
+      setPasswordError('A nova senha deve ter pelo menos 6 caracteres');
+      setPasswordLoading(false);
+      return;
+    }
+
+    try {
+      // First verify current password by trying to sign in
+      const { error: verifyError } = await supabase.auth.signInWithPassword({
+        email: user!.email,
+        password: passwordData.currentPassword
+      });
+
+      if (verifyError) {
+        setPasswordError('Senha atual incorreta');
+        setPasswordLoading(false);
+        return;
+      }
+
+      // Update password
+      const { error: updateError } = await supabase.auth.updateUser({
+        password: passwordData.newPassword
+      });
+
+      if (updateError) {
+        setPasswordError('Erro ao atualizar senha. Tente novamente.');
+        setPasswordLoading(false);
+        return;
+      }
+
+      // Success
+      setPasswordSuccess(true);
+      setPasswordData({
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: ''
+      });
+      setShowPasswordSection(false);
+      
+      setTimeout(() => setPasswordSuccess(false), 3000);
+
+    } catch (error) {
+      console.error('Error changing password:', error);
+      setPasswordError('Erro inesperado. Tente novamente.');
+    } finally {
+      setPasswordLoading(false);
+    }
+  };
+
   if (!user) {
     return (
       <div className="flex flex-col items-center justify-center py-12 sm:py-20">
@@ -308,6 +394,16 @@ const ProfilePage: React.FC = () => {
           <div className="flex items-center space-x-2">
             <CheckCircle className="w-5 h-5 text-green-400" />
             <p className="text-green-400 text-sm">Perfil atualizado com sucesso!</p>
+          </div>
+        </div>
+      )}
+
+      {/* Password Success Message */}
+      {passwordSuccess && (
+        <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-green-500/10 border border-green-500/20 rounded-lg animate-fade-in">
+          <div className="flex items-center space-x-2">
+            <CheckCircle className="w-5 h-5 text-green-400" />
+            <p className="text-green-400 text-sm">Senha alterada com sucesso!</p>
           </div>
         </div>
       )}
@@ -620,6 +716,177 @@ const ProfilePage: React.FC = () => {
             </button>
           </div>
         </form>
+
+
+      {/* Password Section */}
+      <div className="bg-slate-700/30 border border-slate-600/30 rounded-xl p-4 sm:p-6 lg:p-8">
+        <div className="flex items-center justify-between mb-6">
+          <h3 className="text-lg sm:text-xl font-semibold text-white">Segurança</h3>
+          {!showPasswordSection && (
+            <button
+              onClick={() => setShowPasswordSection(true)}
+              className="flex items-center space-x-2 px-4 py-2 bg-slate-600/30 hover:bg-slate-500/30 text-slate-300 hover:text-white rounded-lg transition-colors text-sm"
+            >
+              <Lock className="w-4 h-4" />
+              <span>Alterar Senha</span>
+            </button>
+          )}
+        </div>
+
+        {showPasswordSection && (
+          <form onSubmit={handlePasswordSubmit} className="space-y-6">
+            {passwordError && (
+              <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-lg">
+                <p className="text-red-400 text-sm">{passwordError}</p>
+              </div>
+            )}
+
+            <div className="grid sm:grid-cols-1 gap-4 sm:gap-6">
+              {/* Current Password */}
+              <div>
+                <label className="block text-sm font-medium text-slate-300 mb-2">
+                  Senha Atual *
+                </label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <input
+                    type={showCurrentPassword ? 'text' : 'password'}
+                    name="currentPassword"
+                    value={passwordData.currentPassword}
+                    onChange={handlePasswordChange}
+                    className="w-full pl-10 pr-12 py-3 bg-slate-700/30 border border-slate-600/30 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#ff7551]/50 focus:border-transparent transition-all"
+                    placeholder="••••••••"
+                    disabled={passwordLoading}
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-white transition-colors"
+                    disabled={passwordLoading}
+                  >
+                    {showCurrentPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+              </div>
+
+              {/* New Password */}
+              <div>
+                <label className="block text-sm font-medium text-slate-300 mb-2">
+                  Nova Senha *
+                </label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <input
+                    type={showNewPassword ? 'text' : 'password'}
+                    name="newPassword"
+                    value={passwordData.newPassword}
+                    onChange={handlePasswordChange}
+                    className="w-full pl-10 pr-12 py-3 bg-slate-700/30 border border-slate-600/30 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#ff7551]/50 focus:border-transparent transition-all"
+                    placeholder="••••••••"
+                    disabled={passwordLoading}
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowNewPassword(!showNewPassword)}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-white transition-colors"
+                    disabled={passwordLoading}
+                  >
+                    {showNewPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+              </div>
+
+              {/* Confirm New Password */}
+              <div>
+                <label className="block text-sm font-medium text-slate-300 mb-2">
+                  Confirmar Nova Senha *
+                </label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <input
+                    type={showConfirmPassword ? 'text' : 'password'}
+                    name="confirmPassword"
+                    value={passwordData.confirmPassword}
+                    onChange={handlePasswordChange}
+                    className="w-full pl-10 pr-12 py-3 bg-slate-700/30 border border-slate-600/30 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#ff7551]/50 focus:border-transparent transition-all"
+                    placeholder="••••••••"
+                    disabled={passwordLoading}
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-white transition-colors"
+                    disabled={passwordLoading}
+                  >
+                    {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Password Form Actions */}
+            <div className="flex justify-end space-x-3 pt-4">
+              <button
+                type="button"
+                onClick={() => {
+                  setShowPasswordSection(false);
+                  setPasswordData({
+                    currentPassword: '',
+                    newPassword: '',
+                    confirmPassword: ''
+                  });
+                  setPasswordError('');
+                }}
+                className="px-6 py-2.5 text-slate-300 hover:text-white transition-colors"
+                disabled={passwordLoading}
+              >
+                Cancelar
+              </button>
+              <button
+                type="submit"
+                disabled={passwordLoading}
+                className="flex items-center space-x-2 px-6 sm:px-8 py-2.5 sm:py-3 bg-[#ff7551] hover:bg-[#ff7551]/80 disabled:bg-[#ff7551]/50 text-white font-medium rounded-lg transition-colors disabled:cursor-not-allowed text-sm sm:text-base"
+              >
+                {passwordLoading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>Alterando...</span>
+                  </>
+                ) : (
+                  <>
+                    <Lock className="w-4 h-4" />
+                    <span>Alterar Senha</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </form>
+        )}
+
+        {!showPasswordSection && (
+          <div className="text-slate-400 text-sm">
+            Mantenha sua conta segura alterando sua senha regularmente.
+          </div>
+        )}
+      </div>
+        {/* Subscription Management */}
+        <div className="mt-4 lg:mt-0">
+          <a
+            href="https://app.hub.la/user_subscriptions"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center space-x-2 px-4 py-2 bg-[#ff7551] hover:bg-[#ff7551]/80 text-white font-medium rounded-lg transition-colors text-sm"
+          >
+            <ExternalLink className="w-4 h-4" />
+            <span>Gerenciar Assinatura</span>
+          </a>
+          <p className="text-slate-500 text-xs mt-2 max-w-xs">
+            A gestão da assinatura é feita através da Hubla. Por lá você pode alterar método de pagamento, cancelar ou modificar outras informações.
+          </p>
+        </div>
       </div>
     </div>
   );
