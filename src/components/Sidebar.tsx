@@ -5,7 +5,7 @@ import {
   Bookmark, 
   Grid3X3,
   HelpCircle,
-  Plus,
+  MessageSquare,
   User,
   Menu,
   X,
@@ -28,7 +28,7 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggle, currentView, onV
     { id: 'bookmark', label: 'Salvos', icon: Bookmark },
     { id: 'discounts', label: 'Descontos', icon: Gift },
     { id: 'profile', label: 'Minha Conta', icon: User },
-    { id: 'request-lesson', label: 'Pedir Aula', icon: Plus },
+    { id: 'request-lesson', label: 'Pedir Aula', icon: MessageSquare },
     { id: 'help', label: 'Ajuda', icon: HelpCircle },
   ];
 

@@ -309,7 +309,7 @@ const RequestLessonPage: React.FC = () => {
           onClick={() => setShowForm(true)}
           className="flex items-center space-x-2 px-6 py-3 bg-[#ff7551] hover:bg-[#ff7551]/80 text-white font-medium rounded-lg transition-colors"
         >
-          <Plus className="w-5 h-5" />
+          <MessageSquare className="w-5 h-5" />
           <span>Sugerir Aula</span>
         </button>
       </div>

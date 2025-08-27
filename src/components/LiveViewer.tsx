@@ -475,7 +475,7 @@ const LiveViewer: React.FC<LiveViewerProps> = ({ live, onBack, onVideoSelect }) 
               </div>
               <div>
                 <div className="flex items-center space-x-1">
-                  <span className="text-white font-semibold text-xl pl-1" style={{ marginBottom: '-3px' }}>{currentLive.instructor?.name || 'Instrutor'}</span>
+                  <span className="text-white font-semibold text-xl pl-2" style={{ marginBottom: '-3px' }}>{currentLive.instructor?.name || 'Instrutor'}</span>
                 </div>
                 <div className="flex items-center mt-0 pl-[3px]">
                   {currentLive.instructor?.social_instagram && (
