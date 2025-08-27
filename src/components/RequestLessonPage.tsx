@@ -243,22 +243,6 @@ const RequestLessonPage: React.FC = () => {
             </span>
           </span>
         </div>
-        
-        {/* Like button - positioned absolutely in bottom right */}
-        {canVote && !isPending && (
-          <button
-            onClick={() => handleUpvote(suggestion.id)}
-            disabled={isVoting}
-            className={`absolute bottom-4 right-4 flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-              isVoted 
-                ? 'bg-[#ff7551] text-white' 
-                : 'bg-slate-600/30 text-slate-400 hover:bg-slate-500/30 hover:text-white'
-            } ${isVoting ? 'animate-pulse' : ''}`}
-          >
-            <ThumbsUp className="w-4 h-4" />
-            <span>{suggestion.votes || 0}</span>
-          </button>
-        )}
       </div>
     );
   };
