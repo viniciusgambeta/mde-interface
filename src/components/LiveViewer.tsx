@@ -205,6 +205,7 @@ const LiveViewer: React.FC<LiveViewerProps> = ({ live, onBack, onVideoSelect }) 
   const [loading, setLoading] = useState(true);
   const [bookmarkLoading, setBookmarkLoading] = useState(false);
   const [likeLoading, setLikeLoading] = useState(false);
+  const [selectedVersion, setSelectedVersion] = useState<Video | null>(null);
 
   const handleVersionChange = async (version: Video) => {
     setSelectedVersion(version);
@@ -252,6 +253,7 @@ const LiveViewer: React.FC<LiveViewerProps> = ({ live, onBack, onVideoSelect }) 
       // Load versions for this live
       console.log('LiveViewer: Loading versions for live ID:', currentLiveData.id, 'and slug:', currentLiveData.slug);
       const versionResult = await videoService.getVideoVersions(currentLiveData.id, user?.id);
+      console.log('LiveViewer: Updated liveData with versions:', updatedLiveData.versions?.length || 0);
       console.log('LiveViewer: Received versions from service:', versionResult.versions.length, 'versions');
       // Set bookmark and like status
       if (user) {
