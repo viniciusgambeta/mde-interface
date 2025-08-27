@@ -294,7 +294,7 @@ const Header: React.FC<HeaderProps> = ({ sidebarCollapsed, onSidebarToggle, onVi
                         Tente usar palavras-chave diferentes
                       </div>
                     </div>
-                  <span className="text-white font-semibold text-xl pl-2" style={{ marginBottom: '-3px' }}>{currentVideo.instructor?.name || 'Instrutor'}</span>
+                  ) : null}
                 </div>
               )}
             </div>
