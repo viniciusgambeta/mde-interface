@@ -462,11 +462,6 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video, onBack, onVideoSelect 
         </div>
       </div>
 
-      {/* Comments Section */}
-      <div className="bg-slate-700/30 rounded-lg p-8">
-        <CommentsSection videoId={currentVideo.id} videoTitle={currentVideo.title} />
-      </div>
-
 
       {/* Materials Section */}
       <div className="w-full lg:w-96 border-l border-slate-700/30 flex flex-col">
@@ -498,9 +493,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video, onBack, onVideoSelect 
 
         {/* Tab Content */}
         <div className="flex-1 overflow-y-auto p-6">
-          {activeTab === 'comments' ? (
-            <CommentsSection videoId={currentVideo.id} videoTitle={currentVideo.title} />
-          ) : activeTab === 'materials' ? (
+          {activeTab === 'materials' ? (
             <div className="space-y-6">
              <h3 className="text-white font-semibold mb-6">Materiais e downloads</h3>
               

@@ -111,7 +111,6 @@ const SuggestedPrompts: React.FC<{ currentPrompt: Video }> = ({ currentPrompt })
 interface PromptViewerProps {
   prompt: Video;
   onBack: () => void;
-  onVideoSelect?: (video: Video) => void;
 }
 
 const PromptViewer: React.FC<PromptViewerProps> = ({ prompt, onBack, onVideoSelect }) => {
@@ -485,26 +484,12 @@ const PromptViewer: React.FC<PromptViewerProps> = ({ prompt, onBack, onVideoSele
         <div className="w-full lg:w-96 border-l border-slate-700/30 flex flex-col">
           {/* Tab Header */}
           <div className="p-6 border-b border-slate-700/30">
-            <div className="flex space-x-4">
-              <button
-                onClick={() => setActiveTab('materials')}
-                className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                  activeTab === 'materials'
-                    ? 'bg-[#ff7551] text-white'
-                    : 'text-slate-400 hover:text-white'
-                }`}
-              >
-                Materiais
-              </button>
-            </div>
+            <h3 className="text-white font-semibold">Links</h3>
           </div>
 
           {/* Tab Content */}
           <div className="flex-1 overflow-y-auto p-6">
-            {activeTab === 'comments' ? (
-              <CommentsSection videoId={currentPrompt.id} videoTitle={currentPrompt.title} />
-            ) : (
-              <div className="space-y-8">
+            <div className="space-y-8">
               {/* Materials - Only show if there are materials */}
               {currentPrompt.materials && currentPrompt.materials.length > 0 && (
                 <div>
@@ -586,7 +571,6 @@ const PromptViewer: React.FC<PromptViewerProps> = ({ prompt, onBack, onVideoSele
                 </div>
               )}
             </div>
-            )}
           </div>
         </div>
       )}
@@ -595,9 +579,7 @@ const PromptViewer: React.FC<PromptViewerProps> = ({ prompt, onBack, onVideoSele
       <div className="w-full lg:w-96 border-l border-slate-700/30 flex flex-col">
         {/* Tab Header */}
         <div className="p-6 border-b border-slate-700/30">
-          <div className="flex space-x-4">
-            <h3 className="text-white font-semibold">Sugestões</h3>
-          </div>
+          <h3 className="text-white font-semibold">Sugestões</h3>
         </div>
 
         {/* Tab Content */}
