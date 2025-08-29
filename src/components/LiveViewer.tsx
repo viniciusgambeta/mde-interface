@@ -231,6 +231,7 @@ const YouTubeEmbed: React.FC<{ url: string; title: string }> = ({ url, title }) 
 interface LiveViewerProps {
   live: Video;
   onBack: () => void;
+  onVideoSelect?: (video: Video) => void;
 }
 
 const LiveViewer: React.FC<LiveViewerProps> = ({ live, onBack, onVideoSelect }) => {
@@ -620,7 +621,7 @@ const LiveViewer: React.FC<LiveViewerProps> = ({ live, onBack, onVideoSelect }) 
         <div className="w-full lg:w-96 border-l border-slate-700/30 flex flex-col">
           {/* Tab Header */}
           <div className="p-6 border-b border-slate-700/30">
-            <div className="flex space-x-6">
+            <div className="flex space-x-4">
               <button
                 onClick={() => setActiveTab('materials')}
                 className={`px-4 py-2 rounded-lg font-medium transition-colors ${
@@ -630,6 +631,16 @@ const LiveViewer: React.FC<LiveViewerProps> = ({ live, onBack, onVideoSelect }) 
                 }`}
               >
                 Links
+              </button>
+              <button
+                onClick={() => setActiveTab('comments')}
+                className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                  activeTab === 'comments'
+                    ? 'bg-[#ff7551] text-white'
+                    : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                Comentários
               </button>
               <button
                 onClick={() => setActiveTab('suggestions')}
@@ -646,7 +657,15 @@ const LiveViewer: React.FC<LiveViewerProps> = ({ live, onBack, onVideoSelect }) 
 
           {/* Tab Content */}
           <div className="flex-1 overflow-y-auto p-6">
-            {activeTab === 'materials' ? (
+            {activeTab === 'comments' ? (
+              <CommentsSection videoId={currentLive.id} videoTitle={currentLive.title} />
+            ) : activeTab === 'suggestions' ? (
+              <div className="space-y-6" key={currentLive.id}>
+                <h3 className="text-white font-semibold mb-6">Lives Relacionadas</h3>
+                
+                <SuggestedLives currentLive={currentLive} />
+              </div>
+            ) : (
               <div className="space-y-6">
                 {/* Materials - Only show if there are materials */}
                 {currentLive.materials && currentLive.materials.length > 0 && (
@@ -763,12 +782,6 @@ const LiveViewer: React.FC<LiveViewerProps> = ({ live, onBack, onVideoSelect }) 
                    </div>
                 )}
               </div>
-            ) : (
-              <div className="space-y-6" key={currentLive.id}>
-                <h3 className="text-white font-semibold mb-6">Lives Relacionadas</h3>
-                
-                <SuggestedLives currentLive={currentLive} />
-              </div>
             )}
           </div>
         </div>
@@ -793,50 +806,23 @@ const LiveViewer: React.FC<LiveViewerProps> = ({ live, onBack, onVideoSelect }) 
                 Os materiais estarão disponíveis após a live ir ao ar.
               </p>
             </div>
-            )}
           </div>
         </div>
       )}
 
-      {/* Comments and Suggested Lives - Show when no materials and not upcoming */}
+      {/* Suggested Lives - Show when no materials and not upcoming */}
       {!isUpcoming && !((currentLive.materials && currentLive.materials.length > 0) || (currentLive.ferramentas && currentLive.ferramentas.length > 0) || versionsToShow.length > 0) && (
         <div className="w-full lg:w-96 border-l border-slate-700/30 flex flex-col">
           {/* Tab Header */}
           <div className="p-6 border-b border-slate-700/30">
-            <div className="flex space-x-4">
-              <button
-                onClick={() => setActiveTab('comments')}
-                className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                  activeTab === 'comments'
-                    ? 'bg-[#ff7551] text-white'
-                    : 'text-slate-400 hover:text-white'
-                }`}
-              >
-                Comentários
-              </button>
-              <button
-                onClick={() => setActiveTab('suggestions')}
-                className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                  activeTab === 'suggestions'
-                    ? 'bg-[#ff7551] text-white'
-                    : 'text-slate-400 hover:text-white'
-                }`}
-              >
-                Sugestões
-              </button>
-            </div>
+            <h3 className="text-white font-semibold">Lives Relacionadas</h3>
           </div>
 
           {/* Tab Content */}
           <div className="flex-1 overflow-y-auto p-6">
-            {activeTab === 'comments' ? (
-              <CommentsSection videoId={currentLive.id} videoTitle={currentLive.title} />
-            ) : (
-              <div className="space-y-6" key={currentLive.id}>
-                <h3 className="text-white font-semibold mb-6">Lives Relacionadas</h3>
-                <SuggestedLives currentLive={currentLive} />
-              </div>
-            )}
+            <div className="space-y-6" key={currentLive.id}>
+              <SuggestedLives currentLive={currentLive} />
+            </div>
           </div>
         </div>
       )}
