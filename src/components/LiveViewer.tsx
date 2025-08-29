@@ -657,9 +657,7 @@ const LiveViewer: React.FC<LiveViewerProps> = ({ live, onBack, onVideoSelect }) 
 
           {/* Tab Content */}
           <div className="flex-1 overflow-y-auto p-6">
-            {activeTab === 'comments' ? (
-              <CommentsSection videoId={currentLive.id} videoTitle={currentLive.title} />
-            ) : activeTab === 'suggestions' ? (
+            {activeTab === 'suggestions' ? (
               <div className="space-y-6" key={currentLive.id}>
                 <h3 className="text-white font-semibold mb-6">Lives Relacionadas</h3>
                 

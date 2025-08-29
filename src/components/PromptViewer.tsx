@@ -597,16 +597,6 @@ const PromptViewer: React.FC<PromptViewerProps> = ({ prompt, onBack, onVideoSele
         <div className="p-6 border-b border-slate-700/30">
           <div className="flex space-x-4">
             <h3 className="text-white font-semibold">Sugestões</h3>
-            <button
-              onClick={() => setActiveTab('comments')}
-              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                activeTab === 'comments'
-                  ? 'bg-[#ff7551] text-white'
-                  : 'text-slate-400 hover:text-white'
-              }`}
-            >
-              Comentários
-            </button>
           </div>
         </div>
 

@@ -484,16 +484,6 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video, onBack, onVideoSelect 
               Links
             </button>
             <button
-              onClick={() => setActiveTab('comments')}
-              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                activeTab === 'comments'
-                  ? 'bg-[#ff7551] text-white'
-                  : 'text-slate-400 hover:text-white'
-              }`}
-            >
-              Comentários
-            </button>
-            <button
               onClick={() => setActiveTab('suggestions')}
               className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                 activeTab === 'suggestions'
