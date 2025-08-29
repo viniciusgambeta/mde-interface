@@ -793,23 +793,50 @@ const LiveViewer: React.FC<LiveViewerProps> = ({ live, onBack, onVideoSelect }) 
                 Os materiais estarão disponíveis após a live ir ao ar.
               </p>
             </div>
+            )}
           </div>
         </div>
       )}
 
-      {/* Suggested Lives - Show when no materials and not upcoming */}
+      {/* Comments and Suggested Lives - Show when no materials and not upcoming */}
       {!isUpcoming && !((currentLive.materials && currentLive.materials.length > 0) || (currentLive.ferramentas && currentLive.ferramentas.length > 0) || versionsToShow.length > 0) && (
         <div className="w-full lg:w-96 border-l border-slate-700/30 flex flex-col">
           {/* Tab Header */}
           <div className="p-6 border-b border-slate-700/30">
-            <h3 className="text-white font-semibold">Lives Relacionadas</h3>
+            <div className="flex space-x-4">
+              <button
+                onClick={() => setActiveTab('comments')}
+                className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                  activeTab === 'comments'
+                    ? 'bg-[#ff7551] text-white'
+                    : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                Comentários
+              </button>
+              <button
+                onClick={() => setActiveTab('suggestions')}
+                className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                  activeTab === 'suggestions'
+                    ? 'bg-[#ff7551] text-white'
+                    : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                Sugestões
+              </button>
+            </div>
           </div>
 
           {/* Tab Content */}
           <div className="flex-1 overflow-y-auto p-6">
-            <div className="space-y-6" key={currentLive.id}>
-              <SuggestedLives currentLive={currentLive} />
-            </div>
+            {activeTab === 'comments' ? (
+              <CommentsSection videoId={currentLive.id} videoTitle={currentLive.title} />
+            ) : (
+              <div className="space-y-6" key={currentLive.id}>
+                <h3 className="text-white font-semibold mb-6">Lives Relacionadas</h3>
+                <SuggestedLives currentLive={currentLive} />
+              </div>
+            )}
           </div>
         </div>
       )}

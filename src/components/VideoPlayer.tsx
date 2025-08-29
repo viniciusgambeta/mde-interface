@@ -479,6 +479,16 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video, onBack, onVideoSelect 
               Links
             </button>
             <button
+              onClick={() => setActiveTab('comments')}
+              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                activeTab === 'comments'
+                  ? 'bg-[#ff7551] text-white'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              Comentários
+            </button>
+            <button
               onClick={() => setActiveTab('suggestions')}
               className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                 activeTab === 'suggestions'
@@ -493,7 +503,9 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video, onBack, onVideoSelect 
 
         {/* Tab Content */}
         <div className="flex-1 overflow-y-auto p-6">
-          {activeTab === 'materials' ? (
+          {activeTab === 'comments' ? (
+            <CommentsSection videoId={currentVideo.id} videoTitle={currentVideo.title} />
+          ) : activeTab === 'materials' ? (
             <div className="space-y-6">
              <h3 className="text-white font-semibold mb-6">Materiais e downloads</h3>
               
