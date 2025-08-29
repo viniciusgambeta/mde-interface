@@ -111,6 +111,7 @@ const SuggestedPrompts: React.FC<{ currentPrompt: Video }> = ({ currentPrompt })
 interface PromptViewerProps {
   prompt: Video;
   onBack: () => void;
+  onVideoSelect?: (video: Video) => void;
 }
 
 const PromptViewer: React.FC<PromptViewerProps> = ({ prompt, onBack, onVideoSelect }) => {
@@ -227,7 +228,7 @@ const PromptViewer: React.FC<PromptViewerProps> = ({ prompt, onBack, onVideoSele
             }
           }
         }, 300); // Small delay to ensure trigger has executed
-        }
+      }
     } catch (error) {
       console.error('Error toggling like:', error);
     } finally {
@@ -571,7 +572,6 @@ const PromptViewer: React.FC<PromptViewerProps> = ({ prompt, onBack, onVideoSele
                 </div>
               )}
             </div>
-            )}
           </div>
         </div>
       )}
@@ -619,25 +619,6 @@ const PromptViewer: React.FC<PromptViewerProps> = ({ prompt, onBack, onVideoSele
           </div>
         </div>
       )}
-    </div>
-  );
-};
-
-export default PromptViewer;
-        {/* Tab Header */}
-        <div className="p-6 border-b border-slate-700/30">
-          <h3 className="text-white font-semibold">Sugestões</h3>
-        </div>
-
-        {/* Tab Content */}
-        <div className="flex-1 overflow-y-auto p-6">
-          <div className="space-y-6" key={currentPrompt.id}>
-            <h3 className="text-white font-semibold mb-6">Prompts Relacionados</h3>
-            
-            <SuggestedPrompts currentPrompt={currentPrompt} />
-          </div>
-        </div>
-      </div>
     </div>
   );
 };
