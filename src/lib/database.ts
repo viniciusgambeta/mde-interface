@@ -118,24 +118,6 @@ export interface VideoSuggestion {
   user_avatar?: string;
 }
 
-export interface Comment {
-  id: string;
-  video_id: string;
-  user_id: string;
-  parent_comment_id?: string;
-  content: string;
-  created_at: string;
-  updated_at: string;
-  
-  // Joined data
-  user_name?: string;
-  user_avatar?: string;
-  user_instagram?: string;
-  user_linkedin?: string;
-  replies?: Comment[];
-  reply_count?: number;
-}
-
 export interface VideoRelated {
   id: string;
   video_id: string;
@@ -534,4 +516,683 @@ export const videoService = {
   async isUpvoted(videoId: string, userId: string): Promise<boolean> {
     if (!videoId || !userId) return false;
 
-    const
+    const { data, error } = await supabase
+      .from('video_upvotes')
+      .select('id')
+      .eq('video_id', videoId)
+      .eq('user_id', userId)
+      .maybeSingle();
+
+    if (error) {
+      console.error('Error checking upvote status:', error);
+      return false;
+    }
+
+    return !!data;
+  },
+
+  // Get bookmarked videos for a user
+  async getBookmarkedVideos(userId: string): Promise<Video[]> {
+    if (!userId) return [];
+
+    const { data, error } = await supabase
+      .from('user_bookmarks')
+      .select(`
+        video:videos(
+          *,
+          instructor:instructors(*),
+          category:categories(*),
+          difficulty_level:difficulty_levels(*),
+          materials:video_materials(*),
+          ferramentas:video_ferramentas(
+            ferramenta:ferramentas_links(*)
+          )
+        )
+      `)
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching bookmarked videos:', error);
+      return [];
+    }
+
+    // Extract videos from the nested structure and mark them as bookmarked
+    const videos = (data || [])
+      .map(item => item.video)
+      .filter(Boolean) as Video[];
+
+    // Transform ferramentas data structure and mark all as bookmarked
+    videos.forEach(video => {
+      if (video.ferramentas) {
+        video.ferramentas = (video.ferramentas as any[]).map((item: any) => item.ferramenta).filter(Boolean);
+      }
+      video.is_bookmarked = true;
+    });
+
+    return videos;
+  },
+
+  // Toggle video bookmark
+  async toggleBookmark(videoId: string, userId: string): Promise<boolean> {
+    if (!videoId || !userId) return false;
+
+    try {
+      // Check if bookmark exists
+      const isCurrentlyBookmarked = await this.isBookmarked(videoId, userId);
+
+      if (isCurrentlyBookmarked) {
+        // Remove bookmark
+        const { error } = await supabase
+          .from('user_bookmarks')
+          .delete()
+          .eq('video_id', videoId)
+          .eq('user_id', userId);
+        
+        if (error) {
+          console.error('Error removing bookmark:', error);
+          return false;
+        }
+        
+        console.log('Bookmark removed successfully');
+        return true;
+      } else {
+        // Add bookmark
+        const { error } = await supabase
+          .from('user_bookmarks')
+          .insert({ 
+            video_id: videoId, 
+            user_id: userId 
+          });
+        
+        if (error) {
+          console.error('Error adding bookmark:', error);
+          return false;
+        }
+        
+        console.log('Bookmark added successfully');
+        return true;
+      }
+    } catch (error) {
+      console.error('Error toggling bookmark:', error);
+      return false;
+    }
+  },
+
+  // Optimized toggle bookmark that returns the new state
+  async toggleBookmarkOptimized(videoId: string, userId: string): Promise<{ success: boolean; isBookmarked: boolean }> {
+    if (!videoId || !userId) return { success: false, isBookmarked: false };
+
+    try {
+      // Check if bookmark exists
+      const { data: existing } = await supabase
+        .from('user_bookmarks')
+        .select('id')
+        .eq('video_id', videoId)
+        .eq('user_id', userId)
+        .maybeSingle();
+
+      if (existing) {
+        // Remove bookmark
+        const { error } = await supabase
+          .from('user_bookmarks')
+          .delete()
+          .eq('video_id', videoId)
+          .eq('user_id', userId);
+        
+        if (error) {
+          console.error('Error removing bookmark:', error);
+          return { success: false, isBookmarked: true };
+        }
+        
+        return { success: true, isBookmarked: false };
+      } else {
+        // Add bookmark
+        const { error } = await supabase
+          .from('user_bookmarks')
+          .insert({ 
+            video_id: videoId, 
+            user_id: userId 
+          });
+        
+        if (error) {
+          console.error('Error adding bookmark:', error);
+          return { success: false, isBookmarked: false };
+        }
+        
+        return { success: true, isBookmarked: true };
+      }
+    } catch (error) {
+      console.error('Error toggling bookmark:', error);
+      return { success: false, isBookmarked: false };
+    }
+  },
+
+  // Toggle video upvote
+  async toggleUpvote(videoId: string, userId: string): Promise<boolean> {
+    if (!videoId || !userId) return false;
+
+    try {
+      const isCurrentlyUpvoted = await this.isUpvoted(videoId, userId);
+
+      if (isCurrentlyUpvoted) {
+        // Remove upvote
+        const { error } = await supabase
+          .from('video_upvotes')
+          .delete()
+          .eq('video_id', videoId)
+          .eq('user_id', userId);
+        
+        if (error) {
+          console.error('Error removing upvote:', error);
+          return false;
+        }
+        
+        return true;
+      } else {
+        // Add upvote
+        const { error } = await supabase
+          .from('video_upvotes')
+          .insert({ 
+            video_id: videoId, 
+            user_id: userId 
+          });
+        
+        if (error) {
+          console.error('Error adding upvote:', error);
+          return false;
+        }
+        
+        return true;
+      }
+    } catch (error) {
+      console.error('Error toggling upvote:', error);
+      return false;
+    }
+  },
+
+  // Record video view
+  async recordView(videoId: string, userId?: string, watchDuration = 0): Promise<boolean> {
+    if (!videoId) {
+      console.error('recordView: videoId is required');
+      return false;
+    }
+
+    console.log('recordView: Recording view for video:', videoId, 'user:', userId);
+
+    try {
+      // Prepare the insert data
+      const insertData: any = {
+        video_id: videoId,
+        watch_duration_seconds: watchDuration,
+        completed: watchDuration > 0
+      };
+
+      // Only add user_id if user is authenticated
+      if (userId) {
+        insertData.user_id = userId;
+      }
+
+      const { error } = await supabase
+        .from('video_views')
+        .insert(insertData);
+
+      if (error) {
+        console.error('recordView: Error inserting view:', error.message);
+        
+        // If it's an RLS error and user is not authenticated, try without user_id
+        if (error.code === '42501' && !userId) {
+          console.log('recordView: Retrying view recording as anonymous user');
+          const { error: retryError } = await supabase
+            .from('video_views')
+            .insert({
+              video_id: videoId,
+              watch_duration_seconds: watchDuration,
+              completed: watchDuration > 0
+            });
+          
+          if (retryError) {
+            console.error('recordView: Retry failed:', retryError.message);
+            return false;
+          }
+          
+          console.log('recordView: Successfully recorded anonymous view');
+          return true;
+        }
+        
+        return false;
+      }
+
+      console.log('recordView: Successfully recorded view');
+      return true;
+    } catch (error) {
+      console.error('recordView: Exception:', error);
+      return false;
+    }
+  },
+
+  // Get updated video with fresh counts
+  async getVideoWithFreshCounts(videoId: string, userId?: string): Promise<Video | null> {
+    if (!videoId) return null;
+
+    const { data, error } = await supabase
+      .from('videos')
+      .select(`
+        *,
+        instructor:instructors(*),
+        category:categories(*),
+        difficulty_level:difficulty_levels(*),
+        materials:video_materials(*),
+        ferramentas:video_ferramentas(
+          ferramenta:ferramentas_links(*)
+        )
+      `)
+      .eq('id', videoId)
+      .maybeSingle();
+
+    if (error) {
+      console.error('Error fetching video with fresh counts:', error);
+      return null;
+    }
+
+    if (!data) {
+      return null;
+    }
+
+    // Transform ferramentas data structure
+    if (data.ferramentas) {
+      data.ferramentas = (data.ferramentas as any[]).map((item: any) => item.ferramenta).filter(Boolean);
+    }
+
+    // If user is logged in, check if they bookmarked/upvoted this video
+    if (userId) {
+      const [isBookmarked, isUpvoted] = await Promise.all([
+        this.isBookmarked(data.id, userId),
+        this.isUpvoted(data.id, userId)
+      ]);
+
+      data.is_bookmarked = isBookmarked;
+      data.is_upvoted = isUpvoted;
+    }
+
+    return data as Video;
+  },
+
+  // Get related videos for a video
+  async getRelatedVideos(videoId: string, userId?: string): Promise<Video[]> {
+    if (!videoId) return [];
+
+    try {
+      const { data, error } = await supabase
+        .from('video_relateds')
+        .select(`
+          related_video:videos(
+            *,
+            instructor:instructors(*),
+            category:categories(*),
+            difficulty_level:difficulty_levels(*),
+            materials:video_materials(*),
+            ferramentas:video_ferramentas(
+              ferramenta:ferramentas_links(*)
+            )
+          )
+        `)
+        .eq('video_id', videoId)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching related videos:', error);
+        return [];
+      }
+
+      // Extract videos from the nested structure
+      const relatedVideos = (data || [])
+        .map(item => item.related_video)
+        .filter(Boolean) as Video[];
+
+      // Transform ferramentas data structure
+      relatedVideos.forEach(video => {
+        if (video.ferramentas) {
+          video.ferramentas = (video.ferramentas as any[]).map((item: any) => item.ferramenta).filter(Boolean);
+        }
+      });
+
+      // If user is provided, check bookmark status for each related video
+      if (userId && relatedVideos.length > 0) {
+        const bookmarkStatuses = await this.getBookmarkStatuses(
+          relatedVideos.map(v => v.id), 
+          userId
+        );
+        
+        relatedVideos.forEach(video => {
+          video.is_bookmarked = bookmarkStatuses[video.id] || false;
+        });
+      }
+
+      return relatedVideos;
+    } catch (error) {
+      console.error('Error fetching related videos:', error);
+      return [];
+    }
+  },
+
+  // Refresh video counts from database
+  async refreshVideoCounts(videoId: string): Promise<{ view_count: number; upvote_count: number } | null> {
+    if (!videoId) return null;
+
+    try {
+      const { data, error } = await supabase
+        .from('videos')
+        .select('view_count, upvote_count')
+        .eq('id', videoId)
+        .maybeSingle();
+
+      if (error) {
+        console.error('Error refreshing video counts:', error);
+        return null;
+      }
+
+      if (!data) {
+        return null;
+      }
+
+      return data;
+    } catch (error) {
+      console.error('Exception refreshing video counts:', error);
+      return null;
+    }
+  }
+};
+
+// Category service
+export const categoryService = {
+  async getCategories() {
+    const { data, error } = await supabase
+      .from('categories')
+      .select('*')
+      .order('name');
+
+    if (error) {
+      console.error('Error fetching categories:', error);
+      return [];
+    }
+
+    return data as Category[];
+  }
+};
+
+// Difficulty service
+export const difficultyService = {
+  async getDifficultyLevels() {
+    const { data, error } = await supabase
+      .from('difficulty_levels')
+      .select('*')
+      .order('order_index');
+
+    if (error) {
+      console.error('Error fetching difficulty levels:', error);
+      return [];
+    }
+
+    return data as DifficultyLevel[];
+  }
+};
+
+// Featured content service
+export const featuredContentService = {
+  async getActiveFeaturedContent(): Promise<FeaturedContent | null> {
+    const { data, error } = await supabase
+      .from('featured_content')
+      .select('*')
+      .eq('status', true)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (error) {
+      console.error('Error fetching featured content:', error);
+      return null;
+    }
+
+    return data as FeaturedContent | null;
+  },
+
+  async getAllActiveFeaturedContent(): Promise<FeaturedContent[]> {
+    const { data, error } = await supabase
+      .from('featured_content')
+      .select('*')
+      .eq('status', true)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching all featured content:', error);
+      return [];
+    }
+
+    return data as FeaturedContent[];
+  }
+};
+
+// Secondary highlights service
+export const secondaryHighlightsService = {
+  async getActiveSecondaryHighlights(): Promise<SecondaryHighlight[]> {
+    const { data, error } = await supabase
+      .from('secondary_highlights')
+      .select('*')
+      .eq('status', true)
+      .order('posicao', { ascending: true });
+
+    if (error) {
+      console.error('Error fetching secondary highlights:', error);
+      return [];
+    }
+
+    return data as SecondaryHighlight[];
+  }
+};
+
+// Coupon service
+export const couponService = {
+  async getCoupons(): Promise<Coupon[]> {
+    const { data, error } = await supabase
+      .from('coupons')
+      .select('*')
+      .eq('visibilidade', true)
+      .order('ordem', { ascending: true });
+
+    if (error) {
+      console.error('Error fetching coupons:', error);
+      return [];
+    }
+
+    return data as Coupon[];
+  }
+};
+
+// Video suggestions service
+export const videoSuggestionsService = {
+  async createSuggestion(suggestion: {
+    title: string;
+    description: string;
+    category: string;
+    user_id?: string;
+  }): Promise<boolean> {
+    try {
+      const { error } = await supabase
+        .from('video_suggestions')
+        .insert({
+          title: suggestion.title,
+          description: suggestion.description,
+          category: suggestion.category,
+          user_id: suggestion.user_id,
+          status: 'pending',
+          etapa: 'sugestao'
+        });
+
+      if (error) {
+        console.error('Error creating video suggestion:', error);
+        return false;
+      }
+
+      return true;
+    } catch (error) {
+      console.error('Error creating video suggestion:', error);
+      return false;
+    }
+  },
+
+  async getApprovedSuggestions(): Promise<VideoSuggestion[]> {
+    try {
+      const { data, error } = await supabase
+        .from('video_suggestions')
+        .select(`
+          *,
+          user_data:assinaturas!video_suggestions_assinatura_id_fkey(
+            "Nome do cliente",
+            avatar_usuario
+          )
+        `)
+        .eq('status', 'approved')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching approved suggestions:', error);
+        return [];
+      }
+
+      // Transform data to include user info
+      const suggestions = data.map(suggestion => ({
+        ...suggestion,
+        user_name: suggestion.user_data?.['Nome do cliente'] || 'Usuário Anônimo',
+        user_avatar: suggestion.user_data?.avatar_usuario || '/avatar1.png'
+      }));
+
+      return suggestions as VideoSuggestion[];
+    } catch (error) {
+      console.error('Error fetching approved suggestions:', error);
+      return [];
+    }
+  },
+
+  async toggleUpvote(suggestionId: string, userId: string): Promise<{ success: boolean; votes: number }> {
+    if (!suggestionId || !userId) {
+      return { success: false, votes: 0 };
+    }
+
+    try {
+      // Check if user already voted
+      const { data: existingVote, error: checkError } = await supabase
+        .from('video_suggestion_votes')
+        .select('id')
+        .eq('suggestion_id', suggestionId)
+        .eq('user_id', userId)
+        .maybeSingle();
+
+      if (checkError && checkError.code !== 'PGRST116') {
+        console.error('Error checking existing vote:', checkError);
+        return { success: false, votes: 0 };
+      }
+
+      if (existingVote) {
+        // Remove vote
+        const { error: deleteError } = await supabase
+          .from('video_suggestion_votes')
+          .delete()
+          .eq('suggestion_id', suggestionId)
+          .eq('user_id', userId);
+
+        if (deleteError) {
+          console.error('Error removing vote:', deleteError);
+          return { success: false, votes: 0 };
+        }
+      } else {
+        // Add vote
+        const { error: insertError } = await supabase
+          .from('video_suggestion_votes')
+          .insert({
+            suggestion_id: suggestionId,
+            user_id: userId
+          });
+
+        if (insertError) {
+          console.error('Error adding vote:', insertError);
+          return { success: false, votes: 0 };
+        }
+      }
+
+      // Get updated vote count
+      const { data: suggestion, error: countError } = await supabase
+        .from('video_suggestions')
+        .select('votes')
+        .eq('id', suggestionId)
+        .single();
+
+      if (countError) {
+        console.error('Error getting vote count:', countError);
+        return { success: false, votes: 0 };
+      }
+
+      return { success: true, votes: suggestion.votes || 0 };
+    } catch (error) {
+      console.error('Error toggling upvote:', error);
+      return { success: false, votes: 0 };
+    }
+  },
+
+  async getUserVotes(userId: string): Promise<string[]> {
+    if (!userId) return [];
+
+    try {
+      const { data, error } = await supabase
+        .from('video_suggestion_votes')
+        .select('suggestion_id')
+        .eq('user_id', userId);
+
+      if (error) {
+        console.error('Error fetching user votes:', error);
+        return [];
+      }
+
+      return data.map(vote => vote.suggestion_id);
+    } catch (error) {
+      console.error('Error fetching user votes:', error);
+      return [];
+    }
+  },
+
+  async getUserPendingSuggestions(userId: string): Promise<VideoSuggestion[]> {
+    if (!userId) return [];
+
+    try {
+      const { data, error } = await supabase
+        .from('video_suggestions')
+        .select(`
+          *,
+          user_data:assinaturas!video_suggestions_assinatura_id_fkey(
+            "Nome do cliente",
+            avatar_usuario
+          )
+        `)
+        .eq('user_id', userId)
+        .eq('status', 'pending')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching user pending suggestions:', error);
+        return [];
+      }
+
+      // Transform data to include user info
+      const suggestions = data.map(suggestion => ({
+        ...suggestion,
+        user_name: suggestion.user_data?.['Nome do cliente'] || 'Usuário Anônimo',
+        user_avatar: suggestion.user_data?.avatar_usuario || '/avatar1.png'
+      }));
+
+      return suggestions as VideoSuggestion[];
+    } catch (error) {
+      console.error('Error fetching user pending suggestions:', error);
+      return [];
+    }
+  }
+};
