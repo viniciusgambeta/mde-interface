@@ -462,6 +462,11 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video, onBack, onVideoSelect 
         </div>
       </div>
 
+      {/* Comments Section */}
+      <div className="bg-slate-700/30 rounded-lg p-8">
+        <CommentsSection videoId={currentVideo.id} videoTitle={currentVideo.title} />
+      </div>
+
 
       {/* Materials Section */}
       <div className="w-full lg:w-96 border-l border-slate-700/30 flex flex-col">
