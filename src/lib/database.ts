@@ -118,6 +118,24 @@ export interface VideoSuggestion {
   user_avatar?: string;
 }
 
+export interface Comment {
+  id: string;
+  video_id: string;
+  user_id: string;
+  parent_comment_id?: string;
+  content: string;
+  created_at: string;
+  updated_at: string;
+  
+  // Joined data
+  user_name?: string;
+  user_avatar?: string;
+  user_instagram?: string;
+  user_linkedin?: string;
+  replies?: Comment[];
+  reply_count?: number;
+}
+
 export interface VideoRelated {
   id: string;
   video_id: string;
