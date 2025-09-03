@@ -1241,7 +1241,7 @@ export const commentsService = {
         .from('comments')
         .select(`
           *,
-          user_data:assinaturas(
+          user_data:assinaturas!inner(
             "Nome do cliente",
             avatar_usuario,
             instagram,
@@ -1249,7 +1249,7 @@ export const commentsService = {
           )
         `)
         .eq('video_id', videoId)
-        .eq('user_data.user_id', 'user_id')
+        .eq('user_data.user_id', supabase.auth.getUser().then(u => u.data.user?.id))
         .order('created_at', { ascending: false });
 
       if (error) {
