@@ -253,13 +253,14 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       }
 
       if (data.user) {
-        // Create assinatura record
+        // Create assinatura record with cadastro_mde = true
         const assinaturaData = {
           "Nome do cliente": name,
           "Email do cliente": email,
           user_id: data.user.id,
           onboarding_completed: false,
-          is_premium: false
+          is_premium: false,
+          cadastro_mde: true
         };
 
         console.log('📝 Creating assinatura record:', assinaturaData);
