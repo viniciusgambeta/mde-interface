@@ -1236,16 +1236,18 @@ export const commentsService = {
     if (!videoId) return [];
 
     try {
-      // Get all comments for the video with user data from assinaturas
+      console.log('Loading comments for video:', videoId);
+      
       const { data, error } = await supabase
         .from('comments')
         .select(`
           *,
-          user_data:assinaturas!comments_assinatura_id_fkey(
+          assinatura:assinaturas!comments_assinatura_id_fkey(
             "Nome do cliente",
             avatar_usuario,
             instagram,
-            linkedin
+            linkedin,
+            user_id
           )
         `)
         .eq('video_id', videoId)
@@ -1258,6 +1260,8 @@ export const commentsService = {
 
       if (!data) return [];
 
+      console.log('Raw comments data:', data);
+
       // Transform and organize comments
       const commentsMap = new Map<string, Comment>();
       const rootComments: Comment[] = [];
@@ -1266,12 +1270,13 @@ export const commentsService = {
       data.forEach(comment => {
         const transformedComment: Comment = {
           ...comment,
-          user_name: comment.user_data?.['Nome do cliente'] || 'Usuário',
-          user_avatar: comment.user_data?.avatar_usuario || '/avatar1.png',
-          user_instagram: comment.user_data?.instagram || null,
-          user_linkedin: comment.user_data?.linkedin || null,
+          user_name: comment.assinatura?.['Nome do cliente'] || 'Usuário',
+          user_avatar: comment.assinatura?.avatar_usuario || '/avatar1.png',
+          user_instagram: comment.assinatura?.instagram || null,
+          user_linkedin: comment.assinatura?.linkedin || null,
           replies: []
         };
+        console.log('Transformed comment:', transformedComment);
         commentsMap.set(comment.id, transformedComment);
       });
 
@@ -1298,6 +1303,7 @@ export const commentsService = {
         }
       });
 
+      console.log('Final organized comments:', rootComments);
       return rootComments;
     } catch (error) {
       console.error('Error fetching video comments:', error);
@@ -1308,18 +1314,38 @@ export const commentsService = {
   // Create a new comment
   async createComment(
     videoId: string, 
-    assinaturaId: string, 
+    userId: string, 
     content: string, 
     parentCommentId?: string
   ): Promise<boolean> {
-    if (!videoId || !assinaturaId || !content.trim()) return false;
+    if (!videoId || !userId || !content.trim()) return false;
 
     try {
+      // First, get the user's assinatura_id
+      const { data: assinatura, error: assinaturaError } = await supabase
+        .from('assinaturas')
+        .select('"ID da assinatura"')
+        .eq('user_id', userId)
+        .eq('"Status da assinatura"', 'active')
+        .maybeSingle();
+
+      if (assinaturaError) {
+        console.error('Error fetching user subscription:', assinaturaError);
+        return false;
+      }
+
+      if (!assinatura) {
+        console.error('User does not have an active subscription');
+        return false;
+      }
+
+      console.log('Creating comment with assinatura_id:', assinatura['ID da assinatura']);
+
       const { error } = await supabase
         .from('comments')
         .insert({
           video_id: videoId,
-          assinatura_id: assinaturaId,
+          assinatura_id: assinatura['ID da assinatura'],
           content: content.trim(),
           parent_comment_id: parentCommentId || null
         });
@@ -1329,6 +1355,7 @@ export const commentsService = {
         return false;
       }
 
+      console.log('Comment created successfully');
       return true;
     } catch (error) {
       console.error('Error creating comment:', error);
@@ -1337,15 +1364,28 @@ export const commentsService = {
   },
 
   // Delete a comment
-  async deleteComment(commentId: string, assinaturaId: string): Promise<boolean> {
-    if (!commentId || !assinaturaId) return false;
+  async deleteComment(commentId: string, userId: string): Promise<boolean> {
+    if (!commentId || !userId) return false;
 
     try {
+      // First, get the user's assinatura_id
+      const { data: assinatura, error: assinaturaError } = await supabase
+        .from('assinaturas')
+        .select('"ID da assinatura"')
+        .eq('user_id', userId)
+        .eq('"Status da assinatura"', 'active')
+        .maybeSingle();
+
+      if (assinaturaError || !assinatura) {
+        console.error('Error fetching user subscription for delete:', assinaturaError);
+        return false;
+      }
+
       const { error } = await supabase
         .from('comments')
         .delete()
         .eq('id', commentId)
-        .eq('assinatura_id', assinaturaId);
+        .eq('assinatura_id', assinatura['ID da assinatura']);
 
       if (error) {
         console.error('Error deleting comment:', error);

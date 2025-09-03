@@ -46,13 +46,17 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ videoId, videoTitle }
     setSubmitting(true);
     
     try {
+      console.log('Submitting comment for user:', user.id);
       const success = await commentsService.createComment(videoId, user.id, newComment);
       
       if (success) {
         setNewComment('');
+        console.log('Comment submitted successfully, reloading comments');
         // Reload comments
         const updatedComments = await commentsService.getVideoComments(videoId);
         setComments(updatedComments);
+      } else {
+        console.error('Failed to submit comment');
       }
     } catch (error) {
       console.error('Error submitting comment:', error);
@@ -69,14 +73,18 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ videoId, videoTitle }
     setSubmitting(true);
     
     try {
+      console.log('Submitting reply for user:', user.id, 'to comment:', parentCommentId);
       const success = await commentsService.createComment(videoId, user.id, replyContent, parentCommentId);
       
       if (success) {
         setReplyContent('');
         setReplyingTo(null);
+        console.log('Reply submitted successfully, reloading comments');
         // Reload comments
         const updatedComments = await commentsService.getVideoComments(videoId);
         setComments(updatedComments);
+      } else {
+        console.error('Failed to submit reply');
       }
     } catch (error) {
       console.error('Error submitting reply:', error);
@@ -89,12 +97,16 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ videoId, videoTitle }
     if (!user || !window.confirm('Tem certeza que deseja excluir este comentário?')) return;
 
     try {
+      console.log('Deleting comment:', commentId, 'for user:', user.id);
       const success = await commentsService.deleteComment(commentId, user.id);
       
       if (success) {
+        console.log('Comment deleted successfully, reloading comments');
         // Reload comments
         const updatedComments = await commentsService.getVideoComments(videoId);
         setComments(updatedComments);
+      } else {
+        console.error('Failed to delete comment');
       }
     } catch (error) {
       console.error('Error deleting comment:', error);
