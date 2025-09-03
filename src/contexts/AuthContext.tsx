@@ -40,36 +40,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Clear session and cache on component mount
-  useEffect(() => {
-    const clearAuthData = async () => {
-      console.log('🧹 Clearing all auth data and cache...');
-      
-      try {
-        // Clear Supabase session
-        await supabase.auth.signOut();
-        
-        // Clear localStorage
-        localStorage.clear();
-        
-        // Clear sessionStorage
-        sessionStorage.clear();
-        
-        // Clear any Supabase-specific storage
-        const supabaseKeys = Object.keys(localStorage).filter(key => 
-          key.startsWith('supabase') || key.startsWith('sb-')
-        );
-        supabaseKeys.forEach(key => localStorage.removeItem(key));
-        
-        console.log('✅ Auth data cleared successfully');
-      } catch (error) {
-        console.error('❌ Error clearing auth data:', error);
-      }
-    };
-
-    clearAuthData();
-  }, []);
-
   // Convert Supabase user to our User type
   const fetchAndConvertUser = async (supabaseUser: SupabaseUser): Promise<User> => {
     console.log('🔍 fetchAndConvertUser called for user:', supabaseUser.id, supabaseUser.email);
@@ -146,6 +116,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
     const initializeAuth = async () => {
       console.log('🚀 Initializing auth...');
+      setIsLoading(true);
+      
       try {
         const { data: { session }, error } = await supabase.auth.getSession();
         
@@ -153,23 +125,44 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         
         if (error) {
           console.error('❌ Error getting session:', error);
-          if (mounted) setIsLoading(false);
+          if (mounted) {
+            setUser(null);
+            setIsLoading(false);
+          }
           return;
         }
 
         if (session?.user && mounted) {
           console.log('👤 Converting user from session...');
-          const convertedUser = await fetchAndConvertUser(session.user);
-          console.log('✅ User converted successfully:', convertedUser);
-          if (mounted) setUser(convertedUser);
+          try {
+            const convertedUser = await fetchAndConvertUser(session.user);
+            console.log('✅ User converted successfully:', convertedUser);
+            if (mounted) {
+              setUser(convertedUser);
+              setIsLoading(false);
+            }
+          } catch (convertError) {
+            console.error('❌ Error converting user:', convertError);
+            if (mounted) {
+              setUser(null);
+              setIsLoading(false);
+            }
+          }
+        } else {
+          console.log('👤 No session found, setting user to null');
+          if (mounted) {
+            setUser(null);
+            setIsLoading(false);
+          }
         }
       } catch (error) {
         console.error('💥 Error initializing auth:', error);
-      } finally {
         if (mounted) {
-          console.log('🏁 Auth initialization complete, setting loading to false');
+          setUser(null);
           setIsLoading(false);
         }
+      } finally {
+        console.log('🏁 Auth initialization complete');
       }
     };
 
@@ -183,24 +176,45 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
         if (event === 'SIGNED_IN' && session?.user) {
           console.log('✅ User signed in, converting user data...');
-          const convertedUser = await fetchAndConvertUser(session.user);
-          if (mounted) setUser(convertedUser);
-          setIsLoading(false);
+          try {
+            const convertedUser = await fetchAndConvertUser(session.user);
+            if (mounted) {
+              setUser(convertedUser);
+              setIsLoading(false);
+            }
+          } catch (convertError) {
+            console.error('❌ Error converting user on sign in:', convertError);
+            if (mounted) {
+              setUser(null);
+              setIsLoading(false);
+            }
+          }
         } else if (event === 'SIGNED_OUT') {
           console.log('👋 User signed out');
-          // Clear user state and any onboarding flags
-          setUser(null);
-          setIsLoading(false);
+          if (mounted) {
+            setUser(null);
+            setIsLoading(false);
+          }
         } else if (event === 'TOKEN_REFRESHED' && session?.user) {
           console.log('🔄 Token refreshed');
-          if (!user) {
-            const convertedUser = await fetchAndConvertUser(session.user);
-            setUser(convertedUser);
+          if (!user && mounted) {
+            try {
+              const convertedUser = await fetchAndConvertUser(session.user);
+              setUser(convertedUser);
+              setIsLoading(false);
+            } catch (convertError) {
+              console.error('❌ Error converting user on token refresh:', convertError);
+              setUser(null);
+              setIsLoading(false);
+            }
+          } else if (mounted) {
+            setIsLoading(false);
           }
-          setIsLoading(false);
         } else {
           console.log('⏹️ Other auth event, setting loading to false');
-          setIsLoading(false);
+          if (mounted) {
+            setIsLoading(false);
+          }
         }
       }
     );
@@ -210,7 +224,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       mounted = false;
       subscription.unsubscribe();
     };
-  }, [user]);
+  }, []);
 
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
@@ -300,8 +314,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       // Re-fetch user data to update context
       const { data: { user: currentUser } } = await supabase.auth.getUser();
       if (currentUser) {
-        const updatedUser = await fetchAndConvertUser(currentUser);
-        setUser(updatedUser);
+        try {
+          const updatedUser = await fetchAndConvertUser(currentUser);
+          setUser(updatedUser);
+        } catch (error) {
+          console.error('❌ Error re-fetching user after profile update:', error);
+        }
       }
 
       return true;
