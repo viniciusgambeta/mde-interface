@@ -2,21 +2,6 @@ import { supabase } from './supabase';
 import type { Category } from './database';
 import type { DifficultyLevel } from './database';
 
-// Database types
-export interface Instructor {
-  id: string;
-  name: string;
-  bio?: string;
-  avatar_url?: string;
-  social_instagram?: string;
-  social_linkedin?: string;
-  social_github?: string;
-  social_website?: string;
-  is_verified: boolean;
-  created_at: string;
-  updated_at: string;
-}
-
 export interface Category {
   id: string;
   name: string;
@@ -125,10 +110,24 @@ export interface VideoRelated {
   created_at: string;
 }
 
+export interface Instructor {
+  id: string;
+  name: string;
+  bio?: string;
+  avatar_url?: string;
+  social_instagram?: string;
+  social_linkedin?: string;
+  social_github?: string;
+  social_website?: string;
+  is_verified: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface Comment {
   id: string;
   video_id: string;
-  user_id: string;
+  user_id: string; // Now directly references auth.users.id
   content: string;
   parent_comment_id?: string;
   reply_count: number;
@@ -141,20 +140,21 @@ export interface Comment {
   replies?: Comment[];
 }
 
-export interface Comment {
-  id: string;
-  video_id: string;
+// New Assinatura type to reflect consolidated data
+export interface Assinatura {
+  "ID da assinatura": string;
   user_id: string;
-  content: string;
-  parent_comment_id?: string;
-  reply_count: number;
-  created_at: string;
-  updated_at: string;
-  user_name?: string;
-  user_avatar?: string;
-  user_instagram?: string;
-  user_linkedin?: string;
-  replies?: Comment[];
+  "Nome do cliente": string;
+  "Email do cliente": string;
+  "Status da assinatura": string;
+  avatar_usuario?: string;
+  bio?: string;
+  score?: number;
+  onboarding_completed?: boolean;
+  onboarding_data?: any;
+  instagram?: string;
+  linkedin?: string;
+  "Telefone do cliente"?: string;
 }
 
 export interface Video {
@@ -191,6 +191,7 @@ export interface Video {
   related_videos?: Video[];
   is_bookmarked?: boolean;
   is_upvoted?: boolean;
+  user_assinatura?: Assinatura; // For fetching user details in comments/suggestions
 }
 
 export interface VideoVersion {
@@ -1126,7 +1127,7 @@ export const videoSuggestionsService = {
       // Transform data to include user info
       const suggestions = data.map(suggestion => ({
         ...suggestion,
-        user_name: suggestion.user_data?.['Nome do cliente'] || 'Usuário Anônimo',
+        user_name: suggestion.user_data?.["Nome do cliente"] || 'Usuário Anônimo',
         user_avatar: suggestion.user_data?.avatar_usuario || '/avatar1.png'
       }));
 
@@ -1230,7 +1231,7 @@ export const videoSuggestionsService = {
       const { data, error } = await supabase
         .from('video_suggestions')
         .select(`
-          *,
+          *, 
           user_data:assinaturas!video_suggestions_assinatura_id_fkey(
             "Nome do cliente",
             avatar_usuario
@@ -1248,7 +1249,7 @@ export const videoSuggestionsService = {
       // Transform data to include user info
       const suggestions = data.map(suggestion => ({
         ...suggestion,
-        user_name: suggestion.user_data?.['Nome do cliente'] || 'Usuário Anônimo',
+        user_name: suggestion.user_data?.["Nome do cliente"] || 'Usuário Anônimo',
         user_avatar: suggestion.user_data?.avatar_usuario || '/avatar1.png'
       }));
 
@@ -1273,7 +1274,7 @@ export const commentsService = {
         .from('comments')
         .select(`
           *,
-          assinatura:assinaturas!comments_assinatura_id_fkey(
+          user_profile:assinaturas!comments_user_id_fkey(
             "Nome do cliente",
             avatar_usuario,
             instagram,
@@ -1300,10 +1301,10 @@ export const commentsService = {
       data.forEach(comment => {
         const transformedComment: Comment = {
           ...comment,
-          user_name: comment.assinatura?.['Nome do cliente'] || 'Usuário',
-          user_avatar: comment.assinatura?.avatar_usuario || '/avatar1.png',
-          user_instagram: comment.assinatura?.instagram || null,
-          user_linkedin: comment.assinatura?.linkedin || null,
+          user_name: comment.user_profile?.["Nome do cliente"] || 'Usuário',
+          user_avatar: comment.user_profile?.avatar_usuario || '/avatar1.png',
+          user_instagram: comment.user_profile?.instagram || null,
+          user_linkedin: comment.user_profile?.linkedin || null,
           replies: []
         };
         console.log('Transformed comment:', transformedComment);
@@ -1351,11 +1352,10 @@ export const commentsService = {
 
     try {
       // Get the user's assinatura_id from the assinaturas table for validation
-      const { data: assinatura, error: assinaturaError } = await supabase
+      const { data: userAssinatura, error: assinaturaError } = await supabase
         .from('assinaturas')
-        .select('"ID da assinatura"')
+        .select('"ID da assinatura", "Status da assinatura"')
         .eq('user_id', userId)
-        .eq('"Status da assinatura"', 'active')
         .maybeSingle();
 
       if (assinaturaError) {
@@ -1363,12 +1363,13 @@ export const commentsService = {
         return false;
       }
 
-      if (!assinatura) {
-        console.error('No active subscription found for user - comments require active subscription');
+      // Check if user has an active subscription
+      if (!userAssinatura || userAssinatura["Status da assinatura"] !== 'active') {
+        console.error('User does not have an active subscription to comment.');
         return false;
       }
 
-      const assinaturaId = assinatura['ID da assinatura'];
+      const assinaturaId = userAssinatura['ID da assinatura'];
 
       // Insert comment with both user_id and assinatura_id
       const { error } = await supabase
@@ -1376,7 +1377,6 @@ export const commentsService = {
         .insert({
           video_id: videoId,
           user_id: userId,
-          assinatura_id: assinaturaId,
           content: content.trim(),
           parent_comment_id: parentCommentId || null
         });

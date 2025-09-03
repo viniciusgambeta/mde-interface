@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { User, Mail, Camera, Save, Loader2, Upload, Shield, Calendar, Star, Phone, Instagram, Briefcase, Target, BarChart3, CheckCircle, Lock, Eye, EyeOff, ExternalLink } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
+import { Assinatura } from '../lib/database';
 
 const ProfilePage: React.FC = () => {
   const { user, updateProfile } = useAuth();
@@ -43,7 +44,20 @@ const ProfilePage: React.FC = () => {
       try {
         const { data, error } = await supabase
           .from('assinaturas')
-          .select('*')
+          .select(`
+            "Nome do cliente",
+            "Telefone do cliente",
+            avatar_usuario,
+            bio,
+            score,
+            instagram,
+            experiencia_ia,
+            objetivo_principal,
+            tipo_trabalho,
+            porte_negocio,
+            onboarding_completed,
+            onboarding_data
+          `)
           .eq('user_id', user.id)
           .maybeSingle();
 
@@ -54,7 +68,7 @@ const ProfilePage: React.FC = () => {
 
         if (data) {
           setFormData({
-            name: data['Nome do cliente'] || user.name || '',
+            name: data["Nome do cliente"] || user.name || '',
             phone: data['Telefone do cliente']?.toString() || '',
             bio: data.bio || '',
             instagram: data.instagram || '',
@@ -65,7 +79,7 @@ const ProfilePage: React.FC = () => {
           });
 
           // Set current avatar
-          if (data.avatar_usuario) {
+          if (data.avatar_usuario && data.avatar_usuario !== 'https://static.vecteezy.com/system/resources/previews/009/292/244/non_2x/default-avatar-icon-of-social-media-user-vector.jpg') {
             const presetAvatars = ['/src/images/avatar1.png', '/src/images/avatar2.png', '/src/images/avatar3.png'];
             if (presetAvatars.includes(data.avatar_usuario)) {
               setSelectedPresetAvatar(data.avatar_usuario);
@@ -176,59 +190,28 @@ const ProfilePage: React.FC = () => {
     setSuccess(false);
 
     try {
-      // Determine final avatar URL
-      let finalAvatarUrl = user?.avatar || '/src/images/avatar.jpg';
-      
-      if (avatarMode === 'preset' && selectedPresetAvatar) {
-        finalAvatarUrl = selectedPresetAvatar;
-      } else if (avatarMode === 'upload' && avatarPreview) {
-        finalAvatarUrl = avatarPreview;
-      }
-
-      // Update user profile in auth
-      const authUpdateData: any = {
-        name: formData.name,
-        avatar_url: finalAvatarUrl
-      };
-
-      const { error: authError } = await supabase.auth.updateUser({
-        data: authUpdateData
-      });
-
-      if (authError) {
-        console.error('Error updating auth profile:', authError);
-        throw authError;
-      }
-
-      // Update assinaturas table
-      const { error: subscriptionError } = await supabase
-        .from('assinaturas')
-        .update({
-          'Nome do cliente': formData.name,
-          'Telefone do cliente': formData.phone ? parseInt(formData.phone) : null,
-          avatar_usuario: finalAvatarUrl,
+      const updateData: Partial<Assinatura> = {
+        "Nome do cliente": formData.name,
+        "Telefone do cliente": formData.phone ? parseInt(formData.phone) : null,
+        bio: formData.bio,
+        instagram: formData.instagram,
+        avatar_usuario: avatarPreview || selectedPresetAvatar || user.avatar,
+        // Onboarding related fields
           experiencia_ia: formData.experiencia_ia,
           objetivo_principal: formData.objetivo_principal,
           tipo_trabalho: formData.tipo_trabalho,
           porte_negocio: formData.porte_negocio,
-          instagram: formData.instagram
-        })
-        .eq('user_id', user?.id);
+      };
 
-      if (subscriptionError) {
-        console.error('Error updating subscription data:', subscriptionError);
-        // Don't throw error, just log it
+      // Call the updateProfile from AuthContext
+      const updated = await updateProfile(updateData);
+
+      if (!updated) {
+        throw new Error('Failed to update profile via AuthContext');
       }
-
-      // Update local auth context
-      await updateProfile({ 
-        name: formData.name, 
-        avatar: finalAvatarUrl 
-      });
 
       setSuccess(true);
       setTimeout(() => setSuccess(false), 3000);
-
     } catch (error) {
       console.error('Error updating profile:', error);
       alert('Erro ao atualizar perfil. Tente novamente.');

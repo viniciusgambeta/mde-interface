@@ -1,13 +1,13 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { supabase } from '../lib/supabase';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
-import OnboardingFlow from '../components/OnboardingFlow';
+import { Assinatura } from '../lib/database';
 
 interface User {
   id: string;
   name: string;
   email: string;
-  avatar: string;
+  avatar?: string;
   isPremium: boolean;
   joinedAt: string;
 }
@@ -19,9 +19,7 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<boolean>;
   register: (name: string, email: string, password: string) => Promise<boolean>;
   logout: () => Promise<void>;
-  updateProfile: (data: Partial<User>) => Promise<boolean>;
-  needsOnboarding: boolean;
-  completeOnboarding: () => void;
+  updateProfile: (data: Partial<Assinatura>) => Promise<boolean>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -41,19 +39,36 @@ interface AuthProviderProps {
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [needsOnboarding, setNeedsOnboarding] = useState(false);
 
   // Convert Supabase user to our User type
-  const convertUser = (supabaseUser: SupabaseUser): User => {
-    const metadata = supabaseUser.user_metadata || {};
-    
+  const fetchAndConvertUser = async (supabaseUser: SupabaseUser): Promise<User> => {
+    // Fetch user's consolidated profile/subscription data from 'assinaturas' table
+    const { data: assinaturaData, error } = await supabase
+      .from('assinaturas')
+      .select(`
+        "Nome do cliente",
+        "Email do cliente",
+        "Status da assinatura",
+        avatar_usuario
+      `)
+      .eq('user_id', supabaseUser.id)
+      .maybeSingle();
+
+    if (error) {
+      console.error('Error fetching user assinatura data:', error);
+    }
+
+    const name = assinaturaData?.["Nome do cliente"] || supabaseUser.email?.split('@')[0] || 'Usuário';
+    const avatar = assinaturaData?.avatar_usuario || '/src/images/avatar.jpg';
+    const isPremium = assinaturaData?.["Status da assinatura"] === 'active';
+
     return {
       id: supabaseUser.id,
-      name: metadata.name || supabaseUser.email?.split('@')[0] || 'Usuário',
-      email: supabaseUser.email || '',
-      avatar: metadata.avatar_url || '/src/images/avatar.jpg',
-      isPremium: metadata.is_premium || false,
-      joinedAt: supabaseUser.created_at || new Date().toISOString()
+      name: name,
+      email: supabaseUser.email || assinaturaData?.["Email do cliente"] || '',
+      avatar: avatar,
+      isPremium: isPremium,
+      joinedAt: supabaseUser.created_at || new Date().toISOString() // Use Supabase user's created_at
     };
   };
 
@@ -72,11 +87,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         }
 
         if (session?.user && mounted) {
-          const convertedUser = convertUser(session.user);
-          setUser(convertedUser);
-          
-          // Check if user needs onboarding
-          checkOnboardingStatus(session.user.id);
+          const convertedUser = await fetchAndConvertUser(session.user);
+          if (mounted) setUser(convertedUser);
         }
       } catch (error) {
         console.error('💥 Error initializing auth:', error);
@@ -95,15 +107,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         if (!mounted) return;
 
         if (event === 'SIGNED_IN' && session?.user) {
-          const convertedUser = convertUser(session.user);
-          setUser(convertedUser);
-          
-          // Check if user needs onboarding on login
-          checkOnboardingStatus(session.user.id);
+          const convertedUser = await fetchAndConvertUser(session.user);
+          if (mounted) setUser(convertedUser);
           setIsLoading(false);
         } else if (event === 'SIGNED_OUT') {
+          // Clear user state and any onboarding flags
           setUser(null);
-          setNeedsOnboarding(false);
           setIsLoading(false);
         } else if (event === 'TOKEN_REFRESHED' && session?.user) {
           if (!user) {
@@ -122,53 +131,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       subscription.unsubscribe();
     };
   }, []);
-
-  // Check if user needs onboarding
-  const checkOnboardingStatus = async (userId: string) => {
-    try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('onboarding_completed')
-        .eq('id', userId)
-        .maybeSingle();
-
-      if (error) {
-        console.error('Error checking onboarding status:', error);
-        return;
-      }
-
-      // If no profile exists or onboarding not completed, show onboarding
-      const needsOnboarding = !data || !data.onboarding_completed;
-      setNeedsOnboarding(needsOnboarding);
-      console.log('Onboarding status:', { needsOnboarding, profileData: data });
-    } catch (error) {
-      console.error('Exception checking onboarding status:', error);
-    }
-  };
-
-  const completeOnboarding = async () => {
-    if (!user) return;
-    
-    try {
-      // Mark onboarding as completed in profiles table
-      const { error } = await supabase
-        .from('profiles')
-        .upsert({
-          id: user.id,
-          name: user.name,
-          onboarding_completed: true
-        });
-
-      if (error) {
-        console.error('Error completing onboarding:', error);
-      } else {
-        setNeedsOnboarding(false);
-        console.log('Onboarding completed successfully');
-      }
-    } catch (error) {
-      console.error('Exception completing onboarding:', error);
-    }
-  };
 
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
@@ -194,13 +156,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
-        options: {
-          data: {
-            name: name,
-            avatar_url: '/src/images/avatar.jpg',
-            is_premium: false,
-          },
-        },
+        // No user_metadata here, profile data will be handled in 'assinaturas'
+        // options: {
+        //   data: {
+        //     name: name,
+        //   },
+        // },
       });
 
       if (error) {
@@ -226,20 +187,83 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  const updateProfile = async (data: Partial<User>): Promise<boolean> => {
+  const updateProfile = async (data: Partial<Assinatura>): Promise<boolean> => {
     if (!user) {
       return false;
     }
     
     try {
-      const updateData: any = {};
-      
-      if (data.name) updateData.name = data.name;
-      if (data.avatar) updateData.avatar_url = data.avatar;
-      if (data.isPremium !== undefined) updateData.is_premium = data.isPremium;
+      // Update the 'assinaturas' table directly
+      const { error } = await supabase
+        .from('assinaturas')
+        .update({
+          "Nome do cliente": data["Nome do cliente"],
+          avatar_usuario: data.avatar_usuario,
+          bio: data.bio,
+          score: data.score,
+          instagram: data.instagram,
+          "Telefone do cliente": data["Telefone do cliente"],
+          experiencia_ia: data.experiencia_ia,
+          objetivo_principal: data.objetivo_principal,
+          tipo_trabalho: data.tipo_trabalho,
+          porte_negocio: data.porte_negocio,
+        })
+        .eq('user_id', user.id);
 
-      const { error } = await supabase.auth.updateUser({
-        data: updateData
+      // Also update auth.users metadata if name/avatar are changed, for immediate reflection
+      const authUpdateData: { data?: { name?: string; avatar_url?: string } } = {};
+      if (data["Nome do cliente"]) authUpdateData.data = { ...authUpdateData.data, name: data["Nome do cliente"] };
+      if (data.avatar_usuario) authUpdateData.data = { ...authUpdateData.data, avatar_url: data.avatar_usuario };
+
+      if (Object.keys(authUpdateData).length > 0) {
+        const { error: authError } = await supabase.auth.updateUser(authUpdateData);
+        if (authError) {
+          console.error('❌ Auth user metadata update error:', authError);
+          // Don't return false, as the main 'assinaturas' update might have succeeded
+        }
+      }
+
+      if (error) {
+        console.error('❌ Assinaturas profile update error:', error);
+        return false;
+      }
+
+      // Re-fetch user data to update context
+      const updatedUser = await fetchAndConvertUser(await supabase.auth.getUser().then(res => res.data.user!));
+      setUser(updatedUser);
+
+      return true;
+    } catch (error) {
+      console.error('💥 Profile update exception:', error);
+      return false;
+    }
+  };
+
+  const value: AuthContextType = {
+    user,
+    isAuthenticated: !!user,
+    isLoading,
+    login,
+    register,
+    logout,
+    updateProfile,
+  };
+
+  return (
+    <AuthContext.Provider value={value}>
+      {isLoading ? (
+        <div className="min-h-screen bg-gradient-to-b from-[#1f1d2b] via-[#1f1d2b] to-black flex items-center justify-center">
+          <div className="flex items-center space-x-3">
+            <div className="w-6 h-6 border-2 border-[#ff7551]/30 border-t-[#ff7551] rounded-full animate-spin"></div>
+            <span className="text-slate-400">Carregando autenticação...</span>
+          </div>
+        </div>
+      ) : (
+        children
+      )}
+    </AuthContext.Provider>
+  );
+};
       });
 
       if (error) {

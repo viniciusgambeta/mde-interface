@@ -13,7 +13,7 @@ import {
   ArrowLeft
 } from 'lucide-react';
 
-interface SubscriptionData {
+interface AssinaturaData {
   'ID da assinatura': string;
   'Nome do cliente': string;
   'Email do cliente': string;
@@ -36,7 +36,7 @@ const RegistrationPage: React.FC = () => {
   const [error, setError] = useState('');
   const [emailValid, setEmailValid] = useState<boolean | null>(null);
   const [subscriptionData, setSubscriptionData] = useState<SubscriptionData | null>(null);
-  const [showSuccessScreen, setShowSuccessScreen] = useState(false);
+  const [showSuccessScreen, setShowSuccessScreen] = useState(false); // This will trigger the onboarding flow
 
   // Check subscription when email changes
   useEffect(() => {
@@ -51,7 +51,7 @@ const RegistrationPage: React.FC = () => {
         console.log('🔍 Checking subscription for email:', formData.email);
         
         const { data, error } = await supabase
-          .from('assinaturas')
+          .from('assinaturas') // Assuming 'assinaturas' now holds all user profile data
           .select(`
             "ID da assinatura",
             "Nome do cliente", 
@@ -79,40 +79,6 @@ const RegistrationPage: React.FC = () => {
         }
       } catch (err) {
         console.error('💥 Exception checking subscription:', err);
-        setEmailValid(false);
-        setSubscriptionData(null);
-      }
-    };
-
-    const timeoutId = setTimeout(checkSubscription, 500);
-    return () => clearTimeout(timeoutId);
-  }, [formData.email]);
-
-  // Check subscription when email changes
-  useEffect(() => {
-    const checkSubscription = async () => {
-      if (!formData.email || !formData.email.includes('@')) {
-        setEmailValid(null);
-        setSubscriptionData(null);
-        return;
-      }
-
-      try {
-        const { data, error } = await supabase
-          .from('assinaturas')
-          .select('*')
-          .eq('Email do cliente', formData.email.toLowerCase())
-          .eq('Status da assinatura', 'active')
-          .single();
-
-        if (error || !data) {
-          setEmailValid(false);
-          setSubscriptionData(null);
-        } else {
-          setEmailValid(true);
-          setSubscriptionData(data);
-        }
-      } catch (err) {
         setEmailValid(false);
         setSubscriptionData(null);
       }
@@ -160,44 +126,50 @@ const RegistrationPage: React.FC = () => {
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
-        options: {
-          data: {
-            name: formData.name,
-          }
-        }
+        // No user_metadata here, profile data will be handled in 'assinaturas'
       });
 
       if (authError) {
         throw authError;
       }
 
+      // If user is created in auth.users, then create/update their record in 'assinaturas'
       if (authData.user) {
-        // Create profile
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .insert({
-            id: authData.user.id,
-            name: formData.name,
-            is_premium: true,
-            onboarding_completed: false
-          });
-
-        if (profileError) {
-          console.error('Error creating profile:', profileError);
-        }
-
-        // Update subscription with user_id
+        // Update the existing 'assinaturas' record with the new user_id
+        // This assumes the subscriptionData was found based on email
         if (subscriptionData) {
           const { error: updateError } = await supabase
             .from('assinaturas')
-            .update({ user_id: authData.user.id })
-            .eq('ID da assinatura', subscriptionData['ID da assinatura']);
+            .update({
+              user_id: authData.user.id,
+              "Nome do cliente": formData.name, // Update name from form
+              "Email do cliente": formData.email, // Update email from form
+              onboarding_completed: false, // Set onboarding to false for new users
+            })
+            .eq("ID da assinatura", subscriptionData["ID da assinatura"]);
 
           if (updateError) {
-            console.error('Error updating subscription:', updateError);
+            console.error('Error updating existing assinatura record:', updateError);
+          }
+        } else {
+          // This case should ideally not happen if emailValid is true, but as a fallback
+          // If no existing subscription, create a new one (e.g., for free users)
+          const { error: insertError } = await supabase
+            .from('assinaturas')
+            .insert({
+              user_id: authData.user.id,
+              "Nome do cliente": formData.name,
+              "Email do cliente": formData.email,
+              "ID da assinatura": authData.user.id, // Use user_id as subscription ID for simplicity or generate new
+              "Status da assinatura": 'free', // Default to free if no existing subscription
+              "Plano": 'Free Plan',
+              "Data de criação": new Date().toISOString().split('T')[0],
+              onboarding_completed: false,
+            });
+          if (insertError) {
+            console.error('Error inserting new assinatura record:', insertError);
           }
         }
-
         // Show success screen without logging out
         setShowSuccessScreen(true);
       }

@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { Camera, Upload, ArrowRight, ArrowLeft, CheckCircle, Loader2 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
-
+import { useAuth } from '../contexts/AuthContext';
 interface OnboardingFlowProps {
   userId: string;
   userEmail: string;
@@ -24,6 +24,7 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ userId, userEmail, onCo
   const [selectedPresetAvatar, setSelectedPresetAvatar] = useState<string | null>(null);
   const [avatarMode, setAvatarMode] = useState<'preset' | 'upload'>('preset');
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+  const { updateProfile } = useAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const [onboardingData, setOnboardingData] = useState<OnboardingData>({});
@@ -145,54 +146,29 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ userId, userEmail, onCo
     setIsLoading(true);
 
     try {
-      // First, mark onboarding as completed in the context to hide the flow immediately
-      onComplete();
-      
-      // Update subscription data with onboarding info (optional)
-      const { error: subscriptionError } = await supabase
-        .from('assinaturas')
-        .update({
-          avatar_usuario: onboardingData.avatar_url || 'https://static.vecteezy.com/system/resources/previews/009/292/244/non_2x/default-avatar-icon-of-social-media-user-vector.jpg',
-          experiencia_ia: onboardingData.experiencia_ia,
-          objetivo_principal: onboardingData.objetivo_principal,
-          tipo_trabalho: onboardingData.tipo_trabalho,
-          porte_negocio: onboardingData.porte_negocio,
-          instagram: onboardingData.instagram,
-        })
-        .eq('user_id', userId);
-
-      if (subscriptionError) {
-        console.error('Error updating subscription onboarding data:', subscriptionError);
-        console.warn('Could not save subscription onboarding data, but continuing');
-      }
-      
-      // Update profiles table to mark onboarding as completed
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .upsert({
-          id: userId,
+      // Update the 'assinaturas' table with all onboarding data
+      const updatePayload: Partial<OnboardingData & { onboarding_completed: boolean; avatar_usuario: string }> = {
+        avatar_usuario: onboardingData.avatar_url || 'https://static.vecteezy.com/system/resources/previews/009/292/244/non_2x/default-avatar-icon-of-social-media-user-vector.jpg',
+        experiencia_ia: onboardingData.experiencia_ia,
+        objetivo_principal: onboardingData.objetivo_principal,
+        tipo_trabalho: onboardingData.tipo_trabalho,
+        porte_negocio: onboardingData.porte_negocio,
+        instagram: onboardingData.instagram,
+        onboarding_data: onboardingData, // Save all onboarding data as JSONB
+        // Mark onboarding as completed
           onboarding_completed: true,
-          onboarding_data: onboardingData
-        });
+      };
 
-      if (profileError) {
-        console.error('Error updating profile onboarding status:', profileError);
+      const success = await updateProfile(updatePayload);
+
+      if (success) {
+        console.log('Onboarding completed successfully');
+        onComplete(); // Call onComplete to hide the flow
+      } else {
+        console.error('Failed to complete onboarding via updateProfile');
+        // Even if there's an error, complete the onboarding to avoid infinite loop
+        onComplete();
       }
-      
-      // Update user profile with onboarding data
-      const { error: authError } = await supabase.auth.updateUser({
-        data: {
-          avatar_url: onboardingData.avatar_url,
-          onboarding_completed: true,
-          onboarding_data: onboardingData
-        }
-      });
-
-      if (authError) {
-        console.error('Error updating user auth data:', authError);
-      }
-
-      console.log('Onboarding completed successfully');
     } catch (error) {
       console.error('Error completing onboarding:', error);
       // Even if there's an error, complete the onboarding to avoid infinite loop
