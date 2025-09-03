@@ -1013,25 +1013,24 @@ export const featuredContentService = {
   },
 
   async getAllActiveFeaturedContent(): Promise<FeaturedContent[]> {
-    console.log('⭐ getAllActiveFeaturedContent called');
-    
-    const { data, error } = await supabase
-      .from('featured_content')
-      .select('*')
-      .eq('status', true)
-      .order('created_at', { ascending: false });
+      
+      const { data, error } = await supabase
+        .from('featured_content')
+        .select('*')
+        .eq('status', true)
+        .order('created_at', { ascending: false });
 
-    console.log('📊 getAllActiveFeaturedContent result:', { 
-      dataCount: data?.length || 0, 
-      error: error?.message || 'none' 
-    });
-    if (error) {
-      console.error('Error fetching all featured content:', error);
-      return [];
-    }
-
-    return data as FeaturedContent[];
-  }
+      console.log('📊 getAllActiveFeaturedContent result:', { 
+        dataCount: data?.length || 0, 
+        error: error?.message || 'none',
+        errorDetails: error,
+        sampleData: data?.[0]
+      });
+      
+      if (error) {
+        console.error('Error fetching featured content:', error);
+        return [];
+      }
 };
 
 // Secondary highlights service
@@ -1406,17 +1405,19 @@ export const commentsService = {
         .eq('assinatura_id', assinaturaId);
 
       if (error) {
-        console.error('Error deleting comment:', error);
-        return false;
+      if (!data || data.length === 0) {
+        console.warn('⚠️ No featured content found in database');
+        return [];
       }
-
       return true;
-    } catch (error) {
-      console.error('Error deleting comment:', error);
-      return false;
-    }
+      console.log('✅ getAllActiveFeaturedContent completed:', data.length, 'items');
+      return data as FeaturedContent[];
     } catch (error) {
       console.error('💥 getAllActiveFeaturedContent exception:', error);
+      return [];
+    }
+      return false;
+    }
       return [];
     }
   }
