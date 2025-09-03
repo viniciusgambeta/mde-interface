@@ -1275,40 +1275,19 @@ export const commentsService = {
           *,
           assinatura:assinaturas!comments_assinatura_id_fkey(
             "Nome do cliente",
-      console.log('✅ getActiveFeaturedContent completed');
             avatar_usuario,
-    } catch (error) {
-      console.error('💥 getActiveFeaturedContent exception:', error);
-      return null;
-    }
             instagram,
-      console.log('📊 getActiveFeaturedContent result:', { 
-        hasData: !!data, 
-    console.log('⭐ getAllActiveFeaturedContent called');
-    
-    try {
-      console.log('🔍 Querying all featured_content...');
-        errorDetails: error,
-        data: data
-      });
-      console.log('📊 getAllActiveFeaturedContent result:', { 
-        dataCount: data?.length || 0, 
-        error: error?.message || 'none',
-        errorDetails: error,
-        sampleData: data?.[0]
-      });
+            linkedin
+          )
+        `)
+        .eq('video_id', videoId)
+        .order('created_at', { ascending: false });
       
       if (error) {
         console.error('Error fetching comments:', error);
         return [];
       }
 
-      if (!data || data.length === 0) {
-        console.warn('⚠️ No featured content found in database');
-        return [];
-      }
-
-      console.log('✅ getAllActiveFeaturedContent completed:', data.length, 'items');
       if (!data) return [];
 
       console.log('Raw comments data:', data);
@@ -1354,6 +1333,23 @@ export const commentsService = {
         }
       });
 
+      // Sort root comments by creation date (newest first)
+      rootComments.sort((a, b) => 
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      );
+
+      return rootComments;
+    } catch (error) {
+      console.error('Error fetching comments:', error);
+      return [];
+    }
+  },
+
+  // Create a new comment
+  async createComment(videoId: string, assinaturaId: string, content: string, parentCommentId?: string): Promise<boolean> {
+    if (!videoId || !assinaturaId || !content.trim()) return false;
+
+    try {
       console.log('Creating comment with assinatura_id:', assinaturaId);
 
       const { error } = await supabase
@@ -1383,28 +1379,21 @@ export const commentsService = {
     if (!commentId || !assinaturaId) return false;
 
     try {
+      const { error } = await supabase
+        .from('comments')
+        .delete()
+        .eq('id', commentId)
+        .eq('assinatura_id', assinaturaId);
+
+      if (error) {
+        console.error('Error deleting comment:', error);
+        return false;
+      }
+
+      return true;
+    } catch (error) {
       console.error('Error deleting comment:', error);
       return false;
     }
-    } catch (error) {
-        .eq('assinatura_id', assinaturaId);
-      return [];
-    }
   }
 };
-        )
-    }
-  }
-}
-        )
-    }
-  }
-}
-        )
-    }
-  }
-}
-        )
-    }
-  }
-}
