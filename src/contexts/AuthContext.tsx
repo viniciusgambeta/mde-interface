@@ -425,11 +425,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     signUp,
     signOut,
     updateProfile,
-    refreshUser,
-    // Legacy aliases
-    login: signIn,
-    register: signUp,
-    logout: signOut,
+    refreshUser
   };
 
   return (
