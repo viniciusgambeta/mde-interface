@@ -40,6 +40,36 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Clear session and cache on component mount
+  useEffect(() => {
+    const clearAuthData = async () => {
+      console.log('🧹 Clearing all auth data and cache...');
+      
+      try {
+        // Clear Supabase session
+        await supabase.auth.signOut();
+        
+        // Clear localStorage
+        localStorage.clear();
+        
+        // Clear sessionStorage
+        sessionStorage.clear();
+        
+        // Clear any Supabase-specific storage
+        const supabaseKeys = Object.keys(localStorage).filter(key => 
+          key.startsWith('supabase') || key.startsWith('sb-')
+        );
+        supabaseKeys.forEach(key => localStorage.removeItem(key));
+        
+        console.log('✅ Auth data cleared successfully');
+      } catch (error) {
+        console.error('❌ Error clearing auth data:', error);
+      }
+    };
+
+    clearAuthData();
+  }, []);
+
   // Convert Supabase user to our User type
   const fetchAndConvertUser = async (supabaseUser: SupabaseUser): Promise<User> => {
     console.log('🔍 fetchAndConvertUser called for user:', supabaseUser.id, supabaseUser.email);
