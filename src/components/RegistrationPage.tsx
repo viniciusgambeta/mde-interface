@@ -24,6 +24,15 @@ interface AssinaturaData {
 const RegistrationPage: React.FC = () => {
   const navigate = useNavigate();
   const { user, isAuthenticated } = useAuth();
+
+  // Redirect authenticated users to home
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      console.log('🔄 Authenticated user trying to access registration, redirecting to home');
+      navigate('/');
+    }
+  }, [isAuthenticated, user, navigate]);
+
   const [formData, setFormData] = useState({
     name: '',
     email: '',
