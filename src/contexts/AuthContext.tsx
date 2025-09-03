@@ -78,7 +78,6 @@ const convertAssinaturaToUser = (authUser: SupabaseUser, assinatura: Assinatura 
     avatar: assinatura?.avatar_usuario || authUser.user_metadata?.avatar_url || '/avatar1.png',
     isPremium: assinatura?.is_premium || assinatura?.["Status da assinatura"] === 'active' || false,
     joinedAt: assinatura?.["Data de criação"] || authUser.created_at,
-    onboardingCompleted: assinatura?.onboarding_completed || false,
     onboardingCompleted: assinatura?.onboarding_completed === true,
     phone: assinatura?.phone_number || assinatura?.["Telefone do cliente"]?.toString() || '',
     bio: assinatura?.bio || '',
@@ -406,7 +405,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         setUser(userData);
         setShowOnboarding(userData.onboardingCompleted === false);
         console.log('🎯 Refresh - showOnboarding set to:', userData.onboardingCompleted === false);
-      setShowOnboarding(!userData.onboardingCompleted);
       }
     } catch (error) {
       console.error('❌ Error refreshing user:', error);
