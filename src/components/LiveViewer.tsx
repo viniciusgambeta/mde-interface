@@ -786,7 +786,7 @@ const LiveViewer: React.FC<LiveViewerProps> = ({ live, onBack, onVideoSelect }) 
           <div className="flex-1 flex items-center justify-center p-6">
             <div className="text-center">
               <div className="w-16 h-16 bg-slate-700/30 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Lock className="w-8 h-8 text-slate-500" />
+                <Shield className="w-8 h-8 text-slate-500" />
               </div>
               <h3 className="text-white font-medium mb-2">Materiais Bloqueados</h3>
               <p className="text-slate-400 text-sm text-center max-w-xs">

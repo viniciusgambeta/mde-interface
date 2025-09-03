@@ -475,6 +475,14 @@ const PromptViewer: React.FC<PromptViewerProps> = ({ prompt, onBack, onVideoSele
               )}
             </div>
           </div>
+
+          {/* Comments Section */}
+          <div className="mt-12">
+            <CommentsSection 
+              videoId={currentPrompt.id} 
+              videoTitle={currentPrompt.title} 
+            />
+          </div>
         </div>
       </div>
 

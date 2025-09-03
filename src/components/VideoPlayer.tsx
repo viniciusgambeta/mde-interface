@@ -459,6 +459,14 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video, onBack, onVideoSelect 
               </div>
             </div>
           </div>
+
+          {/* Comments Section */}
+          <div className="mt-12">
+            <CommentsSection 
+              videoId={currentVideo.id} 
+              videoTitle={currentVideo.title} 
+            />
+          </div>
         </div>
       </div>
 

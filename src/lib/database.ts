@@ -125,6 +125,21 @@ export interface VideoRelated {
   created_at: string;
 }
 
+export interface Comment {
+  id: string;
+  video_id: string;
+  user_id: string;
+  content: string;
+  parent_comment_id?: string;
+  created_at: string;
+  updated_at: string;
+  user_name?: string;
+  user_avatar?: string;
+  user_instagram?: string;
+  user_linkedin?: string;
+  replies?: Comment[];
+}
+
 export interface Video {
   id: string;
   title: string;
@@ -168,25 +183,6 @@ export interface VideoVersion {
   version_name: string;
   version_order: number;
   created_at: string;
-}
-
-// Comment interface
-export interface Comment {
-  id: string;
-  video_id: string;
-  user_id: string;
-  parent_comment_id?: string;
-  content: string;
-  reply_count: number;
-  created_at: string;
-  updated_at: string;
-  
-  // Joined data
-  user_name?: string;
-  user_avatar?: string;
-  user_instagram?: string;
-  user_linkedin?: string;
-  replies?: Comment[];
 }
 
 // Database functions
@@ -1212,6 +1208,137 @@ export const videoSuggestionsService = {
     } catch (error) {
       console.error('Error fetching user pending suggestions:', error);
       return [];
+    }
+  }
+};
+
+// Comments service
+export const commentsService = {
+  // Get comments for a video
+  async getVideoComments(videoId: string): Promise<Comment[]> {
+    if (!videoId) return [];
+
+    try {
+      // Get all comments for the video
+      const { data, error } = await supabase
+        .from('comments')
+        .select(`
+          *,
+          user_data:assinaturas!comments_user_id_fkey(
+            "Nome do cliente",
+            avatar_usuario,
+            instagram,
+            linkedin
+          )
+        `)
+        .eq('video_id', videoId)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching comments:', error);
+        return [];
+      }
+
+      if (!data) return [];
+
+      // Transform and organize comments
+      const commentsMap = new Map<string, Comment>();
+      const rootComments: Comment[] = [];
+
+      // First pass: create all comment objects
+      data.forEach(comment => {
+        const transformedComment: Comment = {
+          ...comment,
+          user_name: comment.user_data?.['Nome do cliente'] || 'Usuário',
+          user_avatar: comment.user_data?.avatar_usuario || '/avatar1.png',
+          user_instagram: comment.user_data?.instagram || null,
+          user_linkedin: comment.user_data?.linkedin || null,
+          replies: []
+        };
+        commentsMap.set(comment.id, transformedComment);
+      });
+
+      // Second pass: organize hierarchy
+      commentsMap.forEach(comment => {
+        if (comment.parent_comment_id) {
+          // This is a reply
+          const parentComment = commentsMap.get(comment.parent_comment_id);
+          if (parentComment) {
+            parentComment.replies!.push(comment);
+          }
+        } else {
+          // This is a root comment
+          rootComments.push(comment);
+        }
+      });
+
+      // Sort replies by creation date (oldest first for replies)
+      rootComments.forEach(comment => {
+        if (comment.replies) {
+          comment.replies.sort((a, b) => 
+            new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+          );
+        }
+      });
+
+      return rootComments;
+    } catch (error) {
+      console.error('Error fetching video comments:', error);
+      return [];
+    }
+  },
+
+  // Create a new comment
+  async createComment(
+    videoId: string, 
+    userId: string, 
+    content: string, 
+    parentCommentId?: string
+  ): Promise<boolean> {
+    if (!videoId || !userId || !content.trim()) return false;
+
+    try {
+      const { error } = await supabase
+        .from('comments')
+        .insert({
+          video_id: videoId,
+          user_id: userId,
+          content: content.trim(),
+          parent_comment_id: parentCommentId || null
+        });
+
+      if (error) {
+        console.error('Error creating comment:', error);
+        return false;
+      }
+
+      return true;
+    } catch (error) {
+      console.error('Error creating comment:', error);
+      return false;
+    }
+  },
+
+  // Delete a comment
+  async deleteComment(commentId: string, userId: string): Promise<boolean> {
+    if (!commentId || !userId) return false;
+
+    try {
+      const { error } = await supabase
+        .from('comments')
+        .delete()
+        .eq('id', commentId)
+        .eq('user_id', userId);
+
+      if (error) {
+        console.error('Error deleting comment:', error);
+        return false;
+      }
+
+      return true;
+    } catch (error) {
+      console.error('Error deleting comment:', error);
+      return false;
     }
   }
 };
