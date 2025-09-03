@@ -41,13 +41,13 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ videoId, videoTitle }
   const handleSubmitComment = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!user || !user.assinaturaId || !newComment.trim() || submitting) return;
+    if (!user || !newComment.trim() || submitting) return;
 
     setSubmitting(true);
     
     try {
-      console.log('Submitting comment for assinatura:', user.assinaturaId);
-      const success = await commentsService.createComment(videoId, user.assinaturaId, newComment);
+      console.log('Submitting comment for user:', user.id);
+      const success = await commentsService.createComment(videoId, user.id, newComment);
       
       if (success) {
         setNewComment('');
@@ -68,13 +68,13 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ videoId, videoTitle }
   const handleSubmitReply = async (e: React.FormEvent, parentCommentId: string) => {
     e.preventDefault();
     
-    if (!user || !user.assinaturaId || !replyContent.trim() || submitting) return;
+    if (!user || !replyContent.trim() || submitting) return;
 
     setSubmitting(true);
     
     try {
-      console.log('Submitting reply for assinatura:', user.assinaturaId, 'to comment:', parentCommentId);
-      const success = await commentsService.createComment(videoId, user.assinaturaId, replyContent, parentCommentId);
+      console.log('Submitting reply for user:', user.id, 'to comment:', parentCommentId);
+      const success = await commentsService.createComment(videoId, user.id, replyContent, parentCommentId);
       
       if (success) {
         setReplyContent('');
@@ -94,11 +94,11 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ videoId, videoTitle }
   };
 
   const handleDeleteComment = async (commentId: string) => {
-    if (!user || !user.assinaturaId || !window.confirm('Tem certeza que deseja excluir este comentário?')) return;
+    if (!user || !window.confirm('Tem certeza que deseja excluir este comentário?')) return;
 
     try {
-      console.log('Deleting comment:', commentId, 'for assinatura:', user.assinaturaId);
-      const success = await commentsService.deleteComment(commentId, user.assinaturaId);
+      console.log('Deleting comment:', commentId, 'for user:', user.id);
+      const success = await commentsService.deleteComment(commentId, user.id);
       
       if (success) {
         console.log('Comment deleted successfully, reloading comments');
@@ -154,7 +154,7 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ videoId, videoTitle }
     isReply?: boolean;
   }> = ({ comment, isReply = false }) => {
     const [showMenu, setShowMenu] = useState(false);
-    const isOwner = user?.assinaturaId === comment.assinatura_id;
+    const isOwner = user?.id === comment.user_id;
     const hasReplies = comment.replies && comment.replies.length > 0;
     const isExpanded = expandedComments.has(comment.id);
 
@@ -206,15 +206,13 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ videoId, videoTitle }
               
               {/* Menu for comment owner */}
               {isOwner && (
-                <div className="relative">
-                  {!isReply && user && user.assinaturaId && (
-                    <button
-                      onClick={() => setShowMenu(!showMenu)}
-                      className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-slate-700/30 transition-all"
-                    >
-                      <MoreVertical className="w-4 h-4 text-slate-400" />
-                    </button>
-                  )}
+                <div className="relative ml-auto">
+                  <button
+                    onClick={() => setShowMenu(!showMenu)}
+                    className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-slate-700/30 transition-all"
+                  >
+                    <MoreVertical className="w-4 h-4 text-slate-400" />
+                  </button>
                   
                   {showMenu && (
                     <div className="absolute right-0 top-full mt-1 bg-[#1f1d2b] border border-slate-700/30 rounded-lg shadow-xl z-50 min-w-[120px]">
@@ -241,7 +239,7 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ videoId, videoTitle }
             
             {/* Actions */}
             <div className="flex items-center space-x-4">
-              {!isReply && user && user.assinaturaId && (
+              {!isReply && user && (
                 <button
                   onClick={() => setReplyingTo(replyingTo === comment.id ? null : comment.id)}
                   className="flex items-center space-x-1 text-slate-400 hover:text-white transition-colors text-xs"
@@ -262,7 +260,7 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ videoId, videoTitle }
             </div>
             
             {/* Reply Form */}
-            {replyingTo === comment.id && user && user.assinaturaId && (
+            {replyingTo === comment.id && user && (
               <form onSubmit={(e) => handleSubmitReply(e, comment.id)} className="mt-4">
                 <div className="flex space-x-3">
                   <img
