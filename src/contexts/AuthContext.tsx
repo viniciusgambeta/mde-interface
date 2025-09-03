@@ -162,11 +162,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         console.log('✅ Session found, fetching user data...');
         const userData = await fetchAndConvertUser(session.user);
         setUser(userData);
-        setShowOnboarding(!userData.onboardingCompleted);
+        setShowOnboarding(userData.onboardingCompleted === false);
         console.log('✅ User data set:', userData.email);
-        console.log('🎯 showOnboarding set to:', !userData.onboardingCompleted);
+        console.log('🎯 showOnboarding set to:', userData.onboardingCompleted === false);
       } else {
-        console.log('ℹ️ No active session found');
+        console.log('🎯 Refresh - showOnboarding set to:', userData.onboardingCompleted === false);
       }
     } catch (error) {
       console.error('💥 Error initializing auth:', error instanceof Error ? error.message : 'Unknown error');
@@ -189,8 +189,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       if (event === 'SIGNED_IN' && session?.user) {
         const userData = await fetchAndConvertUser(session.user);
         setUser(userData);
-        setShowOnboarding(!userData.onboardingCompleted);
-        console.log('🎯 Auth change - showOnboarding set to:', !userData.onboardingCompleted);
+        setShowOnboarding(userData.onboardingCompleted === false);
+        console.log('🎯 Auth change - showOnboarding set to:', userData.onboardingCompleted === false);
       } else if (event === 'SIGNED_OUT') {
         setUser(null);
         setShowOnboarding(false);
@@ -220,9 +220,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       if (data.user) {
         const userData = await fetchAndConvertUser(data.user);
         setUser(userData);
-        setShowOnboarding(!userData.onboardingCompleted);
+        setShowOnboarding(userData.onboardingCompleted === false);
         console.log('✅ Sign in successful for:', userData.email);
-        console.log('🎯 Sign in - showOnboarding set to:', !userData.onboardingCompleted);
+        console.log('🎯 Sign in - showOnboarding set to:', userData.onboardingCompleted === false);
         return { user: userData, error: null };
       }
 
@@ -276,9 +276,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
         const userData = await fetchAndConvertUser(data.user);
         setUser(userData);
-        setShowOnboarding(!userData.onboardingCompleted);
+        setShowOnboarding(userData.onboardingCompleted === false);
         console.log('✅ Sign up successful for:', userData.email);
-        console.log('🎯 Sign up - showOnboarding set to:', !userData.onboardingCompleted);
+        console.log('🎯 Sign up - showOnboarding set to:', userData.onboardingCompleted === false);
         return { user: userData, error: null };
       }
 
@@ -405,7 +405,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       if (authUser) {
         const userData = await fetchAndConvertUser(authUser);
         setUser(userData);
-        console.log('🔄 User data refreshed');
+        setShowOnboarding(userData.onboardingCompleted === false);
       setShowOnboarding(!userData.onboardingCompleted);
       }
       console.log('🎯 Refresh - showOnboarding set to:', !userData.onboardingCompleted);
