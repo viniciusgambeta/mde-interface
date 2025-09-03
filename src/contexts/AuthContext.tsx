@@ -351,8 +351,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           onboarding_completed: data.onboarding_completed,
           onboarding_data: data.onboarding_data,
           phone_number: data.phone_number || data["Telefone do cliente"]?.toString(),
-          is_premium: data.is_premium,
-          updated_at: new Date().toISOString()
+          is_premium: data.is_premium
         })
         .eq('user_id', user.id);
 

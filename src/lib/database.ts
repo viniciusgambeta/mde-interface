@@ -151,15 +151,12 @@ export interface Assinatura {
   avatar_usuario?: string;
   instagram?: string;
   linkedin?: string;
-  linkedin?: string;
   experiencia_ia?: string;
   objetivo_principal?: string;
   tipo_trabalho?: string;
   porte_negocio?: string;
   "Data de criação"?: string;
   "Plano"?: string;
-  created_at?: string;
-  updated_at?: string;
   // New onboarding and profile fields
   onboarding_completed?: boolean;
   onboarding_data?: any;
@@ -167,8 +164,6 @@ export interface Assinatura {
   score?: number;
   phone_number?: string;
   is_premium?: boolean;
-  created_at_profile?: string;
-  updated_at_profile?: string;
 }
 
 export interface Video {
