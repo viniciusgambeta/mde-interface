@@ -28,7 +28,7 @@ const Header: React.FC<HeaderProps> = ({ sidebarCollapsed, onSidebarToggle, onVi
   const [isSearching, setIsSearching] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLDivElement>(null);
-  const { user, isAuthenticated, logout } = useAuth();
+  const { user, isAuthenticated, signOut } = useAuth();
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -100,7 +100,7 @@ const Header: React.FC<HeaderProps> = ({ sidebarCollapsed, onSidebarToggle, onVi
   }, [searchQuery]);
 
   const handleLogout = async () => {
-    const { error } = await logout();
+    const { error } = await signOut();
     if (!error) {
       // Force page reload to ensure clean state
       window.location.href = '/';

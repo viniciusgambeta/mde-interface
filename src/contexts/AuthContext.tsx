@@ -96,7 +96,7 @@ const fetchAndConvertUser = async (authUser: SupabaseUser): Promise<User> => {
   try {
     // Set a timeout for the query
     const timeoutPromise = new Promise((_, reject) => {
-      setTimeout(() => reject(new Error('Query timeout')), 10000);
+      setTimeout(() => reject(new Error('Query timeout')), 20000);
     });
 
     const queryPromise = supabase
