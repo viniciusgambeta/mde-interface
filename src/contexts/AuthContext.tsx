@@ -47,77 +47,123 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       console.log('📊 Starting assinaturas query...');
       
-      // Fetch user's consolidated data from 'assinaturas' table
-      const { data: assinaturaData, error } = await supabase
+      // First, try a simple query to test RLS
+      console.log('🔍 Testing simple query...');
+      const { data: testData, error: testError } = await supabase
         .from('assinaturas')
-        .select(`
-          "Nome do cliente",
-          "Email do cliente",
-          "Status da assinatura",
-          avatar_usuario,
-          "Data de criação"
-        `)
+        .select('user_id')
         .eq('user_id', supabaseUser.id)
         .maybeSingle();
 
-      console.log('📊 Assinaturas query completed:', { 
-        hasData: !!assinaturaData, 
-        error: error?.message || 'none',
+      console.log('🧪 Test query result:', { 
+        hasData: !!testData, 
+        error: testError?.message || 'none',
         userId: supabaseUser.id 
       });
       
-      if (error) {
-        console.error('❌ Error fetching user assinatura data:', error);
-        // Don't throw, continue with fallback data
+      if (testError) {
+        console.error('❌ RLS or query error:', testError);
+        console.log('🆘 Using fallback user data due to query error');
+        return {
+          id: supabaseUser.id,
+          name: supabaseUser.email?.split('@')[0] || 'Usuário',
+          email: supabaseUser.email || '',
+          avatar: '/avatar1.png',
+          isPremium: false,
+          joinedAt: supabaseUser.created_at || new Date().toISOString()
+        };
       }
       
-      console.log('📋 Assinatura data found:', assinaturaData);
-      
-      // If no assinatura record exists, create a basic one
-      if (!assinaturaData) {
-        console.log('⚠️ No assinatura record found, creating basic record for user:', supabaseUser.id);
-        
-        const defaultName = supabaseUser.email?.split('@')[0] || 'Usuário';
-        
-        try {
-          console.log('📝 Inserting new assinatura record...');
-          const { error: insertError } = await supabase
-            .from('assinaturas')
-            .insert({
-              user_id: supabaseUser.id,
-              "Nome do cliente": defaultName,
-              "Email do cliente": supabaseUser.email,
-              "ID da assinatura": supabaseUser.id,
-              "Status da assinatura": 'free',
-              "Plano": 'Free Plan',
-              "Data de criação": new Date().toISOString().split('T')[0],
-              avatar_usuario: '/avatar1.png',
-              onboarding_completed: false
-            });
-            
-          if (insertError) {
-            console.error('❌ Error creating default assinatura record:', insertError);
-          } else {
-            console.log('✅ Created default assinatura record');
-          }
-        } catch (createError) {
-          console.error('💥 Exception creating default assinatura record:', createError);
+      // If test query works, try the full query
+      if (testData) {
+        console.log('✅ Test query successful, trying full query...');
+        const { data: assinaturaData, error: fullError } = await supabase
+          .from('assinaturas')
+          .select(`
+            "Nome do cliente",
+            "Email do cliente", 
+            "Status da assinatura",
+            avatar_usuario,
+            "Data de criação",
+            bio,
+            score,
+            instagram,
+            "Telefone do cliente",
+            experiencia_ia,
+            objetivo_principal,
+            tipo_trabalho,
+            porte_negocio,
+            onboarding_completed,
+            onboarding_data
+          `)
+          .eq('user_id', supabaseUser.id)
+          .single();
+
+        console.log('📊 Full query result:', { 
+          hasData: !!assinaturaData, 
+          error: fullError?.message || 'none' 
+        });
+
+        if (fullError) {
+          console.error('❌ Error in full query:', fullError);
+          // Continue with fallback
+        } else if (assinaturaData) {
+          console.log('📋 Full assinatura data found:', assinaturaData);
+          
+          const convertedUser = {
+            id: supabaseUser.id,
+            name: assinaturaData["Nome do cliente"] || supabaseUser.email?.split('@')[0] || 'Usuário',
+            email: supabaseUser.email || assinaturaData["Email do cliente"] || '',
+            avatar: assinaturaData.avatar_usuario || '/avatar1.png',
+            isPremium: assinaturaData["Status da assinatura"] === 'active',
+            joinedAt: assinaturaData["Data de criação"] || supabaseUser.created_at || new Date().toISOString()
+          };
+          
+          console.log('👤 User conversion completed:', convertedUser);
+          return convertedUser;
         }
       }
       
-      console.log('🔄 Converting user data...');
-      const name = assinaturaData?.["Nome do cliente"] || supabaseUser.email?.split('@')[0] || 'Usuário';
-      const avatar = assinaturaData?.avatar_usuario || '/avatar1.png';
-      const isPremium = assinaturaData?.["Status da assinatura"] === 'active';
-      const joinedAt = assinaturaData?.["Data de criação"] || supabaseUser.created_at || new Date().toISOString();
-
+      // If no record exists, create one
+      console.log('⚠️ No assinatura record found, creating basic record...');
+      const defaultName = supabaseUser.email?.split('@')[0] || 'Usuário';
+      
+      try {
+        console.log('📝 Inserting new assinatura record...');
+        const { data: newRecord, error: insertError } = await supabase
+          .from('assinaturas')
+          .insert({
+            user_id: supabaseUser.id,
+            "Nome do cliente": defaultName,
+            "Email do cliente": supabaseUser.email,
+            "ID da assinatura": supabaseUser.id,
+            "Status da assinatura": 'free',
+            "Plano": 'Free Plan',
+            "Data de criação": new Date().toISOString().split('T')[0],
+            avatar_usuario: '/avatar1.png',
+            onboarding_completed: false
+          })
+          .select()
+          .single();
+        
+        if (insertError) {
+          console.error('❌ Error creating assinatura record:', insertError);
+        } else {
+          console.log('✅ Created new assinatura record:', newRecord);
+        }
+      } catch (createError) {
+        console.error('💥 Exception creating assinatura record:', createError);
+      }
+      
+      // Return fallback user data
+      console.log('🆘 Returning fallback user data');
       const convertedUser = {
         id: supabaseUser.id,
-        name: name,
-        email: supabaseUser.email || assinaturaData?.["Email do cliente"] || '',
-        avatar: avatar,
-        isPremium: isPremium,
-        joinedAt: joinedAt
+        name: defaultName,
+        email: supabaseUser.email || '',
+        avatar: '/avatar1.png',
+        isPremium: false,
+        joinedAt: supabaseUser.created_at || new Date().toISOString()
       };
       
       console.log('👤 User conversion completed:', convertedUser);
@@ -150,6 +196,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setIsLoading(true);
       
       try {
+        // Force clear any existing session first
+        console.log('🧹 Clearing existing session...');
+        await supabase.auth.signOut();
+        
+        console.log('📋 Getting fresh session...');
         const { data: { session }, error } = await supabase.auth.getSession();
         
         console.log('📋 Session check result:', { hasSession: !!session, hasUser: !!session?.user, error: error?.message });
@@ -157,6 +208,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         if (error) {
           console.error('❌ Error getting session:', error);
           if (mounted) {
+            console.log('🔄 Setting user to null and loading to false (session error)');
             setUser(null);
             setIsLoading(false);
           }
@@ -169,12 +221,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             const convertedUser = await fetchAndConvertUser(session.user);
             console.log('✅ User converted successfully:', convertedUser);
             if (mounted) {
+              console.log('🔄 Setting converted user and loading to false');
               setUser(convertedUser);
               setIsLoading(false);
             }
           } catch (convertError) {
             console.error('❌ Error converting user:', convertError);
             if (mounted) {
+              console.log('🔄 Setting user to null and loading to false (convert error)');
               setUser(null);
               setIsLoading(false);
             }
@@ -182,6 +236,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         } else {
           console.log('👤 No session found, setting user to null');
           if (mounted) {
+            console.log('🔄 Setting user to null and loading to false (no session)');
             setUser(null);
             setIsLoading(false);
           }
@@ -189,6 +244,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       } catch (error) {
         console.error('💥 Error initializing auth:', error);
         if (mounted) {
+          console.log('🔄 Setting user to null and loading to false (init error)');
           setUser(null);
           setIsLoading(false);
         }
@@ -209,13 +265,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           console.log('✅ User signed in, converting user data...');
           try {
             const convertedUser = await fetchAndConvertUser(session.user);
+            console.log('✅ User converted in auth change:', convertedUser);
             if (mounted) {
+              console.log('🔄 Setting user from auth change');
               setUser(convertedUser);
               setIsLoading(false);
             }
           } catch (convertError) {
             console.error('❌ Error converting user on sign in:', convertError);
             if (mounted) {
+              console.log('🔄 Setting user to null from auth change (error)');
               setUser(null);
               setIsLoading(false);
             }
@@ -223,27 +282,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         } else if (event === 'SIGNED_OUT') {
           console.log('👋 User signed out');
           if (mounted) {
+            console.log('🔄 Setting user to null from sign out');
             setUser(null);
             setIsLoading(false);
           }
-        } else if (event === 'TOKEN_REFRESHED' && session?.user) {
-          console.log('🔄 Token refreshed');
-          if (!user && mounted) {
-            try {
-              const convertedUser = await fetchAndConvertUser(session.user);
-              setUser(convertedUser);
-              setIsLoading(false);
-            } catch (convertError) {
-              console.error('❌ Error converting user on token refresh:', convertError);
-              setUser(null);
-              setIsLoading(false);
-            }
-          } else if (mounted) {
-            setIsLoading(false);
-          }
         } else {
-          console.log('⏹️ Other auth event, setting loading to false');
+          console.log('⏹️ Other auth event:', event, 'setting loading to false');
           if (mounted) {
+            console.log('🔄 Setting loading to false for other event');
             setIsLoading(false);
           }
         }
