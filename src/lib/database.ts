@@ -170,6 +170,25 @@ export interface VideoVersion {
   created_at: string;
 }
 
+// Comment interface
+export interface Comment {
+  id: string;
+  video_id: string;
+  user_id: string;
+  parent_comment_id?: string;
+  content: string;
+  reply_count: number;
+  created_at: string;
+  updated_at: string;
+  
+  // Joined data
+  user_name?: string;
+  user_avatar?: string;
+  user_instagram?: string;
+  user_linkedin?: string;
+  replies?: Comment[];
+}
+
 // Database functions
 export const videoService = {
   // Get all videos with related data
