@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Heart, Bookmark, ThumbsUp, Users, Copy, Download, CheckCircle, BarChart3, ChevronDown } from 'lucide-react';
 import { videoService, type Video } from '../lib/database';
 import { useAuth } from '../contexts/AuthContext';
+import CommentsSection from './CommentsSection';
 
 // Component for suggested prompts
 const SuggestedPrompts: React.FC<{ currentPrompt: Video }> = ({ currentPrompt }) => {

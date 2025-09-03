@@ -3,6 +3,7 @@ import { ArrowLeft, Heart, Bookmark, ThumbsUp, Users, Send, Download, ExternalLi
 import { videoService, type Video } from '../lib/database';
 import { useAuth } from '../contexts/AuthContext';
 import CustomVideoPlayer from './CustomVideoPlayer';
+import CommentsSection from './CommentsSection';
 
 // Component for suggested videos
 const SuggestedVideos: React.FC<{ currentVideo: Video }> = ({ currentVideo }) => {
