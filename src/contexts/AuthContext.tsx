@@ -352,20 +352,42 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
       console.log('📋 Final update payload:', updateData);
 
-      // Update assinaturas table
-      const { data: updatedData, error } = await supabase
+      // First try to update existing record
+      const { data: updatedData, error: updateError } = await supabase
         .from('assinaturas')
         .update(updateData)
         .eq('user_id', user.id)
-        .select()
-        .single();
+        .select();
 
-      if (error) {
-        console.error('❌ Profile update error:', error.message);
-        throw error;
+      // If no rows were updated, create a new record
+      if (updateError || !updatedData || updatedData.length === 0) {
+        console.log('📝 No existing record found, creating new assinatura record...');
+        
+        // Get current auth user for email
+        const { data: { user: authUser } } = await supabase.auth.getUser();
+        
+        const insertData = {
+          user_id: user.id,
+          "Email do cliente": authUser?.email || user.email,
+          "Nome do cliente": updateData["Nome do cliente"] || user.name,
+          ...updateData
+        };
+        
+        const { data: insertedData, error: insertError } = await supabase
+          .from('assinaturas')
+          .insert([insertData])
+          .select();
+
+        if (insertError) {
+          console.error('❌ Profile insert error:', insertError.message);
+          throw insertError;
+        }
+
+        console.log('✅ Profile record created successfully:', insertedData);
+      } else {
+        console.log('✅ Profile updated successfully:', updatedData);
       }
 
-      console.log('✅ Profile updated successfully:', updatedData);
 
       // Refresh user data
       await refreshUser();
