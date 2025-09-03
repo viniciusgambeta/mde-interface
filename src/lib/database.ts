@@ -131,6 +131,7 @@ export interface Comment {
   user_id: string;
   content: string;
   parent_comment_id?: string;
+  reply_count: number;
   created_at: string;
   updated_at: string;
   user_name?: string;
@@ -1224,7 +1225,7 @@ export const commentsService = {
         .from('comments')
         .select(`
           *,
-          user_data:assinaturas!comments_user_id_fkey(
+          user_data:assinaturas(
             "Nome do cliente",
             avatar_usuario,
             instagram,
@@ -1232,6 +1233,7 @@ export const commentsService = {
           )
         `)
         .eq('video_id', videoId)
+        .eq('user_data.user_id', 'user_id')
         .order('created_at', { ascending: false });
 
       if (error) {

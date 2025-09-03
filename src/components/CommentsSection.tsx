@@ -241,7 +241,7 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ videoId, videoTitle }
                   onClick={() => toggleReplies(comment.id)}
                   className="text-slate-400 hover:text-white transition-colors text-xs"
                 >
-                  {isExpanded ? 'Ocultar' : 'Ver'} {comment.reply_count} resposta{comment.reply_count !== 1 ? 's' : ''}
+                  {isExpanded ? 'Ocultar' : 'Ver'} {comment.reply_count || comment.replies?.length || 0} resposta{(comment.reply_count || comment.replies?.length || 0) !== 1 ? 's' : ''}
                 </button>
               )}
             </div>
