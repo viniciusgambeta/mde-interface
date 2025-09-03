@@ -206,7 +206,7 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ videoId, videoTitle }
               
               {/* Menu for comment owner */}
               {isOwner && (
-                {!isReply && user && user.assinaturaId && (
+                <div className="relative">
                   <button
                     onClick={() => setShowMenu(!showMenu)}
                     className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-slate-700/30 transition-all"
@@ -239,7 +239,7 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ videoId, videoTitle }
             
             {/* Actions */}
             <div className="flex items-center space-x-4">
-              {!isReply && user && userAssinaturaId && (
+              {!isReply && user && user.assinaturaId && (
                 <button
                   onClick={() => setReplyingTo(replyingTo === comment.id ? null : comment.id)}
                   className="flex items-center space-x-1 text-slate-400 hover:text-white transition-colors text-xs"
