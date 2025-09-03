@@ -62,18 +62,23 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             "Nome do cliente",
             "Email do cliente", 
             "Status da assinatura",
+            "Telefone do cliente",
             avatar_usuario,
             "Data de criação",
             bio,
             score,
             instagram,
-            "Telefone do cliente",
+            linkedin,
             experiencia_ia,
             objetivo_principal,
             tipo_trabalho,
             porte_negocio,
             onboarding_completed,
-            onboarding_data
+            onboarding_data,
+            phone_number,
+            is_premium,
+            created_at_profile,
+            updated_at_profile
           `)
           .eq('user_id', supabaseUser.id)
           .maybeSingle();
@@ -102,7 +107,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             name: assinaturaData["Nome do cliente"] || supabaseUser.email?.split('@')[0] || 'Usuário',
             email: supabaseUser.email || assinaturaData["Email do cliente"] || '',
             avatar: assinaturaData.avatar_usuario || '/avatar1.png',
-            isPremium: assinaturaData["Status da assinatura"] === 'active',
+            isPremium: assinaturaData.is_premium || assinaturaData["Status da assinatura"] === 'active',
             joinedAt: assinaturaData["Data de criação"] || supabaseUser.created_at || new Date().toISOString()
           };
           
@@ -327,17 +332,20 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         .from('assinaturas')
         .update({
           "Nome do cliente": data["Nome do cliente"],
+          "Telefone do cliente": data["Telefone do cliente"],
           avatar_usuario: data.avatar_usuario,
           bio: data.bio,
           score: data.score,
           instagram: data.instagram,
-          "Telefone do cliente": data["Telefone do cliente"],
+          linkedin: data.linkedin,
           experiencia_ia: data.experiencia_ia,
           objetivo_principal: data.objetivo_principal,
           tipo_trabalho: data.tipo_trabalho,
           porte_negocio: data.porte_negocio,
           onboarding_completed: data.onboarding_completed,
-          onboarding_data: data.onboarding_data
+          onboarding_data: data.onboarding_data,
+          phone_number: data.phone_number,
+          is_premium: data.is_premium
         })
         .eq('user_id', user.id);
 

@@ -68,7 +68,7 @@ const ProfilePage: React.FC = () => {
         if (data) {
           setFormData({
             name: data["Nome do cliente"] || user.name || '',
-            phone: data['Telefone do cliente']?.toString() || '',
+            phone: data.phone_number || data['Telefone do cliente']?.toString() || '',
             bio: data.bio || '',
             instagram: data.instagram || '',
             experiencia_ia: data.experiencia_ia || '',
@@ -191,7 +191,8 @@ const ProfilePage: React.FC = () => {
     try {
       const updateData = {
         "Nome do cliente": formData.name,
-        "Telefone do cliente": formData.phone ? parseInt(formData.phone) : undefined,
+        phone_number: formData.phone,
+        "Telefone do cliente": formData.phone ? parseInt(formData.phone) : null,
         bio: formData.bio,
         instagram: formData.instagram,
         avatar_usuario: avatarPreview || selectedPresetAvatar || user?.avatar,

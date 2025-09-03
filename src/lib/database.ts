@@ -149,11 +149,8 @@ export interface Assinatura {
   "Telefone do cliente"?: number;
   "Status da assinatura": string;
   avatar_usuario?: string;
-  bio?: string;
-  score?: number;
-  onboarding_completed?: boolean;
-  onboarding_data?: any;
   instagram?: string;
+  linkedin?: string;
   linkedin?: string;
   experiencia_ia?: string;
   objetivo_principal?: string;
@@ -163,6 +160,15 @@ export interface Assinatura {
   "Plano"?: string;
   created_at?: string;
   updated_at?: string;
+  // New onboarding and profile fields
+  onboarding_completed?: boolean;
+  onboarding_data?: any;
+  bio?: string;
+  score?: number;
+  phone_number?: string;
+  is_premium?: boolean;
+  created_at_profile?: string;
+  updated_at_profile?: string;
 }
 
 export interface Video {
