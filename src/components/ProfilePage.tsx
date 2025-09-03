@@ -50,12 +50,17 @@ const ProfilePage: React.FC = () => {
             bio,
             score,
             instagram,
+            linkedin,
             experiencia_ia,
             objetivo_principal,
             tipo_trabalho,
             porte_negocio,
             onboarding_completed,
-            onboarding_data
+            onboarding_data,
+            phone_number,
+            is_premium,
+            created_at_profile,
+            updated_at_profile
           `)
           .eq('user_id', user.id)
           .maybeSingle();
