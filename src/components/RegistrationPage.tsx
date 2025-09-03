@@ -24,15 +24,6 @@ interface AssinaturaData {
 const RegistrationPage: React.FC = () => {
   const navigate = useNavigate();
   const { user, isAuthenticated } = useAuth();
-
-  // Redirect authenticated users to home
-  useEffect(() => {
-    if (isAuthenticated && user) {
-      console.log('🔄 Authenticated user trying to access registration, redirecting to home');
-      navigate('/');
-    }
-  }, [isAuthenticated, user, navigate]);
-
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -152,8 +143,7 @@ const RegistrationPage: React.FC = () => {
               user_id: authData.user.id,
               "Nome do cliente": formData.name,
               "Email do cliente": formData.email,
-              onboarding_completed: false,
-              cadastro_mde: true
+              onboarding_completed: false
             })
             .eq("ID da assinatura", subscriptionData["ID da assinatura"]);
 
@@ -172,8 +162,7 @@ const RegistrationPage: React.FC = () => {
               "Status da assinatura": 'free',
               "Plano": 'Free Plan',
               "Data de criação": new Date().toISOString().split('T')[0],
-              onboarding_completed: false,
-              cadastro_mde: true
+              onboarding_completed: false
             });
             
           if (insertError) {
@@ -181,8 +170,10 @@ const RegistrationPage: React.FC = () => {
           }
         }
         
-        // Show success screen first, logout will happen when user clicks login button
-        console.log('✅ Registration successful, showing success screen...');
+        // Force logout after successful registration
+        console.log('✅ Registration successful, forcing logout...');
+        await supabase.auth.signOut();
+        
         setShowSuccessScreen(true);
       }
     } catch (err: any) {
@@ -191,15 +182,6 @@ const RegistrationPage: React.FC = () => {
     } finally {
       setIsSubmitting(false);
     }
-  };
-
-  const handleGoToLogin = async () => {
-    // Force logout before redirecting to login
-    console.log('🚪 Forcing logout before login redirect...');
-    await supabase.auth.signOut();
-    
-    // Navigate to home page where login modal can be opened
-    navigate('/');
   };
 
   // Success Screen Component
@@ -216,19 +198,15 @@ const RegistrationPage: React.FC = () => {
           </h1>
           
           <p className="text-slate-300 mb-6">
-            Sua conta foi criada com sucesso! Para sua segurança, você precisa fazer login novamente para acessar a plataforma.
+            Sua conta foi criada com sucesso! Agora faça login para continuar.
           </p>
           
           <button
-            onClick={handleGoToLogin}
-            className="w-full bg-[#ff7551] hover:bg-[#ff7551]/80 text-white font-medium py-3 rounded-lg transition-colors mb-4"
+            onClick={() => navigate('/')}
+            className="w-full bg-[#ff7551] hover:bg-[#ff7551]/80 text-white font-medium py-3 rounded-lg transition-colors"
           >
             Fazer Login
           </button>
-          
-          <p className="text-slate-400 text-sm">
-            Use o email e senha que você acabou de criar para entrar na plataforma.
-          </p>
         </div>
       </div>
     </div>
@@ -236,6 +214,11 @@ const RegistrationPage: React.FC = () => {
 
   // Show success screen after registration
   if (showSuccessScreen) {
+    // Auto redirect after 3 seconds
+    setTimeout(() => {
+      navigate('/');
+    }, 3000);
+    
     return <SuccessScreen />;
   }
 

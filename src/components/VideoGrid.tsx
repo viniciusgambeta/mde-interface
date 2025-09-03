@@ -112,12 +112,12 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
         if (currentView === 'discover') {
           videoData = await videoService.getVideos({ 
             limit: 20, 
-            userId: user?.id || undefined
+            userId: user?.id 
           });
         } else if (currentView === 'trending') {
           videoData = await videoService.getVideos({ 
             limit: 50, 
-            userId: user?.id || undefined
+            userId: user?.id 
           });
           // Sort by view count for trending
           videoData.sort((a, b) => b.view_count - a.view_count);
@@ -130,7 +130,7 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
           }
         } else {
           // For specific categories
-          videoData = await videoService.getVideosByCategory(currentView, 12, user?.id || undefined);
+          videoData = await videoService.getVideosByCategory(currentView, 12, user?.id);
         }
         
         console.log('Loaded videos:', videoData.length, 'videos');
@@ -154,7 +154,7 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
     };
 
     loadVideos();
-  }, [currentView, user?.id, user]);
+  }, [currentView, user?.id]);
 
   // Load category-specific videos for discover page
   useEffect(() => {
@@ -173,12 +173,12 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
           boltData,
           allVideosData
         ] = await Promise.all([
-          videoService.getVideosByCategory('inteligencia-artificial', 10, user?.id || undefined),
-          videoService.getVideosByCategory('automacao', 10, user?.id || undefined),
-          videoService.getVideosByCategory('whatsapp', 10, user?.id || undefined),
-          videoService.getVideosByCategory('basico', 10, user?.id || undefined),
-          videoService.getVideosByCategory('bolt', 10, user?.id || undefined),
-          videoService.getVideos({ limit: 50, userId: user?.id || undefined })
+          videoService.getVideosByCategory('inteligencia-artificial', 10, user?.id),
+          videoService.getVideosByCategory('automacao', 10, user?.id),
+          videoService.getVideosByCategory('whatsapp', 10, user?.id),
+          videoService.getVideosByCategory('basico', 10, user?.id),
+          videoService.getVideosByCategory('bolt', 10, user?.id),
+          videoService.getVideos({ limit: 50, userId: user?.id })
         ]);
         
         console.log('Category videos loaded with slugs:', {
@@ -207,7 +207,7 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
     };
 
     loadCategoryVideos();
-  }, [currentView, user?.id, categoriesLoaded, user]);
+  }, [currentView, user?.id, categoriesLoaded]);
 
   // Load filter options for trending and bookmark pages
   useEffect(() => {
