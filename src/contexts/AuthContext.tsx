@@ -122,7 +122,6 @@ const fetchAndConvertUser = async (authUser: SupabaseUser): Promise<User> => {
         onboarding_data
       `)
       .eq('user_id', authUser.id)
-      .timeout(30000)
       .maybeSingle();
 
     if (error) {
@@ -168,7 +167,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         console.log('✅ User data set:', userData.email);
         console.log('🎯 showOnboarding set to:', userData.onboardingCompleted === false);
       } else {
-        console.log('🎯 Refresh - showOnboarding set to:', userData.onboardingCompleted === false);
       }
     } catch (error) {
       console.error('💥 Error initializing auth:', error instanceof Error ? error.message : 'Unknown error');
@@ -408,9 +406,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         const userData = await fetchAndConvertUser(authUser);
         setUser(userData);
         setShowOnboarding(userData.onboardingCompleted === false);
+        console.log('🎯 Refresh - showOnboarding set to:', userData.onboardingCompleted === false);
       setShowOnboarding(!userData.onboardingCompleted);
       }
-      console.log('🎯 Refresh - showOnboarding set to:', !userData.onboardingCompleted);
     } catch (error) {
       console.error('❌ Error refreshing user:', error);
     }
