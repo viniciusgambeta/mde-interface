@@ -323,10 +323,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const updateProfile = async (data: Partial<Assinatura>): Promise<boolean> => {
     if (!user) {
+      console.log('❌ updateProfile: No user found');
       return false;
     }
     
     try {
+      console.log('🔄 updateProfile: Starting update with data:', data);
+      console.log('🔄 updateProfile: User ID:', user.id);
+      
       // Update the 'assinaturas' table with all user data
       const { error } = await supabase
         .from('assinaturas')
@@ -344,21 +348,27 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           porte_negocio: data.porte_negocio,
           onboarding_completed: data.onboarding_completed,
           onboarding_data: data.onboarding_data,
-          phone_number: data.phone_number,
-          is_premium: data.is_premium
+          phone_number: data.phone_number || data["Telefone do cliente"]?.toString(),
+          is_premium: data.is_premium,
+          updated_at: new Date().toISOString()
         })
         .eq('user_id', user.id);
 
+      console.log('📊 updateProfile: Update result:', { error: error?.message || 'none' });
+      
       if (error) {
         console.error('❌ Profile update error:', error);
         return false;
       }
 
+      console.log('✅ updateProfile: Update successful, refreshing user data...');
+      
       // Re-fetch user data to update context
       const { data: { user: currentUser } } = await supabase.auth.getUser();
       if (currentUser) {
         try {
           const updatedUser = await fetchAndConvertUser(currentUser);
+          console.log('✅ updateProfile: User data refreshed:', updatedUser);
           setUser(updatedUser);
         } catch (error) {
           console.error('❌ Error re-fetching user after profile update:', error);

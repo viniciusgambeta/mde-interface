@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { User, Mail, Camera, Save, Loader2, Upload, Shield, Calendar, Star, Phone, Instagram, Briefcase, Target, BarChart3, CheckCircle, Lock, Eye, EyeOff, ExternalLink } from 'lucide-react';
+import { User, Mail, Camera, Save, Loader2, Upload, Shield, Calendar, Star, Phone, Instagram, Briefcase, Target, BarChart3, CheckCircle, Lock, Eye, EyeOff, ExternalLink, AlertCircle } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 
@@ -33,6 +33,7 @@ const ProfilePage: React.FC = () => {
   const [passwordLoading, setPasswordLoading] = useState(false);
   const [passwordSuccess, setPasswordSuccess] = useState(false);
   const [passwordError, setPasswordError] = useState('');
+  const [error, setError] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Load user data from assinaturas table
@@ -48,7 +49,6 @@ const ProfilePage: React.FC = () => {
             "Telefone do cliente",
             avatar_usuario,
             bio,
-            score,
             instagram,
             linkedin,
             experiencia_ia,
@@ -58,19 +58,21 @@ const ProfilePage: React.FC = () => {
             onboarding_completed,
             onboarding_data,
             phone_number,
-            is_premium,
-            created_at_profile,
-            updated_at_profile
+            is_premium
           `)
           .eq('user_id', user.id)
           .maybeSingle();
 
+        console.log('📊 ProfilePage: User data loaded:', { hasData: !!data, error: error?.message });
+        
         if (error) {
           console.error('Error loading user data:', error);
+          setError('Erro ao carregar dados do perfil');
           return;
         }
 
         if (data) {
+          console.log('📋 ProfilePage: Setting form data from:', data);
           setFormData({
             name: data["Nome do cliente"] || user.name || '',
             phone: data.phone_number || data['Telefone do cliente']?.toString() || '',
@@ -93,9 +95,12 @@ const ProfilePage: React.FC = () => {
               setAvatarMode('upload');
             }
           }
+        } else {
+          console.log('⚠️ ProfilePage: No user data found in assinaturas table');
         }
       } catch (error) {
         console.error('Exception loading user data:', error);
+        setError('Erro ao carregar dados do perfil');
       }
     };
 
@@ -192,12 +197,17 @@ const ProfilePage: React.FC = () => {
     e.preventDefault();
     setIsLoading(true);
     setSuccess(false);
+    setError('');
 
     try {
+      console.log('🔄 ProfilePage: Starting profile update...');
+      console.log('🔄 ProfilePage: Form data:', formData);
+      console.log('🔄 ProfilePage: Avatar data:', { avatarPreview, selectedPresetAvatar, avatarMode });
+      
       const updateData = {
         "Nome do cliente": formData.name,
-        phone_number: formData.phone,
         "Telefone do cliente": formData.phone ? parseInt(formData.phone) : null,
+        phone_number: formData.phone,
         bio: formData.bio,
         instagram: formData.instagram,
         avatar_usuario: avatarPreview || selectedPresetAvatar || user?.avatar,
@@ -207,18 +217,25 @@ const ProfilePage: React.FC = () => {
         porte_negocio: formData.porte_negocio
       };
 
+      console.log('📤 ProfilePage: Sending update data:', updateData);
+      
       // Call the updateProfile from AuthContext
       const updated = await updateProfile(updateData);
 
+      console.log('📥 ProfilePage: Update result:', updated);
+      
       if (!updated) {
-        throw new Error('Failed to update profile via AuthContext');
+        console.error('❌ ProfilePage: Update failed');
+        setError('Erro ao atualizar perfil. Tente novamente.');
+        return;
       }
 
+      console.log('✅ ProfilePage: Profile updated successfully');
       setSuccess(true);
       setTimeout(() => setSuccess(false), 3000);
     } catch (error) {
       console.error('Error updating profile:', error);
-      alert('Erro ao atualizar perfil. Tente novamente.');
+      setError('Erro ao atualizar perfil. Tente novamente.');
     } finally {
       setIsLoading(false);
     }
@@ -405,6 +422,16 @@ const ProfilePage: React.FC = () => {
           <div className="flex items-center space-x-2">
             <CheckCircle className="w-5 h-5 text-green-400" />
             <p className="text-green-400 text-sm">Perfil atualizado com sucesso!</p>
+          </div>
+        </div>
+      )}
+
+      {/* Error Message */}
+      {error && (
+        <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-red-500/10 border border-red-500/20 rounded-lg animate-fade-in">
+          <div className="flex items-center space-x-2">
+            <AlertCircle className="w-5 h-5 text-red-400" />
+            <p className="text-red-400 text-sm">{error}</p>
           </div>
         </div>
       )}
