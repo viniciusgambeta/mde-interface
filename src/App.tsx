@@ -257,30 +257,50 @@ const AppLayout: React.FC = () => {
 function App() {
   return (
     <AuthProvider>
-      <VideoProvider>
-        <Routes>
-          {/* All routes now use the same layout structure */}
-          <Route path="/" element={<AppLayout />} />
-          <Route path="/trending" element={<AppLayout />} />
-          <Route path="/categories" element={<AppLayout />} />
-          <Route path="/bookmark" element={<AppLayout />} />
-          <Route path="/discounts" element={<AppLayout />} />
-          <Route path="/profile" element={<AppLayout />} />
-          <Route path="/request-lesson" element={<AppLayout />} />
-          <Route path="/help" element={<AppLayout />} />
-          <Route path="/video/:slug" element={<AppLayout />} />
-          <Route path="/prompt/:slug" element={<AppLayout />} />
-          <Route path="/live/:slug" element={<AppLayout />} />
-          <Route path="/registro" element={<RegistrationPage />} />
-          <Route path="/redefinir-senha" element={<PasswordResetPage />} />
-          <Route path="/privacidade" element={<PrivacyPolicyPage />} />
-          
-          {/* Catch all route - redirect to home */}
-          <Route path="*" element={<AppLayout />} />
-        </Routes>
-      </VideoProvider>
+      <AppWithAuth />
     </AuthProvider>
   );
 }
 
+// Component that has access to auth context
+const AppWithAuth: React.FC = () => {
+  const { user, showOnboarding, completeOnboarding } = useAuth();
+
+  // Show onboarding if user is logged in but hasn't completed onboarding
+  if (user && showOnboarding) {
+    return (
+      <OnboardingFlow
+        userId={user.id}
+        userEmail={user.email}
+        onComplete={completeOnboarding}
+      />
+    );
+  }
+
+  // Normal app routes
+  return (
+    <VideoProvider>
+      <Routes>
+        {/* All routes now use the same layout structure */}
+        <Route path="/" element={<AppLayout />} />
+        <Route path="/trending" element={<AppLayout />} />
+        <Route path="/categories" element={<AppLayout />} />
+        <Route path="/bookmark" element={<AppLayout />} />
+        <Route path="/discounts" element={<AppLayout />} />
+        <Route path="/profile" element={<AppLayout />} />
+        <Route path="/request-lesson" element={<AppLayout />} />
+        <Route path="/help" element={<AppLayout />} />
+        <Route path="/video/:slug" element={<AppLayout />} />
+        <Route path="/prompt/:slug" element={<AppLayout />} />
+        <Route path="/live/:slug" element={<AppLayout />} />
+        <Route path="/registro" element={<RegistrationPage />} />
+        <Route path="/redefinir-senha" element={<PasswordResetPage />} />
+        <Route path="/privacidade" element={<PrivacyPolicyPage />} />
+        
+        {/* Catch all route - redirect to home */}
+        <Route path="*" element={<AppLayout />} />
+      </Routes>
+    </VideoProvider>
+  );
+};
 export default App;
