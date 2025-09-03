@@ -1350,9 +1350,7 @@ export const commentsService = {
     if (!videoId || !userId || !content.trim()) return false;
 
     try {
-      console.log('Creating comment - looking up assinatura for userId:', userId);
-      
-      // First, get the user's assinatura_id from the assinaturas table
+      // Get the user's assinatura_id from the assinaturas table for validation
       const { data: assinatura, error: assinaturaError } = await supabase
         .from('assinaturas')
         .select('"ID da assinatura"')
@@ -1361,22 +1359,23 @@ export const commentsService = {
         .maybeSingle();
 
       if (assinaturaError) {
-        console.error('Error finding user subscription:', assinaturaError);
+        console.error('Error validating user subscription:', assinaturaError);
         return false;
       }
 
       if (!assinatura) {
-        console.error('No active subscription found for user:', userId);
+        console.error('No active subscription found for user - comments require active subscription');
         return false;
       }
 
       const assinaturaId = assinatura['ID da assinatura'];
-      console.log('Found assinatura_id:', assinaturaId);
 
+      // Insert comment with both user_id and assinatura_id
       const { error } = await supabase
         .from('comments')
         .insert({
           video_id: videoId,
+          user_id: userId,
           assinatura_id: assinaturaId,
           content: content.trim(),
           parent_comment_id: parentCommentId || null
@@ -1400,26 +1399,12 @@ export const commentsService = {
     if (!commentId || !userId) return false;
 
     try {
-      // First, get the user's assinatura_id
-      const { data: assinatura, error: assinaturaError } = await supabase
-        .from('assinaturas')
-        .select('"ID da assinatura"')
-        .eq('user_id', userId)
-        .eq('"Status da assinatura"', 'active')
-        .maybeSingle();
-
-      if (assinaturaError || !assinatura) {
-        console.error('Error finding user subscription for delete:', assinaturaError);
-        return false;
-      }
-
-      const assinaturaId = assinatura['ID da assinatura'];
-
+      // Delete comment using user_id (RLS policy will ensure user can only delete their own comments)
       const { error } = await supabase
         .from('comments')
         .delete()
         .eq('id', commentId)
-        .eq('assinatura_id', assinaturaId);
+        .eq('user_id', userId);
 
       if (error) {
         console.error('Error deleting comment:', error);
