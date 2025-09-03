@@ -207,14 +207,12 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ videoId, videoTitle }
               {/* Menu for comment owner */}
               {isOwner && (
                 <div className="relative">
-                  {!isReply && user && user.assinaturaId && (
-                    <button
-                      onClick={() => setShowMenu(!showMenu)}
-                      className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-slate-700/30 transition-all"
-                    >
-                      <MoreVertical className="w-4 h-4 text-slate-400" />
-                    </button>
-                  )}
+                  <button
+                    onClick={() => setShowMenu(!showMenu)}
+                    className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-slate-700/30 transition-all"
+                  >
+                    <MoreVertical className="w-4 h-4 text-slate-400" />
+                  </button>
                   
                   {showMenu && (
                     <div className="absolute right-0 top-full mt-1 bg-[#1f1d2b] border border-slate-700/30 rounded-lg shadow-xl z-50 min-w-[120px]">
@@ -333,7 +331,7 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ videoId, videoTitle }
       </div>
 
       {/* New Comment Form */}
-      {user ? (
+      {user && user.assinaturaId ? (
         <form onSubmit={handleSubmitComment} className="space-y-4">
           <div className="flex space-x-3">
             <img
@@ -373,7 +371,9 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ videoId, videoTitle }
       ) : (
         <div className="text-center py-8 bg-slate-700/20 rounded-lg">
           <MessageCircle className="w-12 h-12 text-slate-600 mx-auto mb-3" />
-          <p className="text-slate-400 mb-4">Faça login para comentar</p>
+          <p className="text-slate-400 mb-4">
+            {user ? 'Você precisa de uma assinatura ativa para comentar' : 'Faça login para comentar'}
+          </p>
           <button className="px-6 py-2 bg-[#ff7551] hover:bg-[#ff7551]/80 text-white font-medium rounded-lg transition-colors">
             Entrar
           </button>
