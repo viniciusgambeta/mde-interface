@@ -94,12 +94,9 @@ const fetchAndConvertUser = async (authUser: SupabaseUser): Promise<User> => {
   console.log('🔍 Fetching user data for:', authUser.email);
   
   try {
-    // Set a timeout for the query
-    const timeoutPromise = new Promise((_, reject) => {
-      setTimeout(() => reject(new Error('Query timeout')), 20000);
-    });
-
-    const queryPromise = supabase
+    console.log('🔍 Querying assinaturas table for user_id:', authUser.id);
+    
+    const { data: assinatura, error } = await supabase
       .from('assinaturas')
       .select(`
         "ID da assinatura",
@@ -123,20 +120,20 @@ const fetchAndConvertUser = async (authUser: SupabaseUser): Promise<User> => {
         onboarding_data
       `)
       .eq('user_id', authUser.id)
+      .timeout(30000)
       .maybeSingle();
 
-    const { data: assinatura, error } = await Promise.race([queryPromise, timeoutPromise]) as any;
-
     if (error) {
-      console.error('❌ Error or timeout in assinaturas query:', error.message);
-      throw error;
+      console.error('❌ Error in assinaturas query:', error.message);
+      console.log('🔄 Continuing with auth data only due to query error');
+      return convertAssinaturaToUser(authUser, null);
     }
 
-    console.log('📊 Assinatura data found:', !!assinatura);
+    console.log('📊 Assinatura data found:', !!assinatura, 'onboarding_completed:', assinatura?.onboarding_completed);
     return convertAssinaturaToUser(authUser, assinatura);
     
   } catch (error) {
-    console.error('❌ Error or timeout in assinaturas query:', error instanceof Error ? error.message : 'Unknown error');
+    console.error('❌ Exception in assinaturas query:', error instanceof Error ? error.message : 'Unknown error');
     // Return user with auth data only if assinaturas query fails
     return convertAssinaturaToUser(authUser, null);
   }
@@ -165,7 +162,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         console.log('✅ Session found, fetching user data...');
         const userData = await fetchAndConvertUser(session.user);
         setUser(userData);
+        setShowOnboarding(!userData.onboardingCompleted);
         console.log('✅ User data set:', userData.email);
+        console.log('🎯 showOnboarding set to:', !userData.onboardingCompleted);
       } else {
         console.log('ℹ️ No active session found');
       }
@@ -190,8 +189,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       if (event === 'SIGNED_IN' && session?.user) {
         const userData = await fetchAndConvertUser(session.user);
         setUser(userData);
+        setShowOnboarding(!userData.onboardingCompleted);
+        console.log('🎯 Auth change - showOnboarding set to:', !userData.onboardingCompleted);
       } else if (event === 'SIGNED_OUT') {
         setUser(null);
+        setShowOnboarding(false);
       }
     });
 
@@ -218,7 +220,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       if (data.user) {
         const userData = await fetchAndConvertUser(data.user);
         setUser(userData);
+        setShowOnboarding(!userData.onboardingCompleted);
         console.log('✅ Sign in successful for:', userData.email);
+        console.log('🎯 Sign in - showOnboarding set to:', !userData.onboardingCompleted);
         return { user: userData, error: null };
       }
 
@@ -272,7 +276,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
         const userData = await fetchAndConvertUser(data.user);
         setUser(userData);
+        setShowOnboarding(!userData.onboardingCompleted);
         console.log('✅ Sign up successful for:', userData.email);
+        console.log('🎯 Sign up - showOnboarding set to:', !userData.onboardingCompleted);
         return { user: userData, error: null };
       }
 
@@ -400,7 +406,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         const userData = await fetchAndConvertUser(authUser);
         setUser(userData);
         console.log('🔄 User data refreshed');
+      setShowOnboarding(!userData.onboardingCompleted);
       }
+      console.log('🎯 Refresh - showOnboarding set to:', !userData.onboardingCompleted);
     } catch (error) {
       console.error('❌ Error refreshing user:', error);
     }
