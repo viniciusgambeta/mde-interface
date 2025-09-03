@@ -990,28 +990,26 @@ export const featuredContentService = {
     
     try {
       console.log('🔍 Querying featured_content table...');
-      const { data, error } = await supabase
-        .from('featured_content')
-        .select('*')
-        .eq('status', true)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle();
+    }
+    
+    const { data, error } = await supabase
+      .from('featured_content')
+      .select('*')
+      .eq('status', true)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
 
-      console.log('📊 getActiveFeaturedContent result:', { 
-        hasData: !!data, 
-        error: error?.message || 'none' 
-      });
-      if (error) {
-        console.error('Error fetching featured content:', error);
-        return null;
-      }
-
-      return data as FeaturedContent | null;
-    } catch (error) {
-      console.error('💥 getActiveFeaturedContent exception:', error);
+    console.log('📊 getActiveFeaturedContent result:', { 
+      hasData: !!data, 
+      error: error?.message || 'none' 
+    });
+    if (error) {
+      console.error('Error fetching featured content:', error);
       return null;
     }
+
+    return data as FeaturedContent | null;
   },
 
   async getAllActiveFeaturedContent(): Promise<FeaturedContent[]> {
@@ -1423,14 +1421,6 @@ export const commentsService = {
     }
   }
 };
-        )
-    }
-  }
-}
-        )
-    }
-  }
-}
         )
     }
   }
