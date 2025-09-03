@@ -275,7 +275,8 @@ const AppWithAuth: React.FC = () => {
   });
 
   // Show onboarding if user is logged in but hasn't completed onboarding
-  if (user && showOnboarding) {
+  if (user && showOnboarding && user.onboardingCompleted === false) {
+    console.log('🎯 Showing onboarding flow for user:', user.email);
     return (
       <OnboardingFlow
         userId={user.id}
