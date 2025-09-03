@@ -172,6 +172,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         // Force clear any existing session first
         console.log('🧹 Clearing existing session...');
         
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
         console.log('📋 Session check result:', { hasSession: !!session, hasUser: !!session?.user, error: error?.message });
         
         if (error) {
