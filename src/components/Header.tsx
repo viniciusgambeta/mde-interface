@@ -99,8 +99,12 @@ const Header: React.FC<HeaderProps> = ({ sidebarCollapsed, onSidebarToggle, onVi
     return () => clearTimeout(debounceTimer);
   }, [searchQuery]);
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    const { error } = await logout();
+    if (!error) {
+      // Force page reload to ensure clean state
+      window.location.href = '/';
+    }
     setShowUserMenu(false);
   };
 
