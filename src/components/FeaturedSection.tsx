@@ -18,25 +18,39 @@ const FeaturedSection: React.FC<FeaturedSectionProps> = ({ onVideoSelect, onView
 
   React.useEffect(() => {
     const loadContent = async () => {
-      console.log('⭐ FeaturedSection: Loading content...');
+      console.log('⭐ FeaturedSection: Starting content load...');
+      console.log('🔗 FeaturedSection: Supabase available:', !!supabase);
+      
       try {
+        console.log('📡 FeaturedSection: Calling services...');
         const [featuredData, secondaryData] = await Promise.all([
           featuredContentService.getAllActiveFeaturedContent(),
           secondaryHighlightsService.getActiveSecondaryHighlights()
         ]);
         
+        console.log('📊 FeaturedSection: Services returned:', {
+          featuredCount: featuredData?.length || 0,
+          secondaryCount: secondaryData?.length || 0
+        });
+        
         if (featuredData && featuredData.length > 0) {
           setFeaturedContent(featuredData);
-          console.log('⭐ FeaturedSection: Featured content loaded:', featuredData.length, 'items');
+          console.log('✅ FeaturedSection: Featured content set:', featuredData.length, 'items');
         }
         
         if (secondaryData && secondaryData.length > 0) {
           setSecondaryHighlights(secondaryData);
-          console.log('⭐ FeaturedSection: Secondary highlights loaded:', secondaryData.length, 'items');
+          console.log('✅ FeaturedSection: Secondary highlights set:', secondaryData.length, 'items');
         }
       } catch (error) {
-        console.error('❌ FeaturedSection: Error loading content:', error);
+        console.error('❌ FeaturedSection: Exception loading content:', error);
+        console.error('❌ FeaturedSection: Error details:', {
+          message: error.message,
+          stack: error.stack,
+          name: error.name
+        });
       } finally {
+        console.log('🏁 FeaturedSection: Loading completed');
         setLoading(false);
       }
     };

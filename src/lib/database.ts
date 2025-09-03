@@ -988,6 +988,9 @@ export const featuredContentService = {
   async getActiveFeaturedContent(): Promise<FeaturedContent | null> {
     console.log('⭐ getActiveFeaturedContent called');
     
+    try {
+      console.log('🔍 Querying featured_content table...');
+    
     const { data, error } = await supabase
       .from('featured_content')
       .select('*')
@@ -1269,20 +1272,40 @@ export const commentsService = {
           *,
           assinatura:assinaturas!comments_assinatura_id_fkey(
             "Nome do cliente",
+      console.log('✅ getActiveFeaturedContent completed');
             avatar_usuario,
+    } catch (error) {
+      console.error('💥 getActiveFeaturedContent exception:', error);
+      return null;
+    }
             instagram,
-            linkedin,
-            user_id
-          )
-        `)
-        .eq('video_id', videoId)
-        .order('created_at', { ascending: false });
-
+      console.log('📊 getActiveFeaturedContent result:', { 
+        hasData: !!data, 
+    console.log('⭐ getAllActiveFeaturedContent called');
+    
+    try {
+      console.log('🔍 Querying all featured_content...');
+        errorDetails: error,
+        data: data
+      });
+      console.log('📊 getAllActiveFeaturedContent result:', { 
+        dataCount: data?.length || 0, 
+        error: error?.message || 'none',
+        errorDetails: error,
+        sampleData: data?.[0]
+      });
+      
       if (error) {
         console.error('Error fetching comments:', error);
         return [];
       }
 
+      if (!data || data.length === 0) {
+        console.warn('⚠️ No featured content found in database');
+        return [];
+      }
+
+      console.log('✅ getAllActiveFeaturedContent completed:', data.length, 'items');
       if (!data) return [];
 
       console.log('Raw comments data:', data);
@@ -1390,6 +1413,10 @@ export const commentsService = {
     } catch (error) {
       console.error('Error deleting comment:', error);
       return false;
+    }
+    } catch (error) {
+      console.error('💥 getAllActiveFeaturedContent exception:', error);
+      return [];
     }
   }
 };

@@ -103,17 +103,22 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
   useEffect(() => {
     const loadVideos = async () => {
       console.log('🎬 VideoGrid: Loading videos for view:', currentView);
+      console.log('👤 VideoGrid: User ID:', user?.id);
+      console.log('🔗 VideoGrid: Supabase client available:', !!supabase);
+      
       setLoading(true);
       
       try {
         let videoData: Video[] = [];
         
         if (currentView === 'discover') {
+          console.log('🏠 Loading discover videos...');
           videoData = await videoService.getVideos({ 
             limit: 20, 
             userId: user?.id 
           });
         } else if (currentView === 'trending') {
+          console.log('📈 Loading trending videos...');
           videoData = await videoService.getVideos({ 
             limit: 50, 
             userId: user?.id 
@@ -121,18 +126,31 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
           // Sort by view count for trending
           videoData.sort((a, b) => b.view_count - a.view_count);
         } else if (currentView === 'bookmark') {
+          console.log('🔖 Loading bookmarked videos...');
           // Load bookmarked videos for the user
           if (user) {
             videoData = await videoService.getBookmarkedVideos(user.id);
           } else {
+            console.log('❌ No user for bookmarks');
             videoData = [];
           }
         } else {
+          console.log('🏷️ Loading category videos for:', currentView);
           // For specific categories
           videoData = await videoService.getVideosByCategory(currentView, 12, user?.id);
         }
         
-        console.log('🎬 VideoGrid: Loaded videos:', videoData.length, 'videos for view:', currentView);
+        console.log('🎬 VideoGrid: Final result:', {
+          view: currentView,
+          videosLoaded: videoData.length,
+          firstVideo: videoData[0] ? {
+            id: videoData[0].id,
+            title: videoData[0].title,
+            hasCategory: !!videoData[0].category,
+            hasInstructor: !!videoData[0].instructor
+          } : null
+        });
+        
         setVideos(videoData);
         setFilteredVideos(videoData);
         
@@ -146,7 +164,12 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
         });
         setBookmarkStates(initialBookmarkStates);
       } catch (error) {
-        console.error('❌ VideoGrid: Error loading videos:', error);
+        console.error('❌ VideoGrid: Exception loading videos:', error);
+        console.error('❌ VideoGrid: Error details:', {
+          message: error.message,
+          stack: error.stack,
+          name: error.name
+        });
       } finally {
         setLoading(false);
       }
