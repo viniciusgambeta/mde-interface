@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { MessageCircle, Send, Trash2, Reply, Instagram, Linkedin, MoreVertical } from 'lucide-react';
 import { commentsService, type Comment } from '../lib/database';
 import { useAuth } from '../contexts/AuthContext';
+import { supabase } from '../lib/supabase';
 
 interface CommentsSectionProps {
   videoId: string;

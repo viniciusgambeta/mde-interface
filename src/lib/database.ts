@@ -1236,12 +1236,12 @@ export const commentsService = {
     if (!videoId) return [];
 
     try {
-      // Get all comments for the video
+      // Get all comments for the video with user data from assinaturas
       const { data, error } = await supabase
         .from('comments')
         .select(`
           *,
-          user_data:assinaturas!inner(
+          user_data:assinaturas!comments_assinatura_id_fkey(
             "Nome do cliente",
             avatar_usuario,
             instagram,
@@ -1249,7 +1249,6 @@ export const commentsService = {
           )
         `)
         .eq('video_id', videoId)
-        .eq('user_data.user_id', supabase.auth.getUser().then(u => u.data.user?.id))
         .order('created_at', { ascending: false });
 
       if (error) {
@@ -1309,18 +1308,18 @@ export const commentsService = {
   // Create a new comment
   async createComment(
     videoId: string, 
-    userId: string, 
+    assinaturaId: string, 
     content: string, 
     parentCommentId?: string
   ): Promise<boolean> {
-    if (!videoId || !userId || !content.trim()) return false;
+    if (!videoId || !assinaturaId || !content.trim()) return false;
 
     try {
       const { error } = await supabase
         .from('comments')
         .insert({
           video_id: videoId,
-          user_id: userId,
+          assinatura_id: assinaturaId,
           content: content.trim(),
           parent_comment_id: parentCommentId || null
         });
@@ -1338,15 +1337,15 @@ export const commentsService = {
   },
 
   // Delete a comment
-  async deleteComment(commentId: string, userId: string): Promise<boolean> {
-    if (!commentId || !userId) return false;
+  async deleteComment(commentId: string, assinaturaId: string): Promise<boolean> {
+    if (!commentId || !assinaturaId) return false;
 
     try {
       const { error } = await supabase
         .from('comments')
         .delete()
         .eq('id', commentId)
-        .eq('user_id', userId);
+        .eq('assinatura_id', assinaturaId);
 
       if (error) {
         console.error('Error deleting comment:', error);
