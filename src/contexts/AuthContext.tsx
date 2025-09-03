@@ -48,8 +48,7 @@ interface AuthContextType {
   loading: boolean;
   showOnboarding: boolean;
   completeOnboarding: () => Promise<void>;
-  showOnboarding: boolean;
-  completeOnboarding: () => Promise<void>;
+  isAuthenticated: boolean;
   signIn: (email: string, password: string) => Promise<{ user: User | null; error: string | null }>;
   signUp: (email: string, password: string, name: string) => Promise<{ user: User | null; error: string | null }>;
   signOut: () => Promise<void>;
