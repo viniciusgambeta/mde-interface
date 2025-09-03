@@ -67,17 +67,22 @@ export const useAuth = () => {
 };
 
 // Helper function to convert assinatura data to User
+const toBool = (v: any) => {
+  if (typeof v === 'boolean') return v;
+  if (typeof v === 'string') return ['true','t','1','yes','y'].includes(v.toLowerCase());
+  if (typeof v === 'number') return v === 1;
+  return false;
+};
+
 const convertAssinaturaToUser = (authUser: SupabaseUser, assinatura: Assinatura | null): User => {
-  console.log('🔄 Converting assinatura to user:', { authUser: authUser.email, assinatura });
-  
   return {
     id: authUser.id,
     email: authUser.email || '',
     name: assinatura?.["Nome do cliente"] || authUser.user_metadata?.name || authUser.email?.split('@')[0] || '',
     avatar: assinatura?.avatar_usuario || authUser.user_metadata?.avatar_url || '/avatar1.png',
-    isPremium: assinatura?.is_premium || assinatura?.["Status da assinatura"] === 'active' || false,
+    isPremium: toBool(assinatura?.is_premium) || assinatura?.["Status da assinatura"] === 'active' || false,
     joinedAt: assinatura?.["Data de criação"] || authUser.created_at,
-    onboardingCompleted: assinatura?.onboarding_completed === true,
+    onboardingCompleted: toBool(assinatura?.onboarding_completed),
     phone: assinatura?.phone_number || assinatura?.["Telefone do cliente"]?.toString() || '',
     bio: assinatura?.bio || '',
     instagram: assinatura?.instagram || '',
@@ -428,7 +433,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     loading,
     showOnboarding,
     completeOnboarding,
-    isAuthenticated: !!user,
+    isAuthenticated: !loading && !!user,
     signIn,
     signUp,
     signOut,
