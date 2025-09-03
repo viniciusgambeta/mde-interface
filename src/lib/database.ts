@@ -990,6 +990,7 @@ export const featuredContentService = {
     
     try {
       console.log('🔍 Querying featured_content table...');
+    }
     
     const { data, error } = await supabase
       .from('featured_content')
@@ -1420,3 +1421,7 @@ export const commentsService = {
     }
   }
 };
+        )
+    }
+  }
+}
