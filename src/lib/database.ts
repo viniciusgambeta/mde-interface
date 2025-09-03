@@ -1013,24 +1013,25 @@ export const featuredContentService = {
   },
 
   async getAllActiveFeaturedContent(): Promise<FeaturedContent[]> {
-      
-      const { data, error } = await supabase
-        .from('featured_content')
-        .select('*')
-        .eq('status', true)
-        .order('created_at', { ascending: false });
+    console.log('⭐ getAllActiveFeaturedContent called');
+    
+    const { data, error } = await supabase
+      .from('featured_content')
+      .select('*')
+      .eq('status', true)
+      .order('created_at', { ascending: false });
 
-      console.log('📊 getAllActiveFeaturedContent result:', { 
-        dataCount: data?.length || 0, 
-        error: error?.message || 'none',
-        errorDetails: error,
-        sampleData: data?.[0]
-      });
-      
-      if (error) {
-        console.error('Error fetching featured content:', error);
-        return [];
-      }
+    console.log('📊 getAllActiveFeaturedContent result:', { 
+      dataCount: data?.length || 0, 
+      error: error?.message || 'none' 
+    });
+    if (error) {
+      console.error('Error fetching all featured content:', error);
+      return [];
+    }
+
+    return data as FeaturedContent[];
+  }
 };
 
 // Secondary highlights service
@@ -1405,23 +1406,25 @@ export const commentsService = {
         .eq('assinatura_id', assinaturaId);
 
       if (error) {
-      if (!data || data.length === 0) {
-        console.warn('⚠️ No featured content found in database');
-        return [];
+        console.error('Error deleting comment:', error);
+        return false;
       }
+
       return true;
-      console.log('✅ getAllActiveFeaturedContent completed:', data.length, 'items');
-      return data as FeaturedContent[];
+    } catch (error) {
+      console.error('Error deleting comment:', error);
+      return false;
+    }
     } catch (error) {
       console.error('💥 getAllActiveFeaturedContent exception:', error);
       return [];
     }
-      return false;
-    }
-      return [];
-    }
   }
 };
+        )
+    }
+  }
+}
         )
     }
   }
