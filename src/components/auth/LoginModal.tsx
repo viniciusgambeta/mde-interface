@@ -17,7 +17,7 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onSwitchToRegi
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [success, setSuccess] = useState('');
-  const { login } = useAuth();
+  const { signIn } = useAuth();
 
   // Check for registration success message
   React.useEffect(() => {
@@ -51,10 +51,10 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onSwitchToRegi
     }
 
     console.log('📤 Calling login function...');
-    const success = await login(email, password);
-    console.log('📥 Login result:', success);
+    const result = await signIn(email, password);
+    console.log('📥 Login result:', result);
     
-    if (success) {
+    if (result.user && !result.error) {
       console.log('✅ Login successful, closing modal');
       onClose();
       // Clear form
@@ -64,7 +64,7 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onSwitchToRegi
       setSuccess('');
     } else {
       console.log('❌ Login failed, showing error');
-      setError('Email ou senha incorretos');
+      setError(result.error || 'Email ou senha incorretos');
     }
     
     console.log('🔄 Setting isSubmitting to false');

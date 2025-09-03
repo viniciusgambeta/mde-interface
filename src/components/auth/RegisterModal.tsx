@@ -17,7 +17,7 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose, onSwitch
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { register } = useAuth();
+  const { signUp } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -48,10 +48,10 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose, onSwitch
 
     try {
       console.log('📤 Calling register function...');
-      const success = await register(name, email, password);
-      console.log('📥 Registration result:', success);
+      const result = await signUp(email, password, name);
+      console.log('📥 Registration result:', result);
       
-      if (success) {
+      if (result.user && !result.error) {
         console.log('✅ Registration successful, closing modal');
         onClose();
         setName('');
@@ -60,7 +60,7 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose, onSwitch
         setConfirmPassword('');
       } else {
         console.log('❌ Registration failed, showing error');
-        setError('Erro ao criar conta. Tente novamente.');
+        setError(result.error || 'Erro ao criar conta. Tente novamente.');
       }
     } catch (error) {
       console.error('💥 Registration exception in component:', error);

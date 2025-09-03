@@ -138,6 +138,11 @@ const fetchAndConvertUser = async (authUser: SupabaseUser): Promise<User> => {
     return convertAssinaturaToUser(authUser, null);
   }
 };
+// Legacy aliases for backward compatibility
+export const login = signIn;
+export const register = signUp;
+export const logout = signOut;
+export const isAuthenticated = !loading && !!user;
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
@@ -394,11 +399,16 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const value: AuthContextType = {
     user,
     loading,
+    isAuthenticated: !loading && !!user,
     signIn,
     signUp,
     signOut,
     updateProfile,
     refreshUser,
+    // Legacy aliases
+    login: signIn,
+    register: signUp,
+    logout: signOut,
   };
 
   return (
