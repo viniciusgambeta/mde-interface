@@ -213,6 +213,8 @@ export const videoService = {
     offset?: number;
     userId?: string;
   } = {}) {
+    console.log('🎬 getVideos called with options:', options);
+    
     let query = supabase
       .from('videos')
       .select(`
@@ -225,6 +227,7 @@ export const videoService = {
           ferramenta:ferramentas_links(*)
         )
       `)
+      .eq('status', 'published')
       .order('published_at', { ascending: false });
 
     if (options.category) {
@@ -249,6 +252,10 @@ export const videoService = {
 
     const { data, error } = await query;
 
+    console.log('📊 getVideos result:', { 
+      dataCount: data?.length || 0, 
+      error: error?.message || 'none' 
+    });
     if (error) {
       console.error('Error fetching videos:', error);
       return [];
@@ -939,11 +946,17 @@ export const videoService = {
 // Category service
 export const categoryService = {
   async getCategories() {
+    console.log('📂 getCategories called');
+    
     const { data, error } = await supabase
       .from('categories')
       .select('*')
       .order('name');
 
+    console.log('📊 getCategories result:', { 
+      dataCount: data?.length || 0, 
+      error: error?.message || 'none' 
+    });
     if (error) {
       console.error('Error fetching categories:', error);
       return [];
@@ -973,29 +986,47 @@ export const difficultyService = {
 // Featured content service
 export const featuredContentService = {
   async getActiveFeaturedContent(): Promise<FeaturedContent | null> {
-    const { data, error } = await supabase
-      .from('featured_content')
-      .select('*')
-      .eq('status', true)
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .maybeSingle();
+    console.log('⭐ getActiveFeaturedContent called');
+    
+    try {
+      console.log('🔍 Querying featured_content table...');
+      const { data, error } = await supabase
+        .from('featured_content')
+        .select('*')
+        .eq('status', true)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
 
-    if (error) {
-      console.error('Error fetching featured content:', error);
+      console.log('📊 getActiveFeaturedContent result:', { 
+        hasData: !!data, 
+        error: error?.message || 'none' 
+      });
+      if (error) {
+        console.error('Error fetching featured content:', error);
+        return null;
+      }
+
+      return data as FeaturedContent | null;
+    } catch (error) {
+      console.error('💥 getActiveFeaturedContent exception:', error);
       return null;
     }
-
-    return data as FeaturedContent | null;
   },
 
   async getAllActiveFeaturedContent(): Promise<FeaturedContent[]> {
+    console.log('⭐ getAllActiveFeaturedContent called');
+    
     const { data, error } = await supabase
       .from('featured_content')
       .select('*')
       .eq('status', true)
       .order('created_at', { ascending: false });
 
+    console.log('📊 getAllActiveFeaturedContent result:', { 
+      dataCount: data?.length || 0, 
+      error: error?.message || 'none' 
+    });
     if (error) {
       console.error('Error fetching all featured content:', error);
       return [];
@@ -1244,20 +1275,40 @@ export const commentsService = {
           *,
           assinatura:assinaturas!comments_assinatura_id_fkey(
             "Nome do cliente",
+      console.log('✅ getActiveFeaturedContent completed');
             avatar_usuario,
+    } catch (error) {
+      console.error('💥 getActiveFeaturedContent exception:', error);
+      return null;
+    }
             instagram,
-            linkedin,
-            user_id
-          )
-        `)
-        .eq('video_id', videoId)
-        .order('created_at', { ascending: false });
-
+      console.log('📊 getActiveFeaturedContent result:', { 
+        hasData: !!data, 
+    console.log('⭐ getAllActiveFeaturedContent called');
+    
+    try {
+      console.log('🔍 Querying all featured_content...');
+        errorDetails: error,
+        data: data
+      });
+      console.log('📊 getAllActiveFeaturedContent result:', { 
+        dataCount: data?.length || 0, 
+        error: error?.message || 'none',
+        errorDetails: error,
+        sampleData: data?.[0]
+      });
+      
       if (error) {
         console.error('Error fetching comments:', error);
         return [];
       }
 
+      if (!data || data.length === 0) {
+        console.warn('⚠️ No featured content found in database');
+        return [];
+      }
+
+      console.log('✅ getAllActiveFeaturedContent completed:', data.length, 'items');
       if (!data) return [];
 
       console.log('Raw comments data:', data);
@@ -1303,24 +1354,6 @@ export const commentsService = {
         }
       });
 
-      console.log('Final organized comments:', rootComments);
-      return rootComments;
-    } catch (error) {
-      console.error('Error fetching video comments:', error);
-      return [];
-    }
-  },
-
-  // Create a new comment
-  async createComment(
-    videoId: string, 
-    assinaturaId: string, 
-    content: string, 
-    parentCommentId?: string
-  ): Promise<boolean> {
-    if (!videoId || !assinaturaId || !content.trim()) return false;
-
-    try {
       console.log('Creating comment with assinatura_id:', assinaturaId);
 
       const { error } = await supabase
@@ -1350,21 +1383,28 @@ export const commentsService = {
     if (!commentId || !assinaturaId) return false;
 
     try {
-      const { error } = await supabase
-        .from('comments')
-        .delete()
-        .eq('id', commentId)
-        .eq('assinatura_id', assinaturaId);
-
-      if (error) {
-        console.error('Error deleting comment:', error);
-        return false;
-      }
-
-      return true;
-    } catch (error) {
       console.error('Error deleting comment:', error);
       return false;
     }
+    } catch (error) {
+        .eq('assinatura_id', assinaturaId);
+      return [];
+    }
   }
 };
+        )
+    }
+  }
+}
+        )
+    }
+  }
+}
+        )
+    }
+  }
+}
+        )
+    }
+  }
+}
