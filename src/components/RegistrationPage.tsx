@@ -170,6 +170,10 @@ const RegistrationPage: React.FC = () => {
           }
         }
         
+        // Force logout after successful registration
+        console.log('✅ Registration successful, forcing logout...');
+        await supabase.auth.signOut();
+        
         setShowSuccessScreen(true);
       }
     } catch (err: any) {
@@ -194,14 +198,14 @@ const RegistrationPage: React.FC = () => {
           </h1>
           
           <p className="text-slate-300 mb-6">
-            Sua conta foi criada com sucesso! Agora vamos personalizar seu perfil.
+            Sua conta foi criada com sucesso! Agora faça login para continuar.
           </p>
           
           <button
             onClick={() => navigate('/')}
             className="w-full bg-[#ff7551] hover:bg-[#ff7551]/80 text-white font-medium py-3 rounded-lg transition-colors"
           >
-            Continuar
+            Fazer Login
           </button>
         </div>
       </div>
