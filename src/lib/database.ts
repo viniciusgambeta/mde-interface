@@ -1346,17 +1346,17 @@ export const commentsService = {
   },
 
   // Create a new comment
-  async createComment(videoId: string, assinaturaId: string, content: string, parentCommentId?: string): Promise<boolean> {
-    if (!videoId || !assinaturaId || !content.trim()) return false;
+  async createComment(videoId: string, userId: string, content: string, parentCommentId?: string): Promise<boolean> {
+    if (!videoId || !userId || !content.trim()) return false;
 
     try {
-      console.log('Creating comment with assinatura_id:', assinaturaId);
+      console.log('Creating comment with userId:', userId);
 
       const { error } = await supabase
         .from('comments')
         .insert({
           video_id: videoId,
-          assinatura_id: assinaturaId,
+          assinatura_id: userId,
           content: content.trim(),
           parent_comment_id: parentCommentId || null
         });
@@ -1375,15 +1375,15 @@ export const commentsService = {
   },
 
   // Delete a comment
-  async deleteComment(commentId: string, assinaturaId: string): Promise<boolean> {
-    if (!commentId || !assinaturaId) return false;
+  async deleteComment(commentId: string, userId: string): Promise<boolean> {
+    if (!commentId || !userId) return false;
 
     try {
       const { error } = await supabase
         .from('comments')
         .delete()
         .eq('id', commentId)
-        .eq('assinatura_id', assinaturaId);
+        .eq('assinatura_id', userId);
 
       if (error) {
         console.error('Error deleting comment:', error);
