@@ -44,70 +44,101 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const fetchAndConvertUser = async (supabaseUser: SupabaseUser): Promise<User> => {
     console.log('🔍 fetchAndConvertUser called for user:', supabaseUser.id, supabaseUser.email);
     
-    // Fetch user's consolidated data from 'assinaturas' table
-    const { data: assinaturaData, error } = await supabase
-      .from('assinaturas')
-      .select(`
-        "Nome do cliente",
-        "Email do cliente",
-        "Status da assinatura",
-        avatar_usuario,
-        "Data de criação"
-      `)
-      .eq('user_id', supabaseUser.id)
-      .maybeSingle();
-
-    console.log('📊 Assinatura query result:', { data: assinaturaData, error: error?.message });
-
-    if (error) {
-      console.error('Error fetching user assinatura data:', error);
-    }
-
-    // If no assinatura record exists, create a basic one
-    if (!assinaturaData) {
-      console.log('⚠️ No assinatura record found, creating basic record for user:', supabaseUser.id);
+    try {
+      console.log('📊 Starting assinaturas query...');
       
-      const defaultName = supabaseUser.email?.split('@')[0] || 'Usuário';
+      // Fetch user's consolidated data from 'assinaturas' table
+      const { data: assinaturaData, error } = await supabase
+        .from('assinaturas')
+        .select(`
+          "Nome do cliente",
+          "Email do cliente",
+          "Status da assinatura",
+          avatar_usuario,
+          "Data de criação"
+        `)
+        .eq('user_id', supabaseUser.id)
+        .maybeSingle();
+
+      console.log('📊 Assinaturas query completed:', { 
+        hasData: !!assinaturaData, 
+        error: error?.message || 'none',
+        userId: supabaseUser.id 
+      });
       
-      try {
-        const { error: insertError } = await supabase
-          .from('assinaturas')
-          .insert({
-            user_id: supabaseUser.id,
-            "Nome do cliente": defaultName,
-            "Email do cliente": supabaseUser.email,
-            "ID da assinatura": supabaseUser.id,
-            "Status da assinatura": 'free',
-            "Plano": 'Free Plan',
-            "Data de criação": new Date().toISOString().split('T')[0],
-            avatar_usuario: '/avatar1.png',
-            onboarding_completed: false
-          });
-          
-        if (insertError) {
-          console.error('❌ Error creating default assinatura record:', insertError);
-        } else {
-          console.log('✅ Created default assinatura record');
-        }
-      } catch (createError) {
-        console.error('💥 Exception creating default assinatura record:', createError);
+      if (error) {
+        console.error('❌ Error fetching user assinatura data:', error);
+        // Don't throw, continue with fallback data
       }
+      
+      console.log('📋 Assinatura data found:', assinaturaData);
+      
+      // If no assinatura record exists, create a basic one
+      if (!assinaturaData) {
+        console.log('⚠️ No assinatura record found, creating basic record for user:', supabaseUser.id);
+        
+        const defaultName = supabaseUser.email?.split('@')[0] || 'Usuário';
+        
+        try {
+          console.log('📝 Inserting new assinatura record...');
+          const { error: insertError } = await supabase
+            .from('assinaturas')
+            .insert({
+              user_id: supabaseUser.id,
+              "Nome do cliente": defaultName,
+              "Email do cliente": supabaseUser.email,
+              "ID da assinatura": supabaseUser.id,
+              "Status da assinatura": 'free',
+              "Plano": 'Free Plan',
+              "Data de criação": new Date().toISOString().split('T')[0],
+              avatar_usuario: '/avatar1.png',
+              onboarding_completed: false
+            });
+            
+          if (insertError) {
+            console.error('❌ Error creating default assinatura record:', insertError);
+          } else {
+            console.log('✅ Created default assinatura record');
+          }
+        } catch (createError) {
+          console.error('💥 Exception creating default assinatura record:', createError);
+        }
+      }
+      
+      console.log('🔄 Converting user data...');
+      const name = assinaturaData?.["Nome do cliente"] || supabaseUser.email?.split('@')[0] || 'Usuário';
+      const avatar = assinaturaData?.avatar_usuario || '/avatar1.png';
+      const isPremium = assinaturaData?.["Status da assinatura"] === 'active';
+      const joinedAt = assinaturaData?.["Data de criação"] || supabaseUser.created_at || new Date().toISOString();
+
+      const convertedUser = {
+        id: supabaseUser.id,
+        name: name,
+        email: supabaseUser.email || assinaturaData?.["Email do cliente"] || '',
+        avatar: avatar,
+        isPremium: isPremium,
+        joinedAt: joinedAt
+      };
+      
+      console.log('👤 User conversion completed:', convertedUser);
+      return convertedUser;
+      
+    } catch (error) {
+      console.error('💥 Exception in fetchAndConvertUser:', error);
+      
+      // Return fallback user data to prevent infinite loading
+      const fallbackUser = {
+        id: supabaseUser.id,
+        name: supabaseUser.email?.split('@')[0] || 'Usuário',
+        email: supabaseUser.email || '',
+        avatar: '/avatar1.png',
+        isPremium: false,
+        joinedAt: supabaseUser.created_at || new Date().toISOString()
+      };
+      
+      console.log('🆘 Returning fallback user data:', fallbackUser);
+      return fallbackUser;
     }
-
-    const name = assinaturaData?.["Nome do cliente"] || supabaseUser.email?.split('@')[0] || 'Usuário';
-    const avatar = assinaturaData?.avatar_usuario || '/avatar1.png';
-    const isPremium = assinaturaData?.["Status da assinatura"] === 'active';
-    const joinedAt = assinaturaData?.["Data de criação"] || supabaseUser.created_at || new Date().toISOString();
-
-    console.log('👤 Converted user data:', { name, avatar, isPremium, joinedAt });
-    return {
-      id: supabaseUser.id,
-      name: name,
-      email: supabaseUser.email || assinaturaData?.["Email do cliente"] || '',
-      avatar: avatar,
-      isPremium: isPremium,
-      joinedAt: joinedAt
-    };
   };
 
   // Initialize auth state
