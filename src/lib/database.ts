@@ -141,6 +141,22 @@ export interface Comment {
   replies?: Comment[];
 }
 
+export interface Comment {
+  id: string;
+  video_id: string;
+  user_id: string;
+  content: string;
+  parent_comment_id?: string;
+  reply_count: number;
+  created_at: string;
+  updated_at: string;
+  user_name?: string;
+  user_avatar?: string;
+  user_instagram?: string;
+  user_linkedin?: string;
+  replies?: Comment[];
+}
+
 export interface Video {
   id: string;
   title: string;
