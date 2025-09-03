@@ -188,6 +188,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         setUser(userData);
         setShowOnboarding(userData.onboardingCompleted === false);
         console.log('🎯 Auth change - showOnboarding set to:', userData.onboardingCompleted === false);
+      } else if (event === 'INITIAL_SESSION' && session?.user) {
+        console.log('🔄 Initial session detected, restoring user state');
+        const userData = await fetchAndConvertUser(session.user);
+        setUser(userData);
+        setShowOnboarding(userData.onboardingCompleted === false);
+        console.log('🎯 Auth change - showOnboarding set to:', userData.onboardingCompleted === false);
       } else if (event === 'SIGNED_OUT') {
         setUser(null);
         setShowOnboarding(false);
