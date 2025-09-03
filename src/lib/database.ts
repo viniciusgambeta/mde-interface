@@ -1314,38 +1314,20 @@ export const commentsService = {
   // Create a new comment
   async createComment(
     videoId: string, 
-    userId: string, 
+    assinaturaId: string, 
     content: string, 
     parentCommentId?: string
   ): Promise<boolean> {
-    if (!videoId || !userId || !content.trim()) return false;
+    if (!videoId || !assinaturaId || !content.trim()) return false;
 
     try {
-      // First, get the user's assinatura_id
-      const { data: assinatura, error: assinaturaError } = await supabase
-        .from('assinaturas')
-        .select('"ID da assinatura"')
-        .eq('user_id', userId)
-        .eq('"Status da assinatura"', 'active')
-        .maybeSingle();
-
-      if (assinaturaError) {
-        console.error('Error fetching user subscription:', assinaturaError);
-        return false;
-      }
-
-      if (!assinatura) {
-        console.error('User does not have an active subscription');
-        return false;
-      }
-
-      console.log('Creating comment with assinatura_id:', assinatura['ID da assinatura']);
+      console.log('Creating comment with assinatura_id:', assinaturaId);
 
       const { error } = await supabase
         .from('comments')
         .insert({
           video_id: videoId,
-          assinatura_id: assinatura['ID da assinatura'],
+          assinatura_id: assinaturaId,
           content: content.trim(),
           parent_comment_id: parentCommentId || null
         });
@@ -1364,28 +1346,15 @@ export const commentsService = {
   },
 
   // Delete a comment
-  async deleteComment(commentId: string, userId: string): Promise<boolean> {
-    if (!commentId || !userId) return false;
+  async deleteComment(commentId: string, assinaturaId: string): Promise<boolean> {
+    if (!commentId || !assinaturaId) return false;
 
     try {
-      // First, get the user's assinatura_id
-      const { data: assinatura, error: assinaturaError } = await supabase
-        .from('assinaturas')
-        .select('"ID da assinatura"')
-        .eq('user_id', userId)
-        .eq('"Status da assinatura"', 'active')
-        .maybeSingle();
-
-      if (assinaturaError || !assinatura) {
-        console.error('Error fetching user subscription for delete:', assinaturaError);
-        return false;
-      }
-
       const { error } = await supabase
         .from('comments')
         .delete()
         .eq('id', commentId)
-        .eq('assinatura_id', assinatura['ID da assinatura']);
+        .eq('assinatura_id', assinaturaId);
 
       if (error) {
         console.error('Error deleting comment:', error);

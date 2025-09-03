@@ -239,7 +239,7 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ videoId, videoTitle }
             
             {/* Actions */}
             <div className="flex items-center space-x-4">
-              {!isReply && user && (
+              {!isReply && user && userAssinaturaId && (
                 <button
                   onClick={() => setReplyingTo(replyingTo === comment.id ? null : comment.id)}
                   className="flex items-center space-x-1 text-slate-400 hover:text-white transition-colors text-xs"
@@ -260,7 +260,7 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ videoId, videoTitle }
             </div>
             
             {/* Reply Form */}
-            {replyingTo === comment.id && user && (
+            {replyingTo === comment.id && user && userAssinaturaId && (
               <form onSubmit={(e) => handleSubmitReply(e, comment.id)} className="mt-4">
                 <div className="flex space-x-3">
                   <img
