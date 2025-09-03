@@ -47,37 +47,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       console.log('📊 Starting assinaturas query...');
       
-      // First, try a simple query to test RLS
-      console.log('🔍 Testing simple query...');
-      const { data: testData, error: testError } = await supabase
-        .from('assinaturas')
-        .select('user_id')
-        .eq('user_id', supabaseUser.id)
-        .maybeSingle();
-
-      console.log('🧪 Test query result:', { 
-        hasData: !!testData, 
-        error: testError?.message || 'none',
-        userId: supabaseUser.id 
+      // Create timeout promise to prevent infinite hanging
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('Query timeout')), 5000);
       });
+
+      // Try to query assinaturas with timeout
+      console.log('🔍 Querying assinaturas table with timeout...');
       
-      if (testError) {
-        console.error('❌ RLS or query error:', testError);
-        console.log('🆘 Using fallback user data due to query error');
-        return {
-          id: supabaseUser.id,
-          name: supabaseUser.email?.split('@')[0] || 'Usuário',
-          email: supabaseUser.email || '',
-          avatar: '/avatar1.png',
-          isPremium: false,
-          joinedAt: supabaseUser.created_at || new Date().toISOString()
-        };
-      }
-      
-      // If test query works, try the full query
-      if (testData) {
-        console.log('✅ Test query successful, trying full query...');
-        const { data: assinaturaData, error: fullError } = await supabase
+      try {
+        const queryPromise = supabase
           .from('assinaturas')
           .select(`
             "Nome do cliente",
@@ -97,18 +76,26 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             onboarding_data
           `)
           .eq('user_id', supabaseUser.id)
-          .single();
+          .maybeSingle();
 
-        console.log('📊 Full query result:', { 
+        const { data: assinaturaData, error: queryError } = await Promise.race([
+          queryPromise,
+          timeoutPromise
+        ]) as any;
+
+        console.log('📊 Assinaturas query result:', { 
           hasData: !!assinaturaData, 
-          error: fullError?.message || 'none' 
+          error: queryError?.message || 'none',
+          userId: supabaseUser.id
         });
 
-        if (fullError) {
-          console.error('❌ Error in full query:', fullError);
-          // Continue with fallback
-        } else if (assinaturaData) {
-          console.log('📋 Full assinatura data found:', assinaturaData);
+        if (queryError) {
+          console.error('❌ Query error:', queryError);
+          throw queryError;
+        }
+
+        if (assinaturaData) {
+          console.log('📋 Assinatura data found:', assinaturaData);
           
           const convertedUser = {
             id: supabaseUser.id,
@@ -119,55 +106,36 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             joinedAt: assinaturaData["Data de criação"] || supabaseUser.created_at || new Date().toISOString()
           };
           
-          console.log('👤 User conversion completed:', convertedUser);
+          console.log('👤 User conversion completed successfully:', convertedUser);
           return convertedUser;
-        }
-      }
-      
-      // If no record exists, create one
-      console.log('⚠️ No assinatura record found, creating basic record...');
-      const defaultName = supabaseUser.email?.split('@')[0] || 'Usuário';
-      
-      try {
-        console.log('📝 Inserting new assinatura record...');
-        const { data: newRecord, error: insertError } = await supabase
-          .from('assinaturas')
-          .insert({
-            user_id: supabaseUser.id,
-            "Nome do cliente": defaultName,
-            "Email do cliente": supabaseUser.email,
-            "ID da assinatura": supabaseUser.id,
-            "Status da assinatura": 'free',
-            "Plano": 'Free Plan',
-            "Data de criação": new Date().toISOString().split('T')[0],
-            avatar_usuario: '/avatar1.png',
-            onboarding_completed: false
-          })
-          .select()
-          .single();
-        
-        if (insertError) {
-          console.error('❌ Error creating assinatura record:', insertError);
         } else {
-          console.log('✅ Created new assinatura record:', newRecord);
+          console.log('⚠️ No assinatura record found for user');
+          throw new Error('No assinatura record found');
         }
-      } catch (createError) {
-        console.error('💥 Exception creating assinatura record:', createError);
+
+      } catch (queryError: any) {
+        console.error('❌ Error or timeout in assinaturas query:', queryError.message);
+        
+        // If it's a timeout or RLS error, use fallback
+        if (queryError.message === 'Query timeout' || queryError.code === '42501') {
+          console.log('🆘 Using fallback due to timeout or RLS error');
+        } else {
+          console.log('🆘 Using fallback due to other error');
+        }
+        
+        // Return fallback user data immediately
+        const fallbackUser = {
+          id: supabaseUser.id,
+          name: supabaseUser.email?.split('@')[0] || 'Usuário',
+          email: supabaseUser.email || '',
+          avatar: '/avatar1.png',
+          isPremium: false,
+          joinedAt: supabaseUser.created_at || new Date().toISOString()
+        };
+        
+        console.log('👤 Returning fallback user:', fallbackUser);
+        return fallbackUser;
       }
-      
-      // Return fallback user data
-      console.log('🆘 Returning fallback user data');
-      const convertedUser = {
-        id: supabaseUser.id,
-        name: defaultName,
-        email: supabaseUser.email || '',
-        avatar: '/avatar1.png',
-        isPremium: false,
-        joinedAt: supabaseUser.created_at || new Date().toISOString()
-      };
-      
-      console.log('👤 User conversion completed:', convertedUser);
-      return convertedUser;
       
     } catch (error) {
       console.error('💥 Exception in fetchAndConvertUser:', error);
@@ -198,10 +166,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       try {
         // Force clear any existing session first
         console.log('🧹 Clearing existing session...');
-        await supabase.auth.signOut();
-        
-        console.log('📋 Getting fresh session...');
-        const { data: { session }, error } = await supabase.auth.getSession();
         
         console.log('📋 Session check result:', { hasSession: !!session, hasUser: !!session?.user, error: error?.message });
         
@@ -284,12 +248,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           if (mounted) {
             console.log('🔄 Setting user to null from sign out');
             setUser(null);
-            setIsLoading(false);
-          }
-        } else {
-          console.log('⏹️ Other auth event:', event, 'setting loading to false');
-          if (mounted) {
-            console.log('🔄 Setting loading to false for other event');
             setIsLoading(false);
           }
         }
