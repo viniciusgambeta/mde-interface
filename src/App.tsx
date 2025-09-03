@@ -1,6 +1,8 @@
 import React from 'react';
 import { Routes, Route, useNavigate, useParams, useLocation } from 'react-router-dom';
 import { useEffect } from 'react';
+import { useAuth } from './contexts/AuthContext';
+import OnboardingFlow from './components/OnboardingFlow';
 import Header from './components/Header';
 import Sidebar from './components/Sidebar';
 import MainContent from './components/MainContent';
