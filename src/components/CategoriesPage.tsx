@@ -40,8 +40,9 @@ const CategoriesPage: React.FC<CategoriesPageProps> = ({ onVideoSelect }) => {
     const loadData = async () => {
       setLoading(true);
       try {
+        console.log('🎬 CategoriesPage: Loading data for user:', user?.id || 'not logged in');
         const [videosData, categoriesData, difficultiesData] = await Promise.all([
-          videoService.getVideos({ limit: 100, userId: user?.id }),
+          videoService.getVideos({ limit: 100, userId: user?.id || undefined }),
           categoryService.getCategories(),
           difficultyService.getDifficultyLevels()
         ]);
@@ -59,6 +60,8 @@ const CategoriesPage: React.FC<CategoriesPageProps> = ({ onVideoSelect }) => {
             index === self.findIndex(i => i.id === instructor.id)
           );
         setInstructors(uniqueInstructors);
+        
+        console.log('🎬 CategoriesPage: Loaded', videosData.length, 'videos');
       } catch (error) {
         console.error('Error loading data:', error);
       } finally {
@@ -67,7 +70,7 @@ const CategoriesPage: React.FC<CategoriesPageProps> = ({ onVideoSelect }) => {
     };
 
     loadData();
-  }, [user?.id]);
+  }, [user?.id, user]);
 
   // Apply filters
   useEffect(() => {

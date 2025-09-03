@@ -223,7 +223,11 @@ export const videoService = {
     offset?: number;
     userId?: string;
   } = {}) {
-    console.log('🎬 getVideos called with options:', options);
+    console.log('🎬 getVideos called with options:', { 
+      ...options, 
+      hasUserId: !!options.userId,
+      userIdValue: options.userId || 'undefined'
+    });
     
     let query = supabase
       .from('videos')
@@ -282,6 +286,7 @@ export const videoService = {
 
     // If user is provided, check bookmark status for each video
     if (options.userId && videos.length > 0) {
+      console.log('🔖 Checking bookmark statuses for user:', options.userId);
       const bookmarkStatuses = await this.getBookmarkStatuses(
         videos.map(v => v.id), 
         options.userId
@@ -289,6 +294,12 @@ export const videoService = {
       
       videos.forEach(video => {
         video.is_bookmarked = bookmarkStatuses[video.id] || false;
+      });
+    } else {
+      console.log('🔖 No user provided, skipping bookmark check');
+      // Ensure is_bookmarked is false for non-authenticated users
+      videos.forEach(video => {
+        video.is_bookmarked = false;
       });
     }
 
