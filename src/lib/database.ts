@@ -213,6 +213,8 @@ export const videoService = {
     offset?: number;
     userId?: string;
   } = {}) {
+    console.log('🎬 getVideos called with options:', options);
+    
     let query = supabase
       .from('videos')
       .select(`
@@ -225,6 +227,7 @@ export const videoService = {
           ferramenta:ferramentas_links(*)
         )
       `)
+      .eq('status', 'published')
       .order('published_at', { ascending: false });
 
     if (options.category) {
@@ -249,6 +252,10 @@ export const videoService = {
 
     const { data, error } = await query;
 
+    console.log('📊 getVideos result:', { 
+      dataCount: data?.length || 0, 
+      error: error?.message || 'none' 
+    });
     if (error) {
       console.error('Error fetching videos:', error);
       return [];
@@ -939,11 +946,17 @@ export const videoService = {
 // Category service
 export const categoryService = {
   async getCategories() {
+    console.log('📂 getCategories called');
+    
     const { data, error } = await supabase
       .from('categories')
       .select('*')
       .order('name');
 
+    console.log('📊 getCategories result:', { 
+      dataCount: data?.length || 0, 
+      error: error?.message || 'none' 
+    });
     if (error) {
       console.error('Error fetching categories:', error);
       return [];
@@ -973,6 +986,8 @@ export const difficultyService = {
 // Featured content service
 export const featuredContentService = {
   async getActiveFeaturedContent(): Promise<FeaturedContent | null> {
+    console.log('⭐ getActiveFeaturedContent called');
+    
     const { data, error } = await supabase
       .from('featured_content')
       .select('*')
@@ -981,6 +996,10 @@ export const featuredContentService = {
       .limit(1)
       .maybeSingle();
 
+    console.log('📊 getActiveFeaturedContent result:', { 
+      hasData: !!data, 
+      error: error?.message || 'none' 
+    });
     if (error) {
       console.error('Error fetching featured content:', error);
       return null;
@@ -990,12 +1009,18 @@ export const featuredContentService = {
   },
 
   async getAllActiveFeaturedContent(): Promise<FeaturedContent[]> {
+    console.log('⭐ getAllActiveFeaturedContent called');
+    
     const { data, error } = await supabase
       .from('featured_content')
       .select('*')
       .eq('status', true)
       .order('created_at', { ascending: false });
 
+    console.log('📊 getAllActiveFeaturedContent result:', { 
+      dataCount: data?.length || 0, 
+      error: error?.message || 'none' 
+    });
     if (error) {
       console.error('Error fetching all featured content:', error);
       return [];

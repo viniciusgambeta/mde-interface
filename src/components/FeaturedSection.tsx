@@ -18,6 +18,7 @@ const FeaturedSection: React.FC<FeaturedSectionProps> = ({ onVideoSelect, onView
 
   React.useEffect(() => {
     const loadContent = async () => {
+      console.log('⭐ FeaturedSection: Loading content...');
       try {
         const [featuredData, secondaryData] = await Promise.all([
           featuredContentService.getAllActiveFeaturedContent(),
@@ -26,15 +27,15 @@ const FeaturedSection: React.FC<FeaturedSectionProps> = ({ onVideoSelect, onView
         
         if (featuredData && featuredData.length > 0) {
           setFeaturedContent(featuredData);
-          console.log('Featured content loaded:', featuredData.length, 'items');
+          console.log('⭐ FeaturedSection: Featured content loaded:', featuredData.length, 'items');
         }
         
         if (secondaryData && secondaryData.length > 0) {
           setSecondaryHighlights(secondaryData);
-          console.log('Secondary highlights loaded:', secondaryData.length, 'items');
+          console.log('⭐ FeaturedSection: Secondary highlights loaded:', secondaryData.length, 'items');
         }
       } catch (error) {
-        console.error('Error loading content:', error);
+        console.error('❌ FeaturedSection: Error loading content:', error);
       } finally {
         setLoading(false);
       }

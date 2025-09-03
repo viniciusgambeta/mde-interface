@@ -102,12 +102,11 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
   // Load videos from database
   useEffect(() => {
     const loadVideos = async () => {
+      console.log('🎬 VideoGrid: Loading videos for view:', currentView);
       setLoading(true);
       
       try {
         let videoData: Video[] = [];
-        
-        console.log('Loading videos for view:', currentView);
         
         if (currentView === 'discover') {
           videoData = await videoService.getVideos({ 
@@ -133,7 +132,7 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
           videoData = await videoService.getVideosByCategory(currentView, 12, user?.id);
         }
         
-        console.log('Loaded videos:', videoData.length, 'videos');
+        console.log('🎬 VideoGrid: Loaded videos:', videoData.length, 'videos for view:', currentView);
         setVideos(videoData);
         setFilteredVideos(videoData);
         
@@ -147,7 +146,7 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
         });
         setBookmarkStates(initialBookmarkStates);
       } catch (error) {
-        console.error('Error loading videos:', error);
+        console.error('❌ VideoGrid: Error loading videos:', error);
       } finally {
         setLoading(false);
       }
