@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { User as SupabaseUser, Session } from '@supabase/supabase-js';
+import { User as SupabaseUser, Session, AuthChangeEvent } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
 
 // Types
@@ -145,6 +145,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [showOnboarding, setShowOnboarding] = useState(false);
+  
+  // Prevent double execution in StrictMode
+  const [isMounted, setIsMounted] = useState(false);
 
   // Initialize auth state
   const initializeAuth = async () => {
@@ -174,11 +177,15 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   useEffect(() => {
+    setIsMounted(true);
     initializeAuth();
 
     // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event: AuthChangeEvent, session: Session | null) => {
       console.log('🔄 Auth state changed:', event);
+      
+      // Prevent double execution in StrictMode
+      if (!isMounted) return;
       
       if (event === 'SIGNED_IN' && session?.user) {
         const userData = await fetchAndConvertUser(session.user);
@@ -188,8 +195,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       }
     });
 
-    return () => subscription.unsubscribe();
-  }, []);
+    return () => {
+      setIsMounted(false);
+      subscription.unsubscribe();
+    };
+  }, [isMounted]);
 
   const signIn = async (email: string, password: string): Promise<{ user: User | null; error: string | null }> => {
     try {
@@ -356,42 +366,22 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
       console.log('📋 Final update payload:', updateData);
 
-      // First try to update existing record
-      const { data: updatedData, error: updateError } = await supabase
+      // Use upsert instead of update/insert pattern
+      const { error } = await supabase
         .from('assinaturas')
-        .update(updateData)
-        .eq('user_id', user.id)
-        .select();
+        .upsert({ 
+          user_id: user.id, 
+          ...updateData 
+        }, {
+          onConflict: 'user_id'
+        });
 
-      // If no rows were updated, create a new record
-      if (updateError || !updatedData || updatedData.length === 0) {
-        console.log('📝 No existing record found, creating new assinatura record...');
-        
-        // Get current auth user for email
-        const { data: { user: authUser } } = await supabase.auth.getUser();
-        
-        const insertData = {
-          user_id: user.id,
-          "Email do cliente": authUser?.email || user.email,
-          "Nome do cliente": updateData["Nome do cliente"] || user.name,
-          ...updateData
-        };
-        
-        const { data: insertedData, error: insertError } = await supabase
-          .from('assinaturas')
-          .insert([insertData])
-          .select();
-
-        if (insertError) {
-          console.error('❌ Profile insert error:', insertError.message);
-          throw insertError;
-        }
-
-        console.log('✅ Profile record created successfully:', insertedData);
-      } else {
-        console.log('✅ Profile updated successfully:', updatedData);
+      if (error) {
+        console.error('❌ Profile upsert error:', error.message);
+        throw error;
       }
 
+      console.log('✅ Profile updated successfully');
 
       // Refresh user data
       await refreshUser();
@@ -425,14 +415,23 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     try {
       console.log('✅ Completing onboarding for user:', user.id);
       
-      const success = await updateProfile({ onboarding_completed: true });
-      
-      if (success) {
-        setShowOnboarding(false);
-        console.log('✅ Onboarding completed successfully');
-      } else {
-        console.error('❌ Failed to complete onboarding');
+      const { error } = await supabase
+        .from('assinaturas')
+        .upsert({ 
+          user_id: user.id,
+          onboarding_completed: true 
+        }, {
+          onConflict: 'user_id'
+        });
+
+      if (error) {
+        console.error('❌ Error completing onboarding:', error.message);
+        throw error;
       }
+
+      setShowOnboarding(false);
+      await refreshUser();
+      console.log('✅ Onboarding completed successfully');
     } catch (error) {
       console.error('❌ Error completing onboarding:', error);
     }
