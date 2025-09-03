@@ -267,6 +267,12 @@ function App() {
 // Component that has access to auth context
 const AppWithAuth: React.FC = () => {
   const { user, showOnboarding, completeOnboarding } = useAuth();
+  
+  console.log('🎯 DEBUG App render:', { 
+    hasUser: !!user, 
+    userOnboardingCompleted: user?.onboardingCompleted,
+    showOnboarding: showOnboarding 
+  });
 
   // Show onboarding if user is logged in but hasn't completed onboarding
   if (user && showOnboarding) {

@@ -69,6 +69,7 @@ export const useAuth = () => {
 // Helper function to convert assinatura data to User
 const convertAssinaturaToUser = (authUser: SupabaseUser, assinatura: Assinatura | null): User => {
   console.log('🔄 Converting assinatura to user:', { authUser: authUser.email, assinatura });
+  console.log('🎯 DEBUG onboarding_completed from DB:', assinatura?.onboarding_completed, 'type:', typeof assinatura?.onboarding_completed);
   
   return {
     id: authUser.id,
@@ -78,6 +79,7 @@ const convertAssinaturaToUser = (authUser: SupabaseUser, assinatura: Assinatura 
     isPremium: assinatura?.is_premium || assinatura?.["Status da assinatura"] === 'active' || false,
     joinedAt: assinatura?.["Data de criação"] || authUser.created_at,
     onboardingCompleted: assinatura?.onboarding_completed || false,
+    onboardingCompleted: assinatura?.onboarding_completed === true,
     phone: assinatura?.phone_number || assinatura?.["Telefone do cliente"]?.toString() || '',
     bio: assinatura?.bio || '',
     instagram: assinatura?.instagram || '',
