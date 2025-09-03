@@ -144,8 +144,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [loading, setLoading] = useState(true);
   const [showOnboarding, setShowOnboarding] = useState(false);
   
-  // Prevent double execution in StrictMode
-  const [isMounted, setIsMounted] = useState(false);
 
   // Initialize auth state
   const initializeAuth = async () => {
@@ -176,7 +174,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   useEffect(() => {
-    setIsMounted(true);
+    let isMounted = true;
     initializeAuth();
 
     // Listen for auth changes
@@ -198,10 +196,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     });
 
     return () => {
-      setIsMounted(false);
+      isMounted = false;
       subscription.unsubscribe();
     };
-  }, [isMounted]);
+  }, []);
 
   const signIn = async (email: string, password: string): Promise<{ user: User | null; error: string | null }> => {
     try {
