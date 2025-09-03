@@ -319,7 +319,7 @@ const Header: React.FC<HeaderProps> = ({ sidebarCollapsed, onSidebarToggle, onVi
                   </div>
                   <div className="relative">
                     <img
-                      src={user?.avatar || '/src/images/avatar.jpg'}
+                      src={user?.avatar || '/avatar1.png'}
                       alt="User"
                      className="w-12 h-12 rounded-xl object-cover"
                     />

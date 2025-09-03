@@ -42,14 +42,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   // Convert Supabase user to our User type
   const fetchAndConvertUser = async (supabaseUser: SupabaseUser): Promise<User> => {
-    // Fetch user's consolidated profile/subscription data from 'assinaturas' table
+    // Fetch user's consolidated data from 'assinaturas' table
     const { data: assinaturaData, error } = await supabase
       .from('assinaturas')
       .select(`
         "Nome do cliente",
         "Email do cliente",
         "Status da assinatura",
-        avatar_usuario
+        avatar_usuario,
+        "Data de criação"
       `)
       .eq('user_id', supabaseUser.id)
       .maybeSingle();
@@ -59,8 +60,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
 
     const name = assinaturaData?.["Nome do cliente"] || supabaseUser.email?.split('@')[0] || 'Usuário';
-    const avatar = assinaturaData?.avatar_usuario || '/src/images/avatar.jpg';
+    const avatar = assinaturaData?.avatar_usuario || '/avatar1.png';
     const isPremium = assinaturaData?.["Status da assinatura"] === 'active';
+    const joinedAt = assinaturaData?.["Data de criação"] || supabaseUser.created_at || new Date().toISOString();
 
     return {
       id: supabaseUser.id,
@@ -68,7 +70,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       email: supabaseUser.email || assinaturaData?.["Email do cliente"] || '',
       avatar: avatar,
       isPremium: isPremium,
-      joinedAt: supabaseUser.created_at || new Date().toISOString() // Use Supabase user's created_at
+      joinedAt: joinedAt
     };
   };
 
@@ -193,7 +195,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
     
     try {
-      // Update the 'assinaturas' table directly
+      // Update the 'assinaturas' table with all user data
       const { error } = await supabase
         .from('assinaturas')
         .update({
@@ -207,30 +209,22 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           objetivo_principal: data.objetivo_principal,
           tipo_trabalho: data.tipo_trabalho,
           porte_negocio: data.porte_negocio,
+          onboarding_completed: data.onboarding_completed,
+          onboarding_data: data.onboarding_data
         })
         .eq('user_id', user.id);
 
-      // Also update auth.users metadata if name/avatar are changed, for immediate reflection
-      const authUpdateData: { data?: { name?: string; avatar_url?: string } } = {};
-      if (data["Nome do cliente"]) authUpdateData.data = { ...authUpdateData.data, name: data["Nome do cliente"] };
-      if (data.avatar_usuario) authUpdateData.data = { ...authUpdateData.data, avatar_url: data.avatar_usuario };
-
-      if (Object.keys(authUpdateData).length > 0) {
-        const { error: authError } = await supabase.auth.updateUser(authUpdateData);
-        if (authError) {
-          console.error('❌ Auth user metadata update error:', authError);
-          // Don't return false, as the main 'assinaturas' update might have succeeded
-        }
-      }
-
       if (error) {
-        console.error('❌ Assinaturas profile update error:', error);
+        console.error('❌ Profile update error:', error);
         return false;
       }
 
       // Re-fetch user data to update context
-      const updatedUser = await fetchAndConvertUser(await supabase.auth.getUser().then(res => res.data.user!));
-      setUser(updatedUser);
+      const { data: { user: currentUser } } = await supabase.auth.getUser();
+      if (currentUser) {
+        const updatedUser = await fetchAndConvertUser(currentUser);
+        setUser(updatedUser);
+      }
 
       return true;
     } catch (error) {

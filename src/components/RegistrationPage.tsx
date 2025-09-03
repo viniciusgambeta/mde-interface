@@ -35,7 +35,7 @@ const RegistrationPage: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [emailValid, setEmailValid] = useState<boolean | null>(null);
-  const [subscriptionData, setSubscriptionData] = useState<SubscriptionData | null>(null);
+  const [subscriptionData, setSubscriptionData] = useState<AssinaturaData | null>(null);
   const [showSuccessScreen, setShowSuccessScreen] = useState(false); // This will trigger the onboarding flow
 
   // Check subscription when email changes
@@ -135,16 +135,15 @@ const RegistrationPage: React.FC = () => {
 
       // If user is created in auth.users, then create/update their record in 'assinaturas'
       if (authData.user) {
-        // Update the existing 'assinaturas' record with the new user_id
-        // This assumes the subscriptionData was found based on email
+        // Update the existing assinaturas record with the new user_id
         if (subscriptionData) {
           const { error: updateError } = await supabase
             .from('assinaturas')
             .update({
               user_id: authData.user.id,
-              "Nome do cliente": formData.name, // Update name from form
-              "Email do cliente": formData.email, // Update email from form
-              onboarding_completed: false, // Set onboarding to false for new users
+              "Nome do cliente": formData.name,
+              "Email do cliente": formData.email,
+              onboarding_completed: false
             })
             .eq("ID da assinatura", subscriptionData["ID da assinatura"]);
 
@@ -152,25 +151,25 @@ const RegistrationPage: React.FC = () => {
             console.error('Error updating existing assinatura record:', updateError);
           }
         } else {
-          // This case should ideally not happen if emailValid is true, but as a fallback
-          // If no existing subscription, create a new one (e.g., for free users)
+          // Create a new assinatura record for free users
           const { error: insertError } = await supabase
             .from('assinaturas')
             .insert({
               user_id: authData.user.id,
               "Nome do cliente": formData.name,
               "Email do cliente": formData.email,
-              "ID da assinatura": authData.user.id, // Use user_id as subscription ID for simplicity or generate new
-              "Status da assinatura": 'free', // Default to free if no existing subscription
+              "ID da assinatura": authData.user.id,
+              "Status da assinatura": 'free',
               "Plano": 'Free Plan',
               "Data de criação": new Date().toISOString().split('T')[0],
-              onboarding_completed: false,
+              onboarding_completed: false
             });
+            
           if (insertError) {
             console.error('Error inserting new assinatura record:', insertError);
           }
         }
-        // Show success screen without logging out
+        
         setShowSuccessScreen(true);
       }
     } catch (err: any) {

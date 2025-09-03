@@ -127,7 +127,7 @@ export interface Instructor {
 export interface Comment {
   id: string;
   video_id: string;
-  user_id: string; // Now directly references auth.users.id
+  user_id: string;
   content: string;
   parent_comment_id?: string;
   reply_count: number;
@@ -140,12 +140,13 @@ export interface Comment {
   replies?: Comment[];
 }
 
-// New Assinatura type to reflect consolidated data
+// Consolidated Assinatura type - now contains all user data
 export interface Assinatura {
   "ID da assinatura": string;
   user_id: string;
   "Nome do cliente": string;
   "Email do cliente": string;
+  "Telefone do cliente"?: number;
   "Status da assinatura": string;
   avatar_usuario?: string;
   bio?: string;
@@ -154,7 +155,14 @@ export interface Assinatura {
   onboarding_data?: any;
   instagram?: string;
   linkedin?: string;
-  "Telefone do cliente"?: string;
+  experiencia_ia?: string;
+  objetivo_principal?: string;
+  tipo_trabalho?: string;
+  porte_negocio?: string;
+  "Data de criação"?: string;
+  "Plano"?: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface Video {
@@ -1351,10 +1359,10 @@ export const commentsService = {
     if (!videoId || !userId || !content.trim()) return false;
 
     try {
-      // Get the user's assinatura_id from the assinaturas table for validation
+      // Check if user has an active subscription
       const { data: userAssinatura, error: assinaturaError } = await supabase
         .from('assinaturas')
-        .select('"ID da assinatura", "Status da assinatura"')
+        .select('"Status da assinatura"')
         .eq('user_id', userId)
         .maybeSingle();
 
@@ -1369,9 +1377,7 @@ export const commentsService = {
         return false;
       }
 
-      const assinaturaId = userAssinatura['ID da assinatura'];
-
-      // Insert comment with both user_id and assinatura_id
+      // Insert comment with user_id
       const { error } = await supabase
         .from('comments')
         .insert({

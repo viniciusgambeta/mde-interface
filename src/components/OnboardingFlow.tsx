@@ -146,32 +146,29 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ userId, userEmail, onCo
     setIsLoading(true);
 
     try {
-      // Update the 'assinaturas' table with all onboarding data
-      const updatePayload: Partial<OnboardingData & { onboarding_completed: boolean; avatar_usuario: string }> = {
-        avatar_usuario: onboardingData.avatar_url || 'https://static.vecteezy.com/system/resources/previews/009/292/244/non_2x/default-avatar-icon-of-social-media-user-vector.jpg',
+      // Update the assinaturas table with all onboarding data
+      const updatePayload = {
+        avatar_usuario: onboardingData.avatar_url || '/avatar1.png',
         experiencia_ia: onboardingData.experiencia_ia,
         objetivo_principal: onboardingData.objetivo_principal,
         tipo_trabalho: onboardingData.tipo_trabalho,
         porte_negocio: onboardingData.porte_negocio,
         instagram: onboardingData.instagram,
-        onboarding_data: onboardingData, // Save all onboarding data as JSONB
-        // Mark onboarding as completed
-          onboarding_completed: true,
+        onboarding_data: onboardingData,
+        onboarding_completed: true
       };
 
       const success = await updateProfile(updatePayload);
 
       if (success) {
         console.log('Onboarding completed successfully');
-        onComplete(); // Call onComplete to hide the flow
+        onComplete();
       } else {
         console.error('Failed to complete onboarding via updateProfile');
-        // Even if there's an error, complete the onboarding to avoid infinite loop
         onComplete();
       }
     } catch (error) {
       console.error('Error completing onboarding:', error);
-      // Even if there's an error, complete the onboarding to avoid infinite loop
       onComplete();
     } finally {
       setIsLoading(false);

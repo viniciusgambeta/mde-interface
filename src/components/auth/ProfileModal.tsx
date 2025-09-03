@@ -97,7 +97,10 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) => {
     setIsLoading(true);
     setSuccess(false);
 
-    const updated = await updateProfile({ name });
+    const updated = await updateProfile({ 
+      "Nome do cliente": name,
+      avatar_usuario: avatarPreview || user.avatar
+    });
     
     if (updated) {
       setSuccess(true);
