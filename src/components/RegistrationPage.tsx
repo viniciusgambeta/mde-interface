@@ -172,14 +172,8 @@ const RegistrationPage: React.FC = () => {
           }
         }
         
-        // Force logout after successful registration
-        console.log('✅ Registration successful, forcing logout...');
-        await supabase.auth.signOut();
-        
-        // Clear any auth state
-        setUser(null);
-        setShowOnboarding(false);
-        
+        // Show success screen first, logout will happen when user clicks login button
+        console.log('✅ Registration successful, showing success screen...');
         setShowSuccessScreen(true);
       }
     } catch (err: any) {
@@ -188,6 +182,15 @@ const RegistrationPage: React.FC = () => {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleGoToLogin = async () => {
+    // Force logout before redirecting to login
+    console.log('🚪 Forcing logout before login redirect...');
+    await supabase.auth.signOut();
+    
+    // Navigate to home page where login modal can be opened
+    navigate('/');
   };
 
   // Success Screen Component
@@ -208,7 +211,7 @@ const RegistrationPage: React.FC = () => {
           </p>
           
           <button
-            onClick={() => navigate('/')}
+            onClick={handleGoToLogin}
             className="w-full bg-[#ff7551] hover:bg-[#ff7551]/80 text-white font-medium py-3 rounded-lg transition-colors mb-4"
           >
             Fazer Login
