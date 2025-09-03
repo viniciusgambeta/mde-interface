@@ -116,7 +116,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           setIsLoading(false);
         } else if (event === 'TOKEN_REFRESHED' && session?.user) {
           if (!user) {
-            const convertedUser = convertUser(session.user);
+            const convertedUser = await fetchAndConvertUser(session.user);
             setUser(convertedUser);
           }
           setIsLoading(false);
@@ -258,48 +258,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             <span className="text-slate-400">Carregando autenticação...</span>
           </div>
         </div>
-      ) : (
-        children
-      )}
-    </AuthContext.Provider>
-  );
-};
-      });
-
-      if (error) {
-        console.error('❌ Profile update error:', error);
-        return false;
-      }
-
-      // Update local user state
-      setUser(prev => prev ? { ...prev, ...data } : null);
-      return true;
-    } catch (error) {
-      console.error('💥 Profile update exception:', error);
-      return false;
-    }
-  };
-
-  const value: AuthContextType = {
-    user,
-    isAuthenticated: !!user,
-    isLoading,
-    login,
-    register,
-    logout,
-    updateProfile,
-    needsOnboarding,
-    completeOnboarding
-  };
-
-  return (
-    <AuthContext.Provider value={value}>
-      {needsOnboarding && user ? (
-        <OnboardingFlow 
-          userId={user.id}
-          userEmail={user.email}
-          onComplete={completeOnboarding}
-        />
       ) : (
         children
       )}
