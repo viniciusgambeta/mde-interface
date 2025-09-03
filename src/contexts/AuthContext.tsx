@@ -160,7 +160,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const handleAuthStateChange = async (event: AuthChangeEvent, session: Session | null) => {
       if (!isMounted) return;
 
-      console.log(`🔄 AuthProvider: Auth state changed: ${event}`);
+      console.log(\`🔄 AuthProvider: Auth state changed: ${event}`);
 
       if (session?.user) {
         // User is signed in or session is initialized
@@ -169,7 +169,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           if (isMounted) {
             setUser(fetchedUser);
             setShowOnboarding(!fetchedUser.onboardingCompleted);
-            console.log(\`✅ AuthProvider: User set: ${fetchedUser.email}, Onboarding needed: ${!fetchedUser.onboardingCompleted}`);
+            console.log(`✅ AuthProvider: User set: ${fetchedUser.email}, Onboarding needed: ${!fetchedUser.onboardingCompleted}`);
           }
         } catch (error) {
           console.error('❌ AuthProvider: Error fetching user data on auth change:', error);
