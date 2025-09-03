@@ -419,6 +419,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const value: AuthContextType = {
     user,
     loading,
+    showOnboarding,
+    completeOnboarding,
     isAuthenticated: !loading && !!user,
     signIn,
     signUp,
