@@ -10,6 +10,7 @@ interface User {
   avatar: string;
   isPremium: boolean;
   joinedAt: string;
+  assinaturaId?: string;
 }
 
 interface AuthContextType {
@@ -44,16 +45,24 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [needsOnboarding, setNeedsOnboarding] = useState(false);
 
   // Convert Supabase user to our User type
-  const convertUser = (supabaseUser: SupabaseUser): User => {
+  const convertUser = async (supabaseUser: SupabaseUser): Promise<User> => {
     const metadata = supabaseUser.user_metadata || {};
     
+    // Get assinatura_id from assinaturas table
+    const { data: assinatura } = await supabase
+      .from('assinaturas')
+      .select('"ID da assinatura"')
+      .eq('user_id', supabaseUser.id)
+      .single();
+
     return {
       id: supabaseUser.id,
       name: metadata.name || supabaseUser.email?.split('@')[0] || 'Usuário',
       email: supabaseUser.email || '',
       avatar: metadata.avatar_url || '/src/images/avatar.jpg',
       isPremium: metadata.is_premium || false,
-      joinedAt: supabaseUser.created_at || new Date().toISOString()
+      joinedAt: supabaseUser.created_at || new Date().toISOString(),
+      assinaturaId: assinatura?.["ID da assinatura"] || undefined
     };
   };
 
@@ -72,7 +81,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         }
 
         if (session?.user && mounted) {
-          const convertedUser = convertUser(session.user);
+          const convertedUser = await convertUser(session.user);
           setUser(convertedUser);
           
           // Check if user needs onboarding
@@ -95,7 +104,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         if (!mounted) return;
 
         if (event === 'SIGNED_IN' && session?.user) {
-          const convertedUser = convertUser(session.user);
+          const convertedUser = await convertUser(session.user);
           setUser(convertedUser);
           
           // Check if user needs onboarding on login
@@ -107,7 +116,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           setIsLoading(false);
         } else if (event === 'TOKEN_REFRESHED' && session?.user) {
           if (!user) {
-            const convertedUser = convertUser(session.user);
+            const convertedUser = await convertUser(session.user);
             setUser(convertedUser);
           }
           setIsLoading(false);

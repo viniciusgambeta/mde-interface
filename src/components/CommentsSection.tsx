@@ -41,13 +41,13 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ videoId, videoTitle }
   const handleSubmitComment = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!user || !newComment.trim() || submitting) return;
+    if (!user || !user.assinaturaId || !newComment.trim() || submitting) return;
 
     setSubmitting(true);
     
     try {
-      console.log('Submitting comment for user:', user.id);
-      const success = await commentsService.createComment(videoId, user.id, newComment);
+      console.log('Submitting comment for assinatura:', user.assinaturaId);
+      const success = await commentsService.createComment(videoId, user.assinaturaId, newComment);
       
       if (success) {
         setNewComment('');
@@ -68,13 +68,13 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ videoId, videoTitle }
   const handleSubmitReply = async (e: React.FormEvent, parentCommentId: string) => {
     e.preventDefault();
     
-    if (!user || !replyContent.trim() || submitting) return;
+    if (!user || !user.assinaturaId || !replyContent.trim() || submitting) return;
 
     setSubmitting(true);
     
     try {
-      console.log('Submitting reply for user:', user.id, 'to comment:', parentCommentId);
-      const success = await commentsService.createComment(videoId, user.id, replyContent, parentCommentId);
+      console.log('Submitting reply for assinatura:', user.assinaturaId, 'to comment:', parentCommentId);
+      const success = await commentsService.createComment(videoId, user.assinaturaId, replyContent, parentCommentId);
       
       if (success) {
         setReplyContent('');
@@ -94,11 +94,11 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ videoId, videoTitle }
   };
 
   const handleDeleteComment = async (commentId: string) => {
-    if (!user || !window.confirm('Tem certeza que deseja excluir este comentário?')) return;
+    if (!user || !user.assinaturaId || !window.confirm('Tem certeza que deseja excluir este comentário?')) return;
 
     try {
-      console.log('Deleting comment:', commentId, 'for user:', user.id);
-      const success = await commentsService.deleteComment(commentId, user.id);
+      console.log('Deleting comment:', commentId, 'for assinatura:', user.assinaturaId);
+      const success = await commentsService.deleteComment(commentId, user.assinaturaId);
       
       if (success) {
         console.log('Comment deleted successfully, reloading comments');
@@ -154,7 +154,7 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ videoId, videoTitle }
     isReply?: boolean;
   }> = ({ comment, isReply = false }) => {
     const [showMenu, setShowMenu] = useState(false);
-    const isOwner = user?.id === comment.user_id;
+    const isOwner = user?.assinaturaId === comment.assinatura_id;
     const hasReplies = comment.replies && comment.replies.length > 0;
     const isExpanded = expandedComments.has(comment.id);
 
@@ -206,7 +206,7 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ videoId, videoTitle }
               
               {/* Menu for comment owner */}
               {isOwner && (
-                <div className="relative ml-auto">
+                {!isReply && user && user.assinaturaId && (
                   <button
                     onClick={() => setShowMenu(!showMenu)}
                     className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-slate-700/30 transition-all"
@@ -260,7 +260,7 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ videoId, videoTitle }
             </div>
             
             {/* Reply Form */}
-            {replyingTo === comment.id && user && userAssinaturaId && (
+            {replyingTo === comment.id && user && user.assinaturaId && (
               <form onSubmit={(e) => handleSubmitReply(e, comment.id)} className="mt-4">
                 <div className="flex space-x-3">
                   <img
@@ -331,7 +331,7 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ videoId, videoTitle }
       </div>
 
       {/* New Comment Form */}
-      {user ? (
+      {user && user.assinaturaId ? (
         <form onSubmit={handleSubmitComment} className="space-y-4">
           <div className="flex space-x-3">
             <img
@@ -371,7 +371,9 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ videoId, videoTitle }
       ) : (
         <div className="text-center py-8 bg-slate-700/20 rounded-lg">
           <MessageCircle className="w-12 h-12 text-slate-600 mx-auto mb-3" />
-          <p className="text-slate-400 mb-4">Faça login para comentar</p>
+          <p className="text-slate-400 mb-4">
+            {user ? 'Você precisa de uma assinatura ativa para comentar' : 'Faça login para comentar'}
+          </p>
           <button className="px-6 py-2 bg-[#ff7551] hover:bg-[#ff7551]/80 text-white font-medium rounded-lg transition-colors">
             Entrar
           </button>
