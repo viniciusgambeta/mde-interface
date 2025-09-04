@@ -318,7 +318,6 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ videoId, videoTitle }
                       )}
                     </button>
                     </div>
-                  </div>
                   <div className="flex items-center justify-between mt-2 ml-11">
                     <button
                       type="button"
