@@ -176,21 +176,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       console.log('🔓 Redirecionamentos liberados');
     }, ms);
   };
-  
-  // 🔒 Supressor de redirecionamentos durante operações críticas
-  const suppressRedirectsRef = React.useRef(false);
-  const releaseTimerRef = React.useRef<NodeJS.Timeout | null>(null);
-
-  // Função para suprimir redirecionamentos por X milissegundos
-  const suppressRedirects = (ms: number) => {
-    console.log(`🔒 Suprimindo redirecionamentos por ${ms}ms`);
-    if (releaseTimerRef.current) clearTimeout(releaseTimerRef.current);
-    suppressRedirectsRef.current = true;
-    releaseTimerRef.current = setTimeout(() => {
-      suppressRedirectsRef.current = false;
-      console.log('🔓 Redirecionamentos liberados');
-    }, ms);
-  };
 
   // Função para verificar se é rota protegida
   const isProtectedRoute = (path: string) => {
