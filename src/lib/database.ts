@@ -246,7 +246,32 @@ export const videoService = {
       .abortSignal(controller.signal);
 
     if (options.category) {
-      query = query.eq('category.slug', options.category);
+      // For the main getVideos function, we'll keep the direct category filter
+      // since it's used for general filtering, not specific category pages
+      const { data: category } = await supabase
+        .from('categories')
+        .select('id')
+        .eq('slug', options.category)
+        .single();
+      
+      if (category) {
+        // Get video IDs from video_categories table
+        const { data: videoCategories } = await supabase
+          .from('video_categories')
+          .select('video_id')
+          .eq('category_id', category.id);
+        
+        if (videoCategories && videoCategories.length > 0) {
+          const videoIds = videoCategories.map(vc => vc.video_id);
+          query = query.in('id', videoIds);
+        } else {
+          // No videos in this category, return empty
+          return [];
+        }
+      } else {
+        // Category not found, return empty
+        return [];
+      }
     }
 
     if (options.difficulty) {
