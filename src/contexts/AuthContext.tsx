@@ -172,15 +172,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       }
     }
     )
-    let cleanup: (() => void) | undefined;
-    initializeAuth().then((cleanupFn) => {
-      cleanup = cleanupFn;
-    });
-    
     // Cleanup on unmount
     return () => {
       subscription.unsubscribe();
-    }
   }
   )
 
