@@ -233,9 +233,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
          console.log('🚫 Navigation suppressed, but user state cleared');
        } else {
          console.log('⏳ Still loading auth, deferring redirect decision');
-        } else {
-          console.log('🚫 Navigation suppressed, but user state cleared');
         }
+      }
       
     } catch (error) {
       console.error('❌ Error in auth state change:', error);
