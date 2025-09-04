@@ -165,6 +165,7 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ videoId, videoTitle }
     const [showMenu, setShowMenu] = useState(false);
     const [localReplyContent, setLocalReplyContent] = useState('');
     const [isReplying, setIsReplying] = useState(false);
+    const [isLiking, setIsLiking] = useState(false);
     const isOwner = user?.id === comment.user_id;
     const hasReplies = comment.replies && comment.replies.length > 0;
     const isExpanded = expandedComments.has(comment.id);
@@ -174,6 +175,14 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ videoId, videoTitle }
       handleSubmitReply(e, comment.id, localReplyContent, setLocalReplyContent, setIsReplying);
     };
 
+    // Handle like button click
+    const handleLikeClick = async () => {
+      if (!user || isLiking) return;
+      
+      setIsLiking(true);
+      await handleToggleCommentLike(comment.id);
+      setIsLiking(false);
+    };
     return (
       <div className={`${isReply ? 'ml-12 border-l border-slate-700/30 pl-6' : ''}`}>
         <div className="flex space-x-4 group">
@@ -270,9 +279,17 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ videoId, videoTitle }
             {/* Actions */}
             <div className="flex items-center space-x-4">
               {/* Like Button */}
-              <button className="flex items-center space-x-1.5 text-slate-500 hover:text-slate-300 transition-colors">
+              <button 
+                onClick={handleLikeClick}
+                disabled={!user || isLiking}
+                className={`flex items-center space-x-1.5 transition-colors disabled:cursor-not-allowed ${
+                  comment.is_liked 
+                    ? 'text-[#ff7551]' 
+                    : 'text-slate-500 hover:text-slate-300'
+                } ${isLiking ? 'animate-pulse' : ''}`}
+              >
                 <ThumbsUp className="w-4 h-4" />
-                <span className="text-xs font-medium">0</span>
+                <span className="text-xs font-medium">{comment.like_count || 0}</span>
               </button>
               
               {/* Reply Button */}
