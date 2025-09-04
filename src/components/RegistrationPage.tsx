@@ -640,6 +640,7 @@ const RegistrationPage: React.FC = () => {
 
         </div>
       </div>
+      </div>
     </div>
     
     <div className="text-center mt-6 px-6">
