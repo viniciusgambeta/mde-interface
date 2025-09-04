@@ -573,6 +573,7 @@ const RegistrationPage: React.FC = () => {
       </div>
       
       <div className="bg-[#1f1d2b] border border-slate-700/30 rounded-xl w-full max-w-md relative z-0">
+      <div className="bg-[#1f1d2b] border border-slate-600/40 rounded-xl w-full max-w-md relative z-0">
         {/* Form Content */}
         <div className="px-6 pt-16 pb-0">
           {/* Error Message */}
@@ -637,23 +638,20 @@ const RegistrationPage: React.FC = () => {
             )}
           </div>
 
-          {/* Footer Links */}
-          <div className="mt-6 text-center">
-            <p className="text-slate-400 text-sm">
-              Já tem uma conta?{' '}
-              <button
-                onClick={() => navigate('/')}
-                className="text-[#ff7551] hover:text-[#ff7551]/80 font-medium transition-colors"
-              >
-                Entrar
-              </button>
-            </p>
-          </div>
         </div>
       </div>
     </div>
     
     <div className="text-center mt-6 px-6">
+      <p className="text-slate-400 text-sm">
+        Já tem uma conta?{' '}
+        <button
+          onClick={() => navigate('/')}
+          className="text-[#ff7551] hover:text-[#ff7551]/80 font-medium transition-colors"
+        >
+          Entrar
+        </button>
+      </p>
     </div>
     </>
   );
