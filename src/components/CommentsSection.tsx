@@ -17,6 +17,7 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ videoId, videoTitle }
   const [submitting, setSubmitting] = useState(false);
   const [expandedComments, setExpandedComments] = useState<Set<string>>(new Set());
   const [sortBy, setSortBy] = useState<'recent' | 'oldest'>('recent');
+  const [showSortDropdown, setShowSortDropdown] = useState(false);
 
   // Load comments
   useEffect(() => {
@@ -267,7 +268,7 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ videoId, videoTitle }
                   className="flex items-center space-x-1.5 text-slate-500 hover:text-slate-300 transition-colors"
                 >
                   <Reply className="w-4 h-4" />
-                  <span className="text-xs font-medium">Reply</span>
+                  <span className="text-xs font-medium">Responder</span>
                 </button>
               )}
               
@@ -279,7 +280,7 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ videoId, videoTitle }
                 >
                   <ChevronDown className={`w-4 h-4 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
                   <span className="text-xs font-medium">
-                    {comment.reply_count || comment.replies?.length || 0} {(comment.reply_count || comment.replies?.length || 0) === 1 ? 'reply' : 'replies'}
+                    {comment.reply_count || comment.replies?.length || 0} {(comment.reply_count || comment.replies?.length || 0) === 1 ? 'resposta' : 'respostas'}
                   </span>
                 </button>
               )}
@@ -326,7 +327,7 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ videoId, videoTitle }
                       }}
                       className="text-slate-500 hover:text-slate-300 text-xs transition-colors"
                     >
-                      Cancel
+                      Cancelar
                     </button>
                   </div>
                 </form>
@@ -346,6 +347,16 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ videoId, videoTitle }
       </div>
     );
   };
+
+  // Sort comments based on selected option
+  const sortedComments = React.useMemo(() => {
+    const sorted = [...comments];
+    if (sortBy === 'recent') {
+      return sorted.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+    } else {
+      return sorted.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+    }
+  }, [comments, sortBy]);
 
   return (
     <div className="space-y-6">
@@ -376,7 +387,7 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ videoId, videoTitle }
                   {submitting ? (
                     <div className="w-4 h-4 border border-white/30 border-t-white rounded-full animate-spin" />
                   ) : (
-                    'Comment'
+                    'Comentar'
                   )}
                 </button>
               </div>
@@ -406,10 +417,48 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ videoId, videoTitle }
         
         {/* Sort Options */}
         <div className="flex items-center space-x-4 text-sm">
-          <span className="text-slate-400">All</span>
-          <div className="flex items-center space-x-2">
-            <span className="text-slate-400">Most recent</span>
-            <ChevronDown className="w-4 h-4 text-slate-400" />
+          <span className="text-slate-400">Todos</span>
+          <div className="relative">
+            <button
+              onClick={() => setShowSortDropdown(!showSortDropdown)}
+              className="flex items-center space-x-2 text-slate-400 hover:text-white transition-colors"
+            >
+              <span>{sortBy === 'recent' ? 'Mais recentes' : 'Mais antigos'}</span>
+              <ChevronDown className={`w-4 h-4 transition-transform ${showSortDropdown ? 'rotate-180' : ''}`} />
+            </button>
+            
+            {showSortDropdown && (
+              <div className="absolute top-full right-0 mt-2 w-40 bg-[#1f1d2b] border border-slate-700/30 rounded-lg shadow-xl z-50">
+                <div className="p-2">
+                  <button
+                    onClick={() => {
+                      setSortBy('recent');
+                      setShowSortDropdown(false);
+                    }}
+                    className={`w-full text-left px-3 py-2 text-sm rounded transition-colors ${
+                      sortBy === 'recent'
+                        ? 'bg-[#ff7551] text-white'
+                        : 'text-slate-300 hover:bg-slate-700/30'
+                    }`}
+                  >
+                    Mais recentes
+                  </button>
+                  <button
+                    onClick={() => {
+                      setSortBy('oldest');
+                      setShowSortDropdown(false);
+                    }}
+                    className={`w-full text-left px-3 py-2 text-sm rounded transition-colors ${
+                      sortBy === 'oldest'
+                        ? 'bg-[#ff7551] text-white'
+                        : 'text-slate-300 hover:bg-slate-700/30'
+                    }`}
+                  >
+                    Mais antigos
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
