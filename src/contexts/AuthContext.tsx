@@ -435,7 +435,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const refreshUser = async (): Promise<void> => {
     try {
-      setAuthLoading(true);
       const { data: { user: authUser } } = await supabase.auth.getUser();
       if (authUser) {
         const userData = await fetchUserData(authUser);
@@ -445,8 +444,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       }
     } catch (error) {
       console.error('❌ Error refreshing user:', error);
-    } finally {
-      setAuthLoading(false);
     }
   };
 
@@ -477,7 +474,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     loading,
     showOnboarding,
     completeOnboarding,
-    isAuthenticated: !loading && !!user,
+    isAuthenticated: !authLoading && !!user,
     signIn,
     signUp,
     signOut,
