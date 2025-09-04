@@ -174,7 +174,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const navigate = useNavigate();
   const location = useLocation();
   const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
   const [authLoading, setAuthLoading] = useState(true);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [initialized, setInitialized] = useState(false);
@@ -219,6 +218,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         const userData = await fetchUserData(session.user);
         if (userData) {
           setUser(userData);
+          setShowOnboarding(!userData.onboardingCompleted);
           console.log('✅ User data set successfully');
 
           // Só redireciona se suppressRedirects não estiver ativo
