@@ -570,10 +570,9 @@ const RegistrationPage: React.FC = () => {
             <video
               src="/src/images/outputgansotopo3.webm"
               autoPlay
-              loop
               muted
               playsInline
-              className="h-16 w-auto mx-auto"
+              className="h-32 w-auto mx-auto"
             />
           </div>
         </div>
