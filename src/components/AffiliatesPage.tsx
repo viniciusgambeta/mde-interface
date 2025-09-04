@@ -38,7 +38,7 @@ const AffiliatesPage: React.FC = () => {
       question: "Onde encontro meu link de afiliado?",
       answer: (
         <span>
-          Seu link fica disponível na Hubla em: Produtos > Minhas afiliações > Links. Ou acesse diretamente:{' '}
+          Seu link fica disponível na Hubla em: Produtos &gt; Minhas afiliações &gt; Links. Ou acesse diretamente:{' '}
           <a 
             href="https://app.hub.la/dashboard/products" 
             target="_blank" 
