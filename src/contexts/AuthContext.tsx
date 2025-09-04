@@ -185,13 +185,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   // Handle auth state changes (both initial and subsequent)
   const handleAuthStateChange = async (session: Session | null) => {
-    console.log('🔄 Handling auth state change:', { hasSession: !!session, suppressActive: suppressRedirectsRef.current });
-    
-    // 🚫 Se estamos suprimindo redirecionamentos, não faz nada
-    if (suppressRedirectsRef.current) {
-      console.log('🔒 Redirecionamentos suprimidos, ignorando mudança de auth');
-      return;
-    }
+    console.log('🔄 Handling auth state change:', { hasSession: !!session });
     
     // 🚫 Se estamos suprimindo redirecionamentos, não faz nada
     if (suppressRedirectsRef.current) {
@@ -266,13 +260,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event: AuthChangeEvent, session: Session | null) => {
-        console.log('🔄 Auth state changed:', event, 'suppressActive:', suppressRedirectsRef.current);
-        
-        // 🚫 Se estamos suprimindo redirecionamentos, não faz nada
-        if (suppressRedirectsRef.current) {
-          console.log('🔒 Redirecionamentos suprimidos, ignorando evento:', event);
-          return;
-        }
+        console.log('🔄 Auth state changed:', event);
         
         // Handle all auth events through the same function
         if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION') {
@@ -288,9 +276,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     return () => {
       console.log('🧹 Cleaning up auth listener');
       subscription.unsubscribe();
-      if (releaseTimerRef.current) {
-        clearTimeout(releaseTimerRef.current);
-      }
     };
   }, [initialized]);
 
@@ -320,9 +305,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     try {
       console.log('📝 Attempting sign up for:', email);
       
-      // 🔒 Suprime redirecionamentos por 10 segundos durante o signup
-      suppressRedirects(10000);
-      
       // 🔒 Suprime redirecionamentos por 5 segundos durante o signup
       suppressRedirects(5000);
       
@@ -338,7 +320,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
       if (error) {
         console.error('❌ Sign up error:', error.message);
-        suppressRedirectsRef.current = false; // Libera redirecionamentos em caso de erro
         suppressRedirectsRef.current = false; // Libera redirecionamentos em caso de erro
         return { user: null, error: error.message };
       }
@@ -377,7 +358,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       return { user: null, error: 'Erro desconhecido' };
     } catch (error) {
       console.error('💥 Exception during sign up:', error);
-      suppressRedirectsRef.current = false; // Libera redirecionamentos em caso de exceção
       suppressRedirectsRef.current = false; // Libera redirecionamentos em caso de exceção
       return { user: null, error: 'Erro inesperado durante o cadastro' };
     }
@@ -484,7 +464,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     signOut,
     updateProfile,
     refreshUser,
-    suppressRedirects
     suppressRedirects
   };
 

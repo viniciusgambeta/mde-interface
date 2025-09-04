@@ -186,31 +186,77 @@ const RegistrationPage: React.FC = () => {
     }
 
     try {
-      console.log('📝 RegistrationPage: Iniciando processo de registro no componente.');
+      console.log('📝 Starting registration process...');
       
-      // Força logout de qualquer sessão existente primeiro
+      // Force logout any existing session
       await supabase.auth.signOut();
-      
-      // Chama signUp que já tem o supressor embutido
-      const { signUp } = useAuth();
-      const result = await signUp(formData.email, formData.password, formData.name);
-      
-      if (result.error) {
-        console.error('❌ RegistrationPage: Erro no registro:', result.error);
-        setError(result.error || 'Erro ao criar conta. Tente novamente.');
-      } else {
-        console.log('✅ RegistrationPage: Registro bem-sucedido, mostrando tela de sucesso.');
+
+      // Create new user
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: formData.email,
+        password: formData.password,
+        options: {
+          data: {
+            name: formData.name
+          }
+        }
+      });
+
+      if (authError) {
+        throw authError;
+      }
+
+      if (authData.user) {
+        console.log('✅ User created in auth.users, updating assinaturas...');
         
-        // Atualizar dados da assinatura se necessário
+        // Update the existing assinaturas record with the new user_id
         if (subscriptionData) {
-          console.log('📝 RegistrationPage: Atualizando dados da assinatura existente...');
-          // A lógica de atualização da assinatura já está no AuthContext.signUp
+          const { error: updateError } = await supabase
+            .from('assinaturas')
+            .update({
+              user_id: authData.user.id,
+              "Nome do cliente": formData.name,
+              "Email do cliente": formData.email,
+              onboarding_completed: false,
+              cadastro_mde: true
+            })
+            .eq("ID da assinatura", subscriptionData["ID da assinatura"]);
+
+          if (updateError) {
+            console.error('❌ Error updating existing assinatura record:', updateError);
+          } else {
+            console.log('✅ Assinatura record updated successfully');
+          }
+        } else {
+          // Create a new assinatura record for free users
+          const { error: insertError } = await supabase
+            .from('assinaturas')
+            .insert({
+              user_id: authData.user.id,
+              "Nome do cliente": formData.name,
+              "Email do cliente": formData.email,
+              "ID da assinatura": authData.user.id,
+              "Status da assinatura": 'free',
+              "Plano": 'Free Plan',
+              "Data de criação": new Date().toISOString().split('T')[0],
+              onboarding_completed: false,
+              cadastro_mde: true
+            });
+            
+          if (insertError) {
+            console.error('❌ Error inserting new assinatura record:', insertError);
+          } else {
+            console.log('✅ New assinatura record created successfully');
+          }
         }
         
+        // Force logout and show success screen
+        await supabase.auth.signOut();
+        console.log('✅ Registration successful, showing success screen...');
         setShowSuccessScreen(true);
       }
     } catch (err: any) {
-      console.error('💥 RegistrationPage: Exceção durante o registro:', err);
+      console.error('❌ Registration error:', err);
       setError(err.message || 'Erro ao criar conta. Tente novamente.');
     } finally {
       setIsSubmitting(false);
