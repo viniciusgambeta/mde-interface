@@ -48,6 +48,10 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose, onSwitch
     }
 
     console.log('📝 Iniciando processo de registro...');
+    
+    // Força logout de qualquer sessão existente primeiro
+    await supabase.auth.signOut();
+    
     const result = await signUp(email, password, name);
     
     if (result.error) {
@@ -63,8 +67,11 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose, onSwitch
   };
 
   const handleGoToLogin = () => {
+    console.log('🚪 RegisterModal: Redirecionando para login...');
     setShowSuccess(false);
     setError('');
+    // Força logout antes de trocar para login
+    supabase.auth.signOut();
     onSwitchToLogin();
   };
 
