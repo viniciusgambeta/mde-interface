@@ -573,7 +573,7 @@ const RegistrationPage: React.FC = () => {
       <div className="bg-[#1f1d2b] border border-slate-700/30 rounded-xl w-full max-w-md relative z-0">
       <div className="bg-[#1f1d2b] border border-slate-600/40 rounded-xl w-full max-w-md relative z-0">
         {/* Form Content */}
-        <div className="px-6 pt-16 pb-0">
+        <div className="px-6 pt-12 pb-0">
           {/* Error Message */}
           {error && (
             <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-lg">
