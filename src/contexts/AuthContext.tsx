@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { User as SupabaseUser, Session, AuthChangeEvent } from '@supabase/supabase-js';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 
 // Types
@@ -54,6 +55,7 @@ interface AuthContextType {
   signOut: () => Promise<{ error: string | null }>;
   updateProfile: (data: Partial<Assinatura>) => Promise<boolean>;
   refreshUser: () => Promise<void>;
+  suppressRedirects: (ms: number) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -153,14 +155,43 @@ const fetchUserData = async (authUser: SupabaseUser): Promise<User> => {
 };
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const navigate = useNavigate();
+  const location = useLocation();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [initialized, setInitialized] = useState(false);
+  
+  // 🔒 Supressor de redirecionamentos durante operações críticas
+  const suppressRedirectsRef = React.useRef(false);
+  const releaseTimerRef = React.useRef<NodeJS.Timeout | null>(null);
+
+  // Função para suprimir redirecionamentos por X milissegundos
+  const suppressRedirects = (ms: number) => {
+    console.log(`🔒 Suprimindo redirecionamentos por ${ms}ms`);
+    if (releaseTimerRef.current) clearTimeout(releaseTimerRef.current);
+    suppressRedirectsRef.current = true;
+    releaseTimerRef.current = setTimeout(() => {
+      suppressRedirectsRef.current = false;
+      console.log('🔓 Redirecionamentos liberados');
+    }, ms);
+  };
+
+  // Função para verificar se é rota protegida
+  const isProtectedRoute = (path: string) => {
+    const openRoutes = ['/registro', '/redefinir-senha', '/privacidade'];
+    return !openRoutes.some(route => path.startsWith(route));
+  };
 
   // Handle auth state changes (both initial and subsequent)
   const handleAuthStateChange = async (session: Session | null) => {
     console.log('🔄 Handling auth state change:', { hasSession: !!session });
+    
+    // 🚫 Se estamos suprimindo redirecionamentos, não faz nada
+    if (suppressRedirectsRef.current) {
+      console.log('🔒 Redirecionamentos suprimidos, ignorando mudança de auth');
+      return;
+    }
     
     if (session?.user) {
       try {
@@ -172,6 +203,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           onboardingCompleted: userData.onboardingCompleted,
           showOnboarding: !userData.onboardingCompleted
         });
+        
+        // 🔄 Guard: redireciona usuário logado para home se estiver em rota de auth
+        if (location.pathname === '/registro' || location.pathname === '/redefinir-senha') {
+          console.log('🔄 Usuário logado em rota de auth, redirecionando para home');
+          navigate('/');
+        }
       } catch (error) {
         console.error('❌ Error handling auth state change:', error);
         setUser(null);
@@ -181,6 +218,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       console.log('🚪 No session, clearing user data');
       setUser(null);
       setShowOnboarding(false);
+      
+      // 🔄 Guard: redireciona usuário não logado para home se estiver em rota protegida
+      if (isProtectedRoute(location.pathname) && location.pathname !== '/') {
+        console.log('🔄 Usuário não logado em rota protegida, redirecionando para home');
+        navigate('/');
+      }
     }
   };
 
@@ -262,6 +305,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     try {
       console.log('📝 Attempting sign up for:', email);
       
+      // 🔒 Suprime redirecionamentos por 5 segundos durante o signup
+      suppressRedirects(5000);
+      
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -274,6 +320,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
       if (error) {
         console.error('❌ Sign up error:', error.message);
+        suppressRedirectsRef.current = false; // Libera redirecionamentos em caso de erro
         return { user: null, error: error.message };
       }
 
@@ -300,13 +347,18 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           console.log('✅ Assinatura record created successfully');
         }
 
+        // 🚪 Força logout imediato para evitar auto-login
+        console.log('🚪 Forçando logout após signup para mostrar tela de sucesso');
+        await supabase.auth.signOut();
+        
         console.log('✅ Sign up successful, auth state change will handle user data');
-        return { user: null, error: null }; // User will be set by auth state change
+        return { user: null, error: null };
       }
 
       return { user: null, error: 'Erro desconhecido' };
     } catch (error) {
       console.error('💥 Exception during sign up:', error);
+      suppressRedirectsRef.current = false; // Libera redirecionamentos em caso de exceção
       return { user: null, error: 'Erro inesperado durante o cadastro' };
     }
   };
@@ -411,7 +463,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     signUp,
     signOut,
     updateProfile,
-    refreshUser
+    refreshUser,
+    suppressRedirects
   };
 
   return (

@@ -47,10 +47,14 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose, onSwitch
       return;
     }
 
+    console.log('📝 Iniciando processo de registro...');
     const result = await signUp(email, password, name);
+    
     if (result.error) {
+      console.error('❌ Erro no registro:', result.error);
       setError(result.error || 'Erro ao criar conta. Tente novamente.');
     } else {
+      console.log('✅ Registro bem-sucedido, mostrando tela de sucesso');
       setShowSuccess(true);
       setName(''); setEmail(''); setPassword(''); setConfirmPassword('');
     }
