@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { X, Eye, EyeOff, Mail, Lock, User, Loader2 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 
+import { supabase } from '../../lib/supabase';
+
 interface RegisterModalProps {
   isOpen: boolean;
   onClose: () => void;
