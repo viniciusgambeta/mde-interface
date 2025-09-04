@@ -563,20 +563,18 @@ const RegistrationPage: React.FC = () => {
   return (
     <>
     <div className="min-h-screen bg-gradient-to-b from-[#1f1d2b] via-[#1f1d2b] to-black flex items-center justify-center p-4">
+      {/* Video - Outside and above the form block */}
+      <div className="text-center mb-8">
+        <video
+          src="/src/images/outputgansotopo3.webm"
+          autoPlay
+          muted
+          playsInline
+          className="h-48 w-auto mx-auto"
+        />
+      </div>
+      
       <div className="bg-[#1f1d2b] border border-slate-700/30 rounded-xl w-full max-w-md">
-        {/* Header */}
-        <div className="p-6 border-b border-slate-700/30">
-          <div className="text-center">
-            <video
-              src="/src/images/outputgansotopo3.webm"
-              autoPlay
-              muted
-              playsInline
-              className="h-32 w-auto mx-auto"
-            />
-          </div>
-        </div>
-
         {/* Form Content */}
         <div className="p-6">
           {/* Error Message */}
