@@ -1283,7 +1283,7 @@ export const commentsService = {
         .from('comments')
         .select(`
           *,
-          user_profile:assinaturas!comments_user_id_fkey(
+          user_profile:assinaturas!comments_assinatura_user_id_fkey(
             "Nome do cliente",
             avatar_usuario,
             instagram,
@@ -1360,10 +1360,10 @@ export const commentsService = {
     if (!videoId || !userId || !content.trim()) return false;
 
     try {
-      // Check if user has an active subscription
+      // Check if user has completed onboarding
       const { data: userAssinatura, error: assinaturaError } = await supabase
         .from('assinaturas')
-        .select('"Status da assinatura"')
+        .select('onboarding_completed')
         .eq('user_id', userId)
         .maybeSingle();
 
@@ -1372,18 +1372,31 @@ export const commentsService = {
         return false;
       }
 
-      // Check if user has an active subscription
-      if (!userAssinatura || userAssinatura["Status da assinatura"] !== 'active') {
-        console.error('User does not have an active subscription to comment.');
+      // Check if user has completed onboarding
+      if (!userAssinatura || !userAssinatura.onboarding_completed) {
+        console.error('User must complete onboarding to comment.');
         return false;
       }
 
-      // Insert comment with user_id
+      // Get user's assinatura ID for the comment
+      const { data: assinaturaData, error: assinaturaIdError } = await supabase
+        .from('assinaturas')
+        .select('"ID da assinatura"')
+        .eq('user_id', userId)
+        .single();
+
+      if (assinaturaIdError || !assinaturaData) {
+        console.error('Error getting user assinatura ID:', assinaturaIdError);
+        return false;
+      }
+
+      // Insert comment with user_id and assinatura_id
       const { error } = await supabase
         .from('comments')
         .insert({
           video_id: videoId,
           user_id: userId,
+          assinatura_id: assinaturaData["ID da assinatura"],
           content: content.trim(),
           parent_comment_id: parentCommentId || null
         });
