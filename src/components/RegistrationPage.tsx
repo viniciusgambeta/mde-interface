@@ -196,15 +196,12 @@ const RegistrationPage: React.FC = () => {
     try {
       console.log('📝 Starting registration process...');
       
-      // Force logout any existing session
-      await supabase.auth.signOut();
-
-      // Create new user without email confirmation
+      // Create new user without email confirmation and without auto-login
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
         options: {
-          emailRedirectTo: undefined, // Disable email confirmation
+          emailRedirectTo: undefined, // Disable email confirmation  
           data: {
             name: formData.name
           }
@@ -259,8 +256,6 @@ const RegistrationPage: React.FC = () => {
           }
         }
         
-        // Force logout to ensure user is not automatically logged in
-        await supabase.auth.signOut();
         console.log('✅ Registration successful, showing success screen...');
         setShowSuccessScreen(true);
       }
@@ -273,8 +268,6 @@ const RegistrationPage: React.FC = () => {
   };
 
   const handleGoToLogin = async () => {
-    console.log('🚪 Forcing logout before login redirect...');
-    await supabase.auth.signOut();
     navigate('/?login=true');
   };
 
