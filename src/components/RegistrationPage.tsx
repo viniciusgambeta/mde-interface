@@ -591,6 +591,22 @@ const RegistrationPage: React.FC = () => {
         </div>
 
         {/* Footer */}
+        <div className="p-6">
+          <div className="flex justify-between">
+            {/* Back Button */}
+            {currentStep > 0 ? (
+              <button
+                onClick={handleBack}
+                className="flex items-center space-x-2 px-4 py-2 text-slate-400 hover:text-white transition-colors"
+                disabled={isSubmitting}
+              >
+                <ArrowLeft className="w-4 h-4" />
+                <span>Voltar</span>
+              </button>
+            ) : (
+              <div></div>
+            )}
+
             {/* Next/Submit Button */}
             {currentStep < steps.length - 1 ? (
               <button
@@ -620,31 +636,20 @@ const RegistrationPage: React.FC = () => {
                 )}
               </button>
             )}
-
-            {/* Back Button - Only show for steps > 0 */}
-            {currentStep > 0 && (
-              <button
-                onClick={handleBack}
-                className="w-full flex items-center justify-center space-x-2 py-3 mt-4 text-slate-400 hover:text-white transition-colors"
-                disabled={isSubmitting}
-              >
-                <ArrowLeft className="w-4 h-4" />
-                <span>Voltar</span>
-              </button>
-            )}
           </div>
-        </div>
 
-        <div className="text-center mt-6 px-6">
-          <p className="text-slate-500 text-sm">
-            Já tem uma conta?{' '}
-            <button
-              onClick={() => navigate('/')}
-              className="text-slate-400 hover:text-[#ff7551] transition-colors"
-            >
-              Entrar
-            </button>
-          </p>
+          {/* Footer Links */}
+          <div className="mt-6 text-center">
+            <p className="text-slate-400 text-sm">
+              Já tem uma conta?{' '}
+              <button
+                onClick={() => navigate('/')}
+                className="text-[#ff7551] hover:text-[#ff7551]/80 font-medium transition-colors"
+              >
+                Entrar
+              </button>
+            </p>
+          </div>
         </div>
       </div>
     </div>
