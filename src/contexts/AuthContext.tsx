@@ -170,6 +170,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         // Set loading false after any auth state change
         setLoading(false);
       }
+    }
+    )
     let cleanup: (() => void) | undefined;
     initializeAuth().then((cleanupFn) => {
       cleanup = cleanupFn;
@@ -178,6 +180,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     // Cleanup on unmount
     return () => {
       subscription.unsubscribe();
+    }
+  }
+  )
 
   const signIn = async (email: string, password: string): Promise<{ user: User | null; error: string | null }> => {
     try {
