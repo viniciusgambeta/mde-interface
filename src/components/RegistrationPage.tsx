@@ -570,7 +570,7 @@ const RegistrationPage: React.FC = () => {
           autoPlay
           muted
           playsInline
-          className="h-48 w-auto mx-auto"
+          className="h-64 w-auto mx-auto -mb-12"
         />
       </div>
       
