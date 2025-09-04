@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { MessageCircle, Send, Trash2, Reply, Instagram, Linkedin, MoreVertical, ArrowRight, ThumbsUp, ChevronDown } from 'lucide-react';
+import { MessageCircle, Send, Trash2, Reply, Instagram, Linkedin, MoreVertical, ArrowRight, ThumbsUp, ChevronDown, CheckCircle } from 'lucide-react';
 import { commentsService, type Comment } from '../lib/database';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
@@ -134,7 +134,7 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ videoId, videoTitle }
       return 'agora mesmo';
     } else if (diffInSeconds < 3600) {
       const minutes = Math.floor(diffInSeconds / 60);
-      return `${minutes} min atrás`;
+      return `${minutes}min atrás`;
     } else if (diffInSeconds < 86400) {
       const hours = Math.floor(diffInSeconds / 3600);
       return `${hours}h atrás`;
@@ -178,11 +178,18 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ videoId, videoTitle }
       <div className={`${isReply ? 'ml-12 border-l border-slate-700/30 pl-6' : ''}`}>
         <div className="flex space-x-4 group">
           {/* Avatar */}
-          <img
-            src={comment.user_avatar || '/avatar1.png'}
-            alt={comment.user_name}
-            className="w-10 h-10 rounded-lg object-cover flex-shrink-0"
-          />
+          <div className="relative flex-shrink-0">
+            <img
+              src={comment.user_avatar || '/avatar1.png'}
+              alt={comment.user_name}
+              className="w-10 h-10 rounded-lg object-cover"
+            />
+            {comment.user_nivel === 'instrutor' && (
+              <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-[#ff7551] rounded-full flex items-center justify-center border-2 border-[#1f1d2b]">
+                <CheckCircle className="w-3 h-3 text-white" fill="currentColor" />
+              </div>
+            )}
+          </div>
           
           {/* Comment Content */}
           <div className="flex-1 min-w-0">
@@ -191,6 +198,13 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ videoId, videoTitle }
               <span className="text-white font-medium text-sm">
                 {comment.user_name}
               </span>
+              
+              {/* Instructor Badge */}
+              {comment.user_nivel === 'instrutor' && (
+                <span className="bg-[#ff7551] text-white text-xs px-2 py-0.5 rounded font-medium">
+                  Instrutor
+                </span>
+              )}
               
               {/* Social Links */}
               <div className="flex items-center space-x-1.5">
@@ -289,36 +303,38 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ videoId, videoTitle }
             {/* Reply Form */}
             {isReplying && user && (
               <div className="mt-4">
-                <form onSubmit={handleReplySubmit} className="relative">
-                  <div className="flex space-x-3">
-                    <img
-                      src={user.avatar || '/avatar1.png'}
-                      alt={user.name}
-                      className="w-8 h-8 rounded-lg object-cover flex-shrink-0"
-                    />
-                    <div className="flex-1 relative">
-                      <textarea
-                        value={localReplyContent}
-                        onChange={(e) => setLocalReplyContent(e.target.value)}
-                        placeholder={`Responder para ${comment.user_name}...`}
-                        className="w-full pl-4 pr-12 py-3 bg-slate-800/50 border border-slate-700/30 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-[#ff7551]/30 focus:border-[#ff7551]/30 transition-all resize-none text-sm"
-                        rows={2}
-                        disabled={submitting}
+                <form onSubmit={handleReplySubmit} className="space-y-3">
+                  <div className="relative">
+                    <div className="flex space-x-3">
+                      <img
+                        src={user.avatar || '/avatar1.png'}
+                        alt={user.name}
+                        className="w-10 h-10 rounded-lg object-cover flex-shrink-0 mt-1"
                       />
+                      <div className="flex-1 relative">
+                        <textarea
+                          value={localReplyContent}
+                          onChange={(e) => setLocalReplyContent(e.target.value)}
+                          placeholder={`Responder para ${comment.user_name}...`}
+                          className="w-full pl-4 pr-20 py-3 bg-slate-800/50 border border-slate-700/30 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-[#ff7551]/30 focus:border-[#ff7551]/30 transition-all resize-none text-sm min-h-[60px]"
+                          rows={3}
+                          disabled={submitting}
+                        />
+                        <button
+                          type="submit"
+                          disabled={!localReplyContent.trim() || submitting}
+                          className="absolute bottom-3 right-3 px-4 py-2 bg-[#ff7551] hover:bg-[#ff7551]/80 disabled:bg-slate-600 disabled:cursor-not-allowed text-white rounded-lg transition-colors flex items-center justify-center text-sm font-medium"
+                        >
+                          {submitting ? (
+                            <div className="w-4 h-4 border border-white/30 border-t-white rounded-full animate-spin" />
+                          ) : (
+                            'Comentar'
+                          )}
+                        </button>
+                      </div>
                     </div>
-                    <button
-                      type="submit"
-                      disabled={!localReplyContent.trim() || submitting}
-                      className="px-4 py-2 bg-[#ff7551] hover:bg-[#ff7551]/80 disabled:bg-slate-600 disabled:cursor-not-allowed text-white rounded-lg transition-colors flex items-center justify-center text-sm font-medium"
-                    >
-                      {submitting ? (
-                        <div className="w-4 h-4 border border-white/30 border-t-white rounded-full animate-spin" />
-                      ) : (
-                        'Comentar'
-                      )}
-                    </button>
-                    </div>
-                  <div className="flex items-center justify-between mt-2 ml-11">
+                  </div>
+                  <div className="flex items-center justify-between ml-13">
                     <button
                       type="button"
                       onClick={() => {
@@ -480,7 +496,7 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ videoId, videoTitle }
       ) : (
         <div className="text-center py-16">
           <MessageCircle className="w-16 h-16 text-slate-600 mx-auto mb-4" />
-          <h3 className="text-white font-medium mb-2 text-lg">No comments yet</h3>
+          <h3 className="text-white font-medium mb-2 text-lg">Nenhum comentário ainda</h3>
           <p className="text-slate-400">
             Seja o primeiro a comentar sobre "{videoTitle}"
           </p>
