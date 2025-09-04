@@ -570,13 +570,14 @@ const RegistrationPage: React.FC = () => {
           autoPlay
           muted
           playsInline
-          className="h-64 w-auto mx-auto -mb-12"
+          className="h-64 w-auto mx-auto relative z-10"
+          style={{ marginBottom: '-3.77rem' }}
         />
       </div>
       
-      <div className="bg-[#1f1d2b] border border-slate-700/30 rounded-xl w-full max-w-md">
+      <div className="bg-[#1f1d2b] border border-slate-700/30 rounded-xl w-full max-w-md relative z-0">
         {/* Form Content */}
-        <div className="p-6 mt-0">
+        <div className="p-6 mt-0 pt-16">
           {/* Error Message */}
           {error && (
             <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-lg">
