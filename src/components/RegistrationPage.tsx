@@ -576,7 +576,7 @@ const RegistrationPage: React.FC = () => {
       
       <div className="bg-[#1f1d2b] border border-slate-700/30 rounded-xl w-full max-w-md">
         {/* Form Content */}
-        <div className="p-6">
+        <div className="p-6 mt-0">
           {/* Error Message */}
           {error && (
             <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-lg">
@@ -592,7 +592,7 @@ const RegistrationPage: React.FC = () => {
         </div>
 
         {/* Footer */}
-        <div className="p-6">
+        <div className="p-6 mt-0">
           <div className="flex justify-between">
             {/* Back Button */}
             {currentStep > 0 ? (
