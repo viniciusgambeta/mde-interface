@@ -302,20 +302,6 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ videoId, videoTitle }
             
             {/* Actions */}
             <div className="flex items-center space-x-4">
-              {/* Like Button */}
-              <button 
-                onClick={handleLikeClick}
-                disabled={!user || isLiking}
-                className={`flex items-center space-x-1.5 transition-colors disabled:cursor-not-allowed ${
-                  localIsLiked 
-                    ? 'text-[#ff7551]' 
-                    : 'text-slate-500 hover:text-slate-300'
-                } ${isLiking ? 'animate-pulse' : ''}`}
-              >
-                <ThumbsUp className="w-4 h-4" />
-                <span className="text-xs font-medium">{localLikeCount}</span>
-              </button>
-              
               {/* Reply Button */}
               {!isReply && user && (
                 <button
