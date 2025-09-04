@@ -153,6 +153,7 @@ const AppLayout: React.FC = () => {
         case 'trending': return baseTitle + 'Trending';
         case 'categories': return baseTitle + 'Categorias';
         case 'discounts': return baseTitle + 'Descontos';
+        case 'affiliates': return baseTitle + 'Afiliados';
         case 'bookmark': return baseTitle + 'Salvos';
         case 'profile': return baseTitle + 'Minha Conta';
         case 'request-lesson': return baseTitle + 'Pedir Aula';
@@ -195,6 +196,7 @@ const AppLayout: React.FC = () => {
       'categories': '/categories',
       'bookmark': '/bookmark',
       'discounts': '/discounts',
+      'affiliates': '/affiliates',
       'profile': '/profile',
       'request-lesson': '/request-lesson',
       'help': '/help'
@@ -316,6 +318,7 @@ const AppWithAuth: React.FC = () => {
         <Route path="/categories" element={<AppLayout />} />
         <Route path="/bookmark" element={<AppLayout />} />
         <Route path="/discounts" element={<AppLayout />} />
+        <Route path="/affiliates" element={<AppLayout />} />
         <Route path="/profile" element={<AppLayout />} />
         <Route path="/request-lesson" element={<AppLayout />} />
         <Route path="/help" element={<AppLayout />} />

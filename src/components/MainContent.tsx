@@ -8,6 +8,7 @@ import ProfilePage from './ProfilePage';
 import VideoPlayer from './VideoPlayer';
 import PromptViewer from './PromptViewer';
 import DiscountsPage from './DiscountsPage';
+import AffiliatesPage from './AffiliatesPage';
 
 interface MainContentProps {
   currentView: string;
@@ -38,6 +39,7 @@ const MainContent: React.FC<MainContentProps> = ({ currentView, onVideoSelect, o
       case 'streaming': return 'Live Streams';
       case 'bookmark': return '';
       case 'discounts': return '';
+      case 'affiliates': return '';
       case 'profile': return '';
       case 'request-lesson': return '';
       case 'help': return '';
@@ -71,6 +73,8 @@ const MainContent: React.FC<MainContentProps> = ({ currentView, onVideoSelect, o
           <CategoriesPage onVideoSelect={handleVideoSelect} />
         ) : currentView === 'discounts' ? (
           <DiscountsPage />
+        ) : currentView === 'affiliates' ? (
+          <AffiliatesPage />
         ) : currentView === 'profile' ? (
           <ProfilePage />
         ) : currentView === 'help' ? (
