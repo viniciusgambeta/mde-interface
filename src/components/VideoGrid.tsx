@@ -113,6 +113,12 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
         return;
       }
       
+      // Don't reload if we already have videos and user session is just refreshing
+      if (videos.length > 0 && user) {
+        console.log('📱 Videos already loaded and user authenticated, skipping reload');
+        return;
+      }
+      
       setLoading(true);
       
       try {
@@ -198,6 +204,12 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
       // Don't load if page is not visible
       if (document.hidden) {
         console.log('📱 Page not visible, skipping category videos load');
+        return;
+      }
+      
+      // Don't reload if we already have category videos
+      if (aiVideos.length > 0 || automationVideos.length > 0) {
+        console.log('📱 Category videos already loaded, skipping reload');
         return;
       }
       

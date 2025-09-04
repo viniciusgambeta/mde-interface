@@ -46,7 +46,8 @@ interface Assinatura {
 
 interface AuthContextType {
   user: User | null;
-  loading: boolean;
+  isLoadingInitial: boolean;
+  isUserSessionRefreshing: boolean;
   showOnboarding: boolean;
   completeOnboarding: () => Promise<void>;
   isAuthenticated: boolean;
@@ -230,11 +231,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const navigate = useNavigate();
   const location = useLocation();
   const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [authLoading, setAuthLoading] = useState(true);
+  const [isLoadingInitial, setIsLoadingInitial] = useState(true);
+  const [isUserSessionRefreshing, setIsUserSessionRefreshing] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [initialized, setInitialized] = useState(false);
-  const [isRefreshing, setIsRefreshing] = useState(false);
   
   // 🔒 Supressor de redirecionamentos durante operações críticas
   const suppressRedirectsRef = React.useRef(false);
@@ -270,14 +270,15 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const handleAuthStateChange = useCallback(async (event: AuthChangeEvent, session: Session | null) => {
     console.log('🔄 Handling auth state change:', { hasSession: !!session });
     
-    // Prevent multiple simultaneous auth state changes
-    if (isRefreshing && event !== 'INITIAL_SESSION') {
-      console.log('🚫 Auth state change already in progress, skipping');
-      return;
+    // Only set session refreshing for non-initial events
+    if (event !== 'INITIAL_SESSION') {
+      // Prevent multiple simultaneous session refreshes
+      if (isUserSessionRefreshing) {
+        console.log('🚫 Session refresh already in progress, skipping');
+        return;
+      }
+      setIsUserSessionRefreshing(true);
     }
-    
-    setIsRefreshing(true);
-    setAuthLoading(true);
 
     try {
       if (session?.user) {
@@ -304,7 +305,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         setShowOnboarding(false);
 
         // Só redireciona se suppressRedirects não estiver ativo E não estivermos carregando
-        if (!suppressRedirectsRef.current && !authLoading) {
+        if (!suppressRedirectsRef.current && !isLoadingInitial) {
           // Redirecionar para login se estiver em rota protegida
           const currentPath = location.pathname;
           const isCurrentlyProtected = isProtectedRoute(currentPath);
@@ -327,11 +328,13 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       setUser(null);
       setShowOnboarding(false);
     } finally {
-      setIsRefreshing(false);
-      setAuthLoading(false);
+      // Only clear initial loading on INITIAL_SESSION
+      if (event === 'INITIAL_SESSION') {
+        setIsLoadingInitial(false);
+      } else {
+        setIsUserSessionRefreshing(false);
+      }
     }
-  }, [location.pathname, navigate, isRefreshing]);
-
   // Initialize auth state
   useEffect(() => {
     const initializeAuth = async () => {
@@ -348,7 +351,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       } catch (error) {
         console.error('💥 Error initializing auth:', error);
       } finally {
-        setLoading(false);
         setInitialized(true);
         console.log('✅ Auth initialization complete');
       }
@@ -554,10 +556,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const value: AuthContextType = {
     user,
-    loading: authLoading,
+    isLoadingInitial,
+    isUserSessionRefreshing,
     showOnboarding,
     completeOnboarding,
-    isAuthenticated: !authLoading && !!user,
+    isAuthenticated: !isLoadingInitial && !!user,
     signIn,
     signUp,
     signOut,
