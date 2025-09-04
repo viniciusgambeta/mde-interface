@@ -190,7 +190,7 @@ const Header: React.FC<HeaderProps> = ({ sidebarCollapsed, onSidebarToggle, onVi
               <span>Reproduzindo em Picture-in-Picture: {currentVideo.title}</span>
             </div>
             <button
-              onClick={() => navigate('/registro')}
+              onClick={() => returnToVideo()}
               className="text-white hover:text-black transition-colors font-medium"
             >
               Voltar ao vídeo
