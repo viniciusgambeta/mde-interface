@@ -70,8 +70,17 @@ const Header: React.FC<HeaderProps> = ({ sidebarCollapsed, onSidebarToggle, onVi
 
       try {
         console.log('🔍 Searching for:', searchQuery);
-        // Get all videos and filter client-side for better search experience
-        const allVideos = await videoService.getVideos({ limit: 100 });
+        
+        // Add timeout to prevent hanging search requests
+        const timeoutPromise = new Promise((_, reject) => {
+          setTimeout(() => reject(new Error('Search timeout')), 10000);
+        });
+        
+        const allVideos = await Promise.race([
+          videoService.getVideos({ limit: 100 }),
+          timeoutPromise
+        ]) as Video[];
+        
         console.log('📊 Loaded videos for search:', allVideos.length);
         
         const query = searchQuery.toLowerCase();
@@ -102,13 +111,16 @@ const Header: React.FC<HeaderProps> = ({ sidebarCollapsed, onSidebarToggle, onVi
         setSearchResults(sorted.slice(0, 8)); // Limit to 8 results
       } catch (error) {
         console.error('Search error:', error);
+        if (error.message === 'Search timeout') {
+          console.warn('Search timed out, showing empty results');
+        }
         setSearchResults([]);
       } finally {
         setIsSearching(false);
       }
     };
 
-    const debounceTimer = setTimeout(searchVideos, 500);
+    const debounceTimer = setTimeout(searchVideos, 300);
     return () => clearTimeout(debounceTimer);
   }, [searchQuery]);
 

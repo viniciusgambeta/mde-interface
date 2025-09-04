@@ -108,31 +108,37 @@ const fetchUserData = async (authUser: SupabaseUser): Promise<User> => {
   console.log('🔍 Fetching user data for:', authUser.email);
   
   try {
-    const { data: assinatura, error } = await supabase
-      .from('assinaturas')
-      .select(`
-        "ID da assinatura",
-        "Nome do cliente",
-        "Email do cliente", 
-        "Telefone do cliente",
-        "Status da assinatura",
-        "Data de criação",
-        user_id,
-        avatar_usuario,
-        experiencia_ia,
-        objetivo_principal,
-        tipo_trabalho,
-        porte_negocio,
-        instagram,
-        linkedin,
-        bio,
-        phone_number,
-        is_premium,
-        onboarding_completed,
-        onboarding_data
-      `)
-      .eq('user_id', authUser.id)
-      .maybeSingle();
+    // Add timeout to prevent hanging queries
+    const { data: assinatura, error } = await Promise.race([
+      supabase
+        .from('assinaturas')
+        .select(`
+          "ID da assinatura",
+          "Nome do cliente",
+          "Email do cliente", 
+          "Telefone do cliente",
+          "Status da assinatura",
+          "Data de criação",
+          user_id,
+          avatar_usuario,
+          experiencia_ia,
+          objetivo_principal,
+          tipo_trabalho,
+          porte_negocio,
+          instagram,
+          linkedin,
+          bio,
+          phone_number,
+          is_premium,
+          onboarding_completed,
+          onboarding_data
+        `)
+        .eq('user_id', authUser.id)
+        .maybeSingle(),
+      new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Database query timeout')), 8000)
+      )
+    ]) as { data: any; error: any };
 
     if (error) {
       console.error('❌ Error fetching assinatura:', error.message);
@@ -195,7 +201,15 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     
     if (session?.user) {
       try {
-        const userData = await fetchUserData(session.user);
+        // Add timeout to prevent hanging
+        const timeoutPromise = new Promise((_, reject) => {
+          setTimeout(() => reject(new Error('User data fetch timeout')), 10000);
+        });
+        
+        const userData = await Promise.race([
+          fetchUserData(session.user),
+          timeoutPromise
+        ]) as User;
         setUser(userData);
         setShowOnboarding(!userData.onboardingCompleted);
         console.log('✅ User data set:', { 
@@ -211,6 +225,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         }
       } catch (error) {
         console.error('❌ Error handling auth state change:', error);
+        // Don't block navigation on user data fetch errors
         setUser(null);
         setShowOnboarding(false);
       }

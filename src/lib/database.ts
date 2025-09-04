@@ -225,6 +225,10 @@ export const videoService = {
   } = {}) {
     console.log('🎬 getVideos called with options:', options);
     
+    // Add AbortController for request cancellation
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+    
     let query = supabase
       .from('videos')
       .select(`
@@ -238,7 +242,8 @@ export const videoService = {
         )
       `)
       .eq('status', 'published')
-      .order('published_at', { ascending: false });
+      .order('published_at', { ascending: false })
+      .abortSignal(controller.signal);
 
     if (options.category) {
       query = query.eq('category.slug', options.category);
@@ -260,39 +265,56 @@ export const videoService = {
       query = query.range(options.offset, options.offset + (options.limit || 10) - 1);
     }
 
-    const { data, error } = await query;
+    try {
+      const { data, error } = await query;
+      clearTimeout(timeoutId);
 
-    console.log('📊 getVideos result:', { 
-      dataCount: data?.length || 0, 
-      error: error?.message || 'none' 
-    });
-    if (error) {
-      console.error('Error fetching videos:', error);
+      console.log('📊 getVideos result:', { 
+        dataCount: data?.length || 0, 
+        error: error?.message || 'none' 
+      });
+      
+      if (error) {
+        console.error('Error fetching videos:', error);
+        return [];
+      }
+
+      const videos = data as Video[];
+
+      // Transform ferramentas data structure
+      videos.forEach(video => {
+        if (video.ferramentas) {
+          video.ferramentas = (video.ferramentas as any[]).map((item: any) => item.ferramenta).filter(Boolean);
+        }
+      });
+
+      // If user is provided, check bookmark status for each video
+      if (options.userId && videos.length > 0) {
+        try {
+          const bookmarkStatuses = await this.getBookmarkStatuses(
+            videos.map(v => v.id), 
+            options.userId
+          );
+          
+          videos.forEach(video => {
+            video.is_bookmarked = bookmarkStatuses[video.id] || false;
+          });
+        } catch (bookmarkError) {
+          console.warn('Error loading bookmark statuses, continuing without them:', bookmarkError);
+          // Continue without bookmark statuses rather than failing completely
+        }
+      }
+
+      return videos;
+    } catch (error) {
+      clearTimeout(timeoutId);
+      if (error.name === 'AbortError') {
+        console.warn('Video query was aborted due to timeout');
+      } else {
+        console.error('Error in getVideos:', error);
+      }
       return [];
     }
-
-    const videos = data as Video[];
-
-    // Transform ferramentas data structure
-    videos.forEach(video => {
-      if (video.ferramentas) {
-        video.ferramentas = (video.ferramentas as any[]).map((item: any) => item.ferramenta).filter(Boolean);
-      }
-    });
-
-    // If user is provided, check bookmark status for each video
-    if (options.userId && videos.length > 0) {
-      const bookmarkStatuses = await this.getBookmarkStatuses(
-        videos.map(v => v.id), 
-        options.userId
-      );
-      
-      videos.forEach(video => {
-        video.is_bookmarked = bookmarkStatuses[video.id] || false;
-      });
-    }
-
-    return videos;
   },
 
   // Get bookmark statuses for multiple videos

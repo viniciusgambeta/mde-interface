@@ -32,6 +32,20 @@ const VideoDetailPage: React.FC = () => {
       tipo: selectedVideo.tipo
     });
     
+    // Prevent navigation if already on the same video page
+    const currentPath = location.pathname;
+    let targetPath = '/video/' + selectedVideo.slug;
+    if (selectedVideo.tipo === 'prompt') {
+      targetPath = '/prompt/' + selectedVideo.slug;
+    } else if (selectedVideo.tipo === 'live') {
+      targetPath = '/live/' + selectedVideo.slug;
+    }
+    
+    if (currentPath === targetPath) {
+      console.log('🔄 Already on target page, skipping navigation');
+      return;
+    }
+    
     // Navigate to the appropriate URL based on content type
     let urlPrefix = '/video/';
     if (selectedVideo.tipo === 'prompt') {

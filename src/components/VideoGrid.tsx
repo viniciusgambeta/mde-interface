@@ -108,28 +108,45 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
         
         console.log('Loading videos for view:', currentView);
         
+        // Add timeout to prevent hanging requests
+        const timeoutPromise = new Promise((_, reject) => {
+          setTimeout(() => reject(new Error('Video loading timeout')), 15000);
+        });
+        
         if (currentView === 'discover') {
-          videoData = await videoService.getVideos({ 
-            limit: 20, 
-            userId: user?.id 
-          });
+          videoData = await Promise.race([
+            videoService.getVideos({ 
+              limit: 20, 
+              userId: user?.id 
+            }),
+            timeoutPromise
+          ]) as Video[];
         } else if (currentView === 'trending') {
-          videoData = await videoService.getVideos({ 
-            limit: 50, 
-            userId: user?.id 
-          });
+          videoData = await Promise.race([
+            videoService.getVideos({ 
+              limit: 50, 
+              userId: user?.id 
+            }),
+            timeoutPromise
+          ]) as Video[];
           // Sort by view count for trending
           videoData.sort((a, b) => b.view_count - a.view_count);
         } else if (currentView === 'bookmark') {
           // Load bookmarked videos for the user
           if (user) {
-            videoData = await videoService.getBookmarkedVideos(user.id);
+            videoData = await Promise.race([
+              videoService.getBookmarkedVideos(user.id),
+              timeoutPromise
+            ]) as Video[];
           } else {
             videoData = [];
           }
         } else {
           // For specific categories
-          videoData = await videoService.getVideosByCategory(currentView, 12, user?.id);
+          videoData = await Promise.race([
+            videoService.getVideosByCategory(currentView, 12, user?.id),
+            timeoutPromise
+          ]) as Video[];
         }
         
         console.log('Loaded videos:', videoData.length, 'videos');
@@ -147,6 +164,9 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
         setBookmarkStates(initialBookmarkStates);
       } catch (error) {
         console.error('Error loading videos:', error);
+        if (error.message === 'Video loading timeout') {
+          console.warn('Video loading timed out, setting empty state');
+        }
         // Set empty arrays on error to prevent infinite loading
         setVideos([]);
         setFilteredVideos([]);
