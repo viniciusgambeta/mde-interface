@@ -138,64 +138,80 @@ const fetchUserData = async (authUser: SupabaseUser): Promise<User> => {
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const navigate = useNavigate();
-  const location = useLocation();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [showOnboarding, setShowOnboarding] = useState(false);
-
-  // Simple auth state handler - no dependencies to prevent recreations
-  const handleAuthStateChange = useCallback(async (event: AuthChangeEvent, session: Session | null) => {
-    console.log('Auth state change:', event, 'hasSession:', !!session);
-
-    try {
-      if (session?.user) {
-        const userData = await fetchUserData(session.user);
-        setUser(userData);
-        setShowOnboarding(!userData.onboardingCompleted);
-      } else {
-        setUser(null);
-        setShowOnboarding(false);
-        
-        // Only redirect on actual logout, not initial load
-        if (event === 'SIGNED_OUT') {
-          window.location.href = '/';
-        }
-      }
-    } catch (error) {
-      console.error('Error in auth state change:', error);
-      setUser(null);
-      setShowOnboarding(false);
-    } finally {
-      // Only set loading false after initial session check
-      if (event === 'INITIAL_SESSION') {
-        setLoading(false);
-      }
-    }
-  }, []); // No dependencies to prevent constant recreations
 
   // Initialize auth and setup listener - run once only
   useEffect(() => {
     const initializeAuth = async () => {
       try {
+        // Setup auth listener first
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event: AuthChangeEvent, session: Session | null) => {
+          console.log('Auth state change:', event, 'hasSession:', !!session);
+
+          try {
+            if (session?.user) {
+              const userData = await fetchUserData(session.user);
+              setUser(userData);
+              setShowOnboarding(!userData.onboardingCompleted);
+            } else {
+              setUser(null);
+              setShowOnboarding(false);
+              
+              // Only redirect on actual logout, not initial load
+              if (event === 'SIGNED_OUT') {
+                navigate('/');
+              }
+            }
+          } catch (error) {
+            console.error('Error in auth state change:', error);
+            setUser(null);
+            setShowOnboarding(false);
+          } finally {
+            // Only set loading false after initial session check
+            if (event === 'INITIAL_SESSION') {
+              setLoading(false);
+            }
+          }
+        });
+        
+        // Get initial session
         const { data: { session }, error } = await supabase.auth.getSession();
         if (error) {
           console.error('Error getting initial session:', error.message);
         }
-        await handleAuthStateChange('INITIAL_SESSION', session);
+        
+        // Handle initial session manually to ensure loading is set to false
+        if (session?.user) {
+          const userData = await fetchUserData(session.user);
+          setUser(userData);
+          setShowOnboarding(!userData.onboardingCompleted);
+        } else {
+          setUser(null);
+          setShowOnboarding(false);
+        }
+        setLoading(false);
+        
+        // Return cleanup function
+        return () => subscription.unsubscribe();
       } catch (error) {
         console.error('Error initializing auth:', error);
         setLoading(false);
+        return () => {};
       }
     };
 
-    // Setup auth listener immediately
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(handleAuthStateChange);
+    // Initialize and get cleanup function
+    let cleanup: (() => void) | undefined;
+    initializeAuth().then((cleanupFn) => {
+      cleanup = cleanupFn;
+    });
     
-    // Initialize auth state
-    initializeAuth();
-    
-    // Cleanup listener on unmount
-    return () => subscription.unsubscribe();
+    // Cleanup on unmount
+    return () => {
+      if (cleanup) cleanup();
+    };
   }, []); // No dependencies - runs only once
 
   const signIn = async (email: string, password: string): Promise<{ user: User | null; error: string | null }> => {
