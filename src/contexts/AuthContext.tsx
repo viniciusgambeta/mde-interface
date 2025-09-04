@@ -348,10 +348,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
         if (assinaturaError) {
           console.error('❌ Error creating assinatura:', assinaturaError.message);
-        } else {
-          console.log('✅ Assinatura record created successfully');
         }
-
         // 🚪 Força logout imediato para evitar auto-login
         console.log('🚪 Forçando logout após signup para mostrar tela de sucesso');
         await supabase.auth.signOut();
