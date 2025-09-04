@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, Heart, Bookmark, ThumbsUp, Users, Send, Download, ExternalLink, FileText, MessageCircle, Phone, Instagram, BarChart3, Clock, ChevronDown } from 'lucide-react';
+import { ArrowLeft, Heart, Bookmark, ThumbsUp, Users, Send, Download, ExternalLink, FileText, MessageCircle, Phone, Instagram, BarChart3, Clock, ChevronDown, Linkedin } from 'lucide-react';
 import { videoService, type Video } from '../lib/database';
 import { useAuth } from '../contexts/AuthContext';
 import CustomVideoPlayer from './CustomVideoPlayer';
 import CommentsSection from './CommentsSection';
 
 // Component for suggested videos
-const SuggestedVideos: React.FC<{ currentVideo: Video }> = ({ currentVideo }) => {
+const SuggestedVideos: React.FC<{ currentVideo: Video; onVideoSelect?: (video: Video) => void }> = ({ currentVideo, onVideoSelect }) => {
   const { user } = useAuth();
   const [suggestedVideos, setSuggestedVideos] = useState<Video[]>([]);
   const [loading, setLoading] = useState(true);
@@ -20,24 +20,78 @@ const SuggestedVideos: React.FC<{ currentVideo: Video }> = ({ currentVideo }) =>
     return `${mins}min`;
   };
 
+  const formatViews = (count: number) => {
+    if (count >= 1000000) {
+      return `${(count / 1000000).toFixed(1)}M`;
+    } else if (count >= 1000) {
+      return `${(count / 1000).toFixed(1)}K`;
+    }
+    return count.toString();
+  };
+
   useEffect(() => {
     const loadSuggestedVideos = async () => {
-      if (!currentVideo.category?.slug) {
-        setLoading(false);
-        return;
-      }
-
       try {
-        // Get videos from the same category, excluding the current video
-        const videos = await videoService.getVideosByCategory(
-          currentVideo.category.slug, 
-          6, 
-          user?.id
+        console.log('Loading suggested videos for:', currentVideo.title);
+        
+        // Get all videos to filter from
+        const allVideos = await videoService.getVideos({ 
+          limit: 100, 
+          userId: user?.id 
+        });
+        
+        // Filter related videos based on multiple criteria
+        let relatedVideos = allVideos.filter(v => v.id !== currentVideo.id);
+        
+        // Priority 1: Same category
+        const sameCategoryVideos = relatedVideos.filter(v => 
+          v.category?.id === currentVideo.category?.id
         );
         
-        // Filter out the current video
-        const filtered = videos.filter(v => v.id !== currentVideo.id);
-        setSuggestedVideos(filtered.slice(0, 5));
+        // Priority 2: Same tools/ferramentas
+        const currentTools = currentVideo.ferramentas?.map(f => f.id) || [];
+        const sameToolsVideos = relatedVideos.filter(v => {
+          const videoTools = v.ferramentas?.map(f => f.id) || [];
+          return currentTools.some(toolId => videoTools.includes(toolId));
+        });
+        
+        // Priority 3: Same instructor
+        const sameInstructorVideos = relatedVideos.filter(v => 
+          v.instructor?.id === currentVideo.instructor?.id
+        );
+        
+        // Priority 4: Same difficulty level
+        const sameDifficultyVideos = relatedVideos.filter(v => 
+          v.difficulty_level?.id === currentVideo.difficulty_level?.id
+        );
+        
+        // Combine and deduplicate, maintaining priority order
+        const combinedVideos = [
+          ...sameCategoryVideos,
+          ...sameToolsVideos.filter(v => !sameCategoryVideos.find(cv => cv.id === v.id)),
+          ...sameInstructorVideos.filter(v => 
+            !sameCategoryVideos.find(cv => cv.id === v.id) && 
+            !sameToolsVideos.find(tv => tv.id === v.id)
+          ),
+          ...sameDifficultyVideos.filter(v => 
+            !sameCategoryVideos.find(cv => cv.id === v.id) && 
+            !sameToolsVideos.find(tv => tv.id === v.id) &&
+            !sameInstructorVideos.find(iv => iv.id === v.id)
+          )
+        ];
+        
+        // Take top 10 suggestions
+        const suggestions = combinedVideos.slice(0, 10);
+        
+        console.log('Found suggestions:', {
+          total: suggestions.length,
+          sameCategory: sameCategoryVideos.length,
+          sameTools: sameToolsVideos.length,
+          sameInstructor: sameInstructorVideos.length,
+          sameDifficulty: sameDifficultyVideos.length
+        });
+        
+        setSuggestedVideos(suggestions);
       } catch (error) {
         console.error('Error loading suggested videos:', error);
       } finally {
@@ -75,39 +129,64 @@ const SuggestedVideos: React.FC<{ currentVideo: Video }> = ({ currentVideo }) =>
   return (
     <div className="space-y-4">
       {suggestedVideos.map((suggestion, index) => (
-        <div key={suggestion.id} className="flex space-x-4 cursor-pointer group p-2 rounded-lg hover:bg-slate-700/20 transition-colors">
+        <div 
+          key={suggestion.id} 
+          className="flex space-x-4 cursor-pointer group p-2 rounded-lg hover:bg-slate-700/20 transition-colors"
+          onClick={() => onVideoSelect?.(suggestion)}
+        >
           <div className="relative flex-shrink-0">
-            <div className="relative">
-              <img
-                src={currentVideo.instructor?.avatar_url || '/avatar1.png'}
-                alt={currentVideo.instructor?.name || 'Instrutor'}
-                className="w-16 h-16 rounded-xl object-cover"
-              />
-              <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-[#ff7551] rounded-full flex items-center justify-center border-2 border-[#1f1d2b]">
-                <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                </svg>
+            <img
+              src={suggestion.thumbnail_url || 'https://images.pexels.com/photos/11035380/pexels-photo-11035380.jpeg?auto=compress&cs=tinysrgb&w=80&h=60&fit=crop'}
+              alt={suggestion.title}
+              className="w-20 h-15 rounded object-cover"
+            />
+            {/* Content Type Badge */}
+            {suggestion.tipo === 'prompt' && (
+              <div className="absolute top-1 right-1 bg-blue-500 text-white text-xs px-1.5 py-0.5 rounded font-medium">
+                Prompt
               </div>
-            </div>
+            )}
+            {suggestion.tipo === 'live' && (
+              <div className="absolute top-1 right-1 bg-red-500 text-white text-xs px-1.5 py-0.5 rounded font-medium">
+                Live
+              </div>
+            )}
           </div>
           <div className="flex-1 min-w-0">
-            <h5 className="text-white text-sm font-medium line-clamp-2 group-hover:text-[#ff7551] transition-colors">
+            <h5 className="text-white text-sm font-medium line-clamp-2 group-hover:text-[#ff7551] transition-colors mb-1">
               {suggestion.title}
             </h5>
-            <div className="flex items-center space-x-2 text-xs text-slate-400 mt-1">
+            <div className="flex items-center space-x-2 text-xs text-slate-400">
+              {suggestion.instructor && (
+                <span>{suggestion.instructor.name}</span>
+              )}
+              {suggestion.instructor && suggestion.category && (
+                <span>•</span>
+              )}
               {suggestion.category && (
                 <span>{suggestion.category.name}</span>
               )}
-              {suggestion.category && (
-                <span>•</span>
-              )}
+            </div>
+            <div className="flex items-center space-x-2 text-xs text-slate-500 mt-1">
+              <Clock className="w-3 h-3" />
               <span>{formatDuration(suggestion.duration_minutes)}</span>
+              <span>•</span>
+              <span>{formatViews(suggestion.view_count)} views</span>
             </div>
           </div>
         </div>
       ))}
     </div>
   );
+};
+
+const formatViews = (count: number) => {
+  if (count >= 1000000) {
+    return `${(count / 1000000).toFixed(1)}M`;
+  } else if (count >= 1000) {
+    return `${(count / 1000).toFixed(1)}K`;
+  }
+  return count.toString();
 };
 
 interface VideoPlayerProps {
@@ -364,261 +443,14 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video, onBack, onVideoSelect 
               <div>
                 <div className="flex items-center space-x-1">
                   <span className="text-white font-semibold text-xl" style={{ marginBottom: '0px', marginLeft: '0px', paddingLeft: '0px' }}>{currentVideo.instructor?.name || 'Instrutor'}</span>
-                </div>
-                <div className="flex items-center mt-0 pl-[3px]">
-                  {currentVideo.instructor?.social_instagram && (
+                  {currentVideo.instructor?.social_linkedin && (
                     <a 
-                      href={`https://instagram.com/${currentVideo.instructor.social_instagram}`} 
+                      href={currentVideo.instructor.social_linkedin} 
                       target="_blank" 
                       rel="noopener noreferrer"
-                      className="text-[#ff7551] hover:text-[#ff7551]/80 text-xs transition-colors"
+                      className="text-slate-400 hover:text-blue-400 transition-colors ml-2"
                     >
-                      @{currentVideo.instructor.social_instagram}
+                      <Linkedin className="w-4 h-4" />
                     </a>
                   )}
-                </div>
-              </div>
-            </div>
-
-            <div className="flex items-center space-x-3">
-              {/* Video Info */}
-              <div className="flex items-center space-x-4 text-slate-300 text-xs mr-4">
-                {currentVideo.difficulty_level && (
-                  <div className="flex items-center space-x-1">
-                    <BarChart3 className="w-4 h-4 text-slate-400" />
-                    <span>{currentVideo.difficulty_level.name}</span>
-                  </div>
-                )}
-                <div className="flex items-center space-x-1">
-                  <Clock className="w-4 h-4 text-slate-400" />
-                  <span>{formatDuration(currentVideo.duration_minutes)}</span>
-                </div>
-              </div>
-              
-              {/* Version Selector - Always show */}
-
-              {/* Like Button */}
-              <button
-                onClick={handleToggleLike}
-                disabled={!user || likeLoading}
-                className={`group flex items-center justify-center hover:justify-start rounded-lg transition-all duration-300 overflow-hidden cursor-pointer disabled:cursor-not-allowed mr-1 hover:mr-0 ${
-                  liked ? 'bg-[#ff7551] text-white shadow-lg' : 'bg-slate-700 text-slate-300 hover:bg-slate-600 disabled:opacity-50'
-                } ${likeLoading ? 'animate-pulse' : ''} w-12 h-12 hover:w-auto hover:pl-4 hover:pr-4`}
-              >
-                <ThumbsUp className="w-5 h-5 flex-shrink-0 group-hover:ml-0 ml-0.5" />
-                <span className="ml-2 text-sm font-medium whitespace-nowrap hidden group-hover:block">
-                  {liked ? 'Curtido' : 'Curtir'}
-                </span>
-              </button>
-              
-              {/* Save Button */}
-              <button 
-                onClick={handleToggleSave}
-                disabled={!user || bookmarkLoading}
-                className={`group flex items-center justify-center hover:justify-start rounded-lg transition-all duration-300 overflow-hidden cursor-pointer disabled:cursor-not-allowed mr-1 hover:mr-0 ${
-                  saved ? 'bg-[#ff7551] text-white shadow-lg' : 'bg-slate-700 text-slate-300 hover:bg-slate-600 disabled:opacity-50'
-                } ${bookmarkLoading ? 'animate-pulse' : ''} w-12 h-12 hover:w-auto hover:pl-4 hover:pr-4`}
-              >
-                <Bookmark className="w-5 h-5 flex-shrink-0 group-hover:ml-0 mt-0 ml-0" fill="none" stroke="currentColor" />
-                <span className="ml-2 text-sm font-medium whitespace-nowrap hidden group-hover:block">
-                  {saved ? 'Salvo' : 'Salvar'}
-                </span>
-              </button>
-            </div>
-          </div>
-
-          {/* Description */}
-          <div className="bg-slate-700/30 rounded-lg p-8">
-            <div className="text-slate-300 text-sm leading-relaxed">
-              {currentVideo.summary && (
-                <p className="mb-4 font-medium text-white">{currentVideo.summary}</p>
-              )}
-              {currentVideo.description && (
-                <div className="mb-4">
-                  {currentVideo.description.split('\n').map((paragraph, index) => (
-                    <p key={index} className="mb-2">{paragraph}</p>
-                  ))}
-                </div>
-              )}
-              
-              {/* Questions Subtitle */}
-            </div>
-          </div>
-
-          {/* Comments Section */}
-          <div className="mt-12">
-            <CommentsSection 
-              videoId={currentVideo.id} 
-              videoTitle={currentVideo.title} 
-            />
-          </div>
-        </div>
-      </div>
-
-
-      {/* Materials Section */}
-      <div className="w-full lg:w-96 border-l border-slate-700/30 flex flex-col">
-        {/* Tab Header */}
-        <div className="p-6 border-b border-slate-700/30">
-          <div className="flex space-x-6">
-            <button
-              onClick={() => setActiveTab('materials')}
-              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                activeTab === 'materials'
-                  ? 'bg-[#ff7551] text-white'
-                  : 'text-slate-400 hover:text-white'
-              }`}
-            >
-              Links
-            </button>
-            <button
-              onClick={() => setActiveTab('suggestions')}
-              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                activeTab === 'suggestions'
-                  ? 'bg-[#ff7551] text-white'
-                  : 'text-slate-400 hover:text-white'
-              }`}
-            >
-              Sugestões
-            </button>
-          </div>
-        </div>
-
-        {/* Tab Content */}
-        <div className="flex-1 overflow-y-auto p-6">
-          {activeTab === 'materials' ? (
-            <div className="space-y-6">
-             <h3 className="text-white font-semibold mb-6">Materiais e downloads</h3>
-              
-              {/* Downloads */}
-              {currentVideo.materials && currentVideo.materials.length > 0 ? (
-                <div className="space-y-4">
-                  {currentVideo.materials
-                    .sort((a, b) => a.order_index - b.order_index)
-                    .map((material) => {
-                      return (
-                        <a
-                          key={material.id}
-                          href={material.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center space-x-3 px-3 py-4 bg-slate-700/30 rounded-lg hover:bg-slate-600/30 transition-colors cursor-pointer"
-                        >
-                          <Download className="w-5 h-5 text-slate-400" />
-                          <div className="flex-1">
-                            <div className="text-white font-medium text-sm">{material.title}</div>
-                            {material.description && (
-                              <div className="text-slate-400 text-xs mt-1">{material.description}</div>
-                            )}
-                            {material.file_size_mb && (
-                              <div className="text-slate-500 text-xs mt-1">{material.file_size_mb}MB</div>
-                            )}
-                          </div>
-                        </a>
-                      );
-                    })}
-                </div>
-              ) : (
-                <div className="text-center py-8">
-                  <FileText className="w-12 h-12 text-slate-600 mx-auto mb-4" />
-                 <p className="text-slate-400">Nenhum link disponível para este vídeo.</p>
-                </div>
-              )}
-             
-             {/* Ferramentas Section - Only show if there are tools */}
-             {currentVideo.ferramentas && currentVideo.ferramentas.length > 0 && (
-               <div className="mt-12">
-                 <h3 className="text-white font-semibold mb-6">Ferramentas usadas</h3>
-                 
-                 <div className="flex flex-wrap gap-3">
-                   {currentVideo.ferramentas.map((ferramenta) => {
-                     return (
-                       <a
-                         key={ferramenta.id}
-                         href={ferramenta.link}
-                         target="_blank"
-                         rel="noopener noreferrer"
-                         className="block hover:scale-110 transition-transform duration-200"
-                         title={ferramenta.nome}
-                       >
-                         <img 
-                           src={ferramenta.icone} 
-                           alt={ferramenta.nome}
-                           className="w-10 h-10 object-contain rounded"
-                           onError={(e) => {
-                             // Fallback to ExternalLink icon if image fails to load
-                             const target = e.target as HTMLImageElement;
-                             target.style.display = 'none';
-                             const fallbackIcon = target.nextElementSibling as HTMLElement;
-                             if (fallbackIcon) fallbackIcon.style.display = 'block';
-                           }}
-                         />
-                         <ExternalLink className="w-10 h-10 text-slate-400 hidden rounded" />
-                       </a>
-                     );
-                   })}
-                 </div>
-               </div>
-             )}
-             
-             {/* Version Selector - Only show if there are versions */}
-             {versionsToShow.length > 0 && (
-               <div className="mt-12">
-                 <h3 className="text-white font-semibold mb-4">Outras versões</h3>
-                 
-                 <div className="space-y-2">
-                   {versionsToShow.map((version) => (
-                     <button
-                       key={version.id}
-                       onClick={() => handleVersionChange(version)}
-                       className={`w-full text-left p-3 rounded-lg transition-colors ${
-                         currentVideo.id === version.id
-                           ? 'bg-[#ff7551] text-white'
-                           : 'bg-slate-700/30 text-slate-300 hover:bg-slate-600/30'
-                       }`}
-                     >
-                       <div className="flex items-center space-x-3">
-                         <img
-                           src={version.thumbnail_url || 'https://images.pexels.com/photos/11035380/pexels-photo-11035380.jpeg?auto=compress&cs=tinysrgb&w=80&h=60&fit=crop'}
-                           alt={version.title}
-                           className="w-20 h-15 rounded object-cover flex-shrink-0"
-                         />
-                         <div className="flex-1 min-w-0">
-                           <div className="font-medium text-sm">
-                             {(version as any).version_name || version.title}
-                             {(version as any).is_main_version && (
-                               <span className="ml-2 text-xs bg-slate-600/50 text-slate-300 px-2 py-0.5 rounded">
-                                 Original
-                               </span>
-                             )}
-                           </div>
-                           <div className="text-xs text-slate-400 mt-1">
-                             {formatDuration(version.duration_minutes)}
-                           </div>
-                         </div>
-                         <div className="flex-shrink-0">
-                           <svg className="w-5 h-5 text-[#ff7551]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                           </svg>
-                         </div>
-                       </div>
-                     </button>
-                   ))}
-                 </div>
-               </div>
-             )}
-            </div>
-          ) : (
-            <div className="space-y-6" key={currentVideo.id}>
-              <h3 className="text-white font-semibold mb-6">Sugestões de Aulas</h3>
-              
-              <SuggestedVideos currentVideo={currentVideo} />
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-};
-
-export default VideoPlayer;
+                
