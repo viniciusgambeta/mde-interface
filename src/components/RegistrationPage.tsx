@@ -266,7 +266,7 @@ const RegistrationPage: React.FC = () => {
   const handleGoToLogin = async () => {
     console.log('🚪 Forcing logout before login redirect...');
     await supabase.auth.signOut();
-    navigate('/');
+    navigate('/?login=true');
   };
 
   const canProceed = () => {
