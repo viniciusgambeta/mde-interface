@@ -21,6 +21,7 @@ interface AssinaturaData {
   'Email do cliente': string;
   'Status da assinatura': string;
   'Plano': string;
+  'cadastro_mde': boolean;
 }
 
 interface FormData {
@@ -52,6 +53,7 @@ const RegistrationPage: React.FC = () => {
   const [subscriptionData, setSubscriptionData] = useState<AssinaturaData | null>(null);
   const [showSuccessScreen, setShowSuccessScreen] = useState(false);
   const [isCheckingEmail, setIsCheckingEmail] = useState(false);
+  const [hasExistingAccount, setHasExistingAccount] = useState(false);
 
   const steps = ['email', 'details', 'password'];
 
@@ -86,7 +88,8 @@ const RegistrationPage: React.FC = () => {
             "Nome do cliente", 
             "Email do cliente",
             "Status da assinatura",
-            "Plano"
+            "Plano",
+            cadastro_mde
           `)
           .eq('Email do cliente', formData.email.toLowerCase())
           .maybeSingle();
@@ -105,6 +108,7 @@ const RegistrationPage: React.FC = () => {
           console.log('✅ Subscription found:', data);
           setEmailValid(true);
           setSubscriptionData(data);
+          setHasExistingAccount(data.cadastro_mde || false);
           // Auto-fill name if available
           if (data["Nome do cliente"] && !formData.name) {
             setFormData(prev => ({ ...prev, name: data["Nome do cliente"] }));
@@ -143,6 +147,10 @@ const RegistrationPage: React.FC = () => {
       }
       if (!emailValid) {
         setError('Email não possui assinatura ativa ou não foi encontrado');
+        return;
+      }
+      if (hasExistingAccount) {
+        // Don't proceed if user already has an account
         return;
       }
     } else if (currentStep === 1) {
@@ -272,7 +280,7 @@ const RegistrationPage: React.FC = () => {
   const canProceed = () => {
     switch (currentStep) {
       case 0: // Email step
-        return emailValid === true && !isCheckingEmail;
+        return emailValid === true && !isCheckingEmail && !hasExistingAccount;
       case 1: // Details step
         return formData.name.trim().length > 0;
       case 2: // Password step
@@ -375,7 +383,28 @@ const RegistrationPage: React.FC = () => {
                 </div>
               )}
               
-              {emailValid === true && subscriptionData && !isCheckingEmail && (
+              {/* Existing Account Message */}
+              {hasExistingAccount && emailValid === true && subscriptionData && !isCheckingEmail && (
+                <div className="mt-3 p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg">
+                  <div className="flex items-center space-x-2 mb-3">
+                    <AlertCircle className="w-4 h-4 text-blue-400" />
+                    <p className="text-blue-400 text-sm font-medium">
+                      Você já possui uma conta cadastrada!
+                    </p>
+                  </div>
+                  <p className="text-blue-300 text-xs mb-4">
+                    Este email já tem uma senha cadastrada na plataforma. Faça login para acessar sua conta.
+                  </p>
+                  <button
+                    onClick={handleGoToLogin}
+                    className="w-full bg-blue-500 hover:bg-blue-600 text-white font-medium py-3 rounded-lg transition-colors"
+                  >
+                    Ir para Login
+                  </button>
+                </div>
+              )}
+              
+              {emailValid === true && subscriptionData && !isCheckingEmail && !hasExistingAccount && (
                 <div className="mt-3 p-3 bg-green-500/10 border border-green-500/20 rounded-lg">
                   <div className="flex items-center space-x-2">
                     <CheckCircle className="w-4 h-4 text-green-400" />
@@ -536,31 +565,13 @@ const RegistrationPage: React.FC = () => {
       <div className="bg-[#1f1d2b] border border-slate-700/30 rounded-xl w-full max-w-md">
         {/* Header */}
         <div className="p-6 border-b border-slate-700/30">
-          <div className="flex items-center mb-4">
-            <button
-              onClick={() => navigate('/')}
-              className="text-slate-400 hover:text-white transition-colors mr-3"
-            >
-              <ArrowLeft className="w-5 h-5" />
-            </button>
-            <h1 className="text-2xl font-bold text-white">Criar Conta</h1>
+          <div className="text-center">
+            <img
+              src="/logo1_branco.png"
+              alt="Me dá um Exemplo"
+              className="h-16 w-auto mx-auto"
+            />
           </div>
-          
-          {/* Progress Indicator */}
-          <div className="flex items-center justify-center space-x-2 mb-4">
-            {steps.map((_, index) => (
-              <div
-                key={index}
-                className={`w-3 h-3 rounded-full transition-colors ${
-                  index <= currentStep ? 'bg-[#ff7551]' : 'bg-slate-600'
-                }`}
-              />
-            ))}
-          </div>
-          
-          <p className="text-slate-400 text-center">
-            Etapa {currentStep + 1} de {steps.length}
-          </p>
         </div>
 
         {/* Form Content */}
@@ -580,7 +591,7 @@ const RegistrationPage: React.FC = () => {
         </div>
 
         {/* Footer */}
-        <div className="p-6 border-t border-slate-700/30">
+        <div className="p-6">
           <div className="flex justify-between">
             {/* Back Button */}
             {currentStep > 0 ? (
@@ -600,8 +611,8 @@ const RegistrationPage: React.FC = () => {
             {currentStep < steps.length - 1 ? (
               <button
                 onClick={handleNext}
-                disabled={!canProceed() || isSubmitting || isCheckingEmail}
-                className="flex items-center space-x-2 px-6 py-3 bg-[#ff7551] hover:bg-[#ff7551]/80 disabled:bg-[#ff7551]/50 text-white font-medium rounded-lg transition-colors disabled:cursor-not-allowed"
+                disabled={!canProceed() || isSubmitting || isCheckingEmail || hasExistingAccount}
+                className="w-full flex items-center justify-center space-x-2 py-4 bg-[#ff7551] hover:bg-[#ff7551]/80 disabled:bg-[#ff7551]/50 text-white font-medium rounded-lg transition-colors disabled:cursor-not-allowed text-lg"
               >
                 <span>Continuar</span>
                 <ArrowRight className="w-4 h-4" />
@@ -609,8 +620,8 @@ const RegistrationPage: React.FC = () => {
             ) : (
               <button
                 onClick={handleSubmit}
-                disabled={!canProceed() || isSubmitting}
-                className="flex items-center space-x-2 px-6 py-3 bg-[#ff7551] hover:bg-[#ff7551]/80 disabled:bg-[#ff7551]/50 text-white font-medium rounded-lg transition-colors disabled:cursor-not-allowed"
+                disabled={!canProceed() || isSubmitting || hasExistingAccount}
+                className="w-full flex items-center justify-center space-x-2 py-4 bg-[#ff7551] hover:bg-[#ff7551]/80 disabled:bg-[#ff7551]/50 text-white font-medium rounded-lg transition-colors disabled:cursor-not-allowed text-lg"
               >
                 {isSubmitting ? (
                   <>
