@@ -1,16 +1,8 @@
 import React, { useState } from 'react';
 import {
-  X,
-  Eye,
-  EyeOff,
-  Mail,
-  Lock,
-  User,
-  Loader2,
-  CheckCircle
+  X, Eye, EyeOff, Mail, Lock, User, Loader2, CheckCircle
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
-import { supabase } from '../../lib/supabase';
 
 interface RegisterModalProps {
   isOpen: boolean;
@@ -18,11 +10,7 @@ interface RegisterModalProps {
   onSwitchToLogin: () => void;
 }
 
-const RegisterModal: React.FC<RegisterModalProps> = ({
-  isOpen,
-  onClose,
-  onSwitchToLogin
-}) => {
+const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose, onSwitchToLogin }) => {
   // form state
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -36,7 +24,6 @@ const RegisterModal: React.FC<RegisterModalProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
 
-  // auth
   const { signUp } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -44,7 +31,6 @@ const RegisterModal: React.FC<RegisterModalProps> = ({
     setError('');
     setIsSubmitting(true);
 
-    // validações básicas
     if (!name || !email || !password || !confirmPassword) {
       setError('Por favor, preencha todos os campos');
       setIsSubmitting(false);
@@ -61,70 +47,22 @@ const RegisterModal: React.FC<RegisterModalProps> = ({
       return;
     }
 
-    try {
-      // signup
-      const result = await signUp(email, password, name);
-
-      if (!result.error) {
-        // ⚠️ desloga imediatamente após signup para evitar redirects automáticos do AuthProvider
-        try {
-          await supabase.auth.signOut();
-        } catch (e) {
-          console.warn('Falha ao deslogar pós-signup (seguindo mesmo assim):', e);
-        }
-
-        // mostra tela de sucesso
-        setShowSuccess(true);
-
-        // limpa campos
-        setName('');
-        setEmail('');
-        setPassword('');
-        setConfirmPassword('');
-      } else {
-        setError(result.error || 'Erro ao criar conta. Tente novamente.');
-      }
-    } catch (err) {
-      console.error('Erro no cadastro:', err);
-      setError('Erro ao criar conta. Tente novamente.');
-    } finally {
-      setIsSubmitting(false);
+    const result = await signUp(email, password, name);
+    if (result.error) {
+      setError(result.error || 'Erro ao criar conta. Tente novamente.');
+    } else {
+      setShowSuccess(true);
+      setName(''); setEmail(''); setPassword(''); setConfirmPassword('');
     }
+
+    setIsSubmitting(false);
   };
 
-  const handleGoToLogin = async () => {
-    // estado limpinho e troca pro login
+  const handleGoToLogin = () => {
     setShowSuccess(false);
     setError('');
     onSwitchToLogin();
   };
-
-  // Tela de sucesso embutida
-  const SuccessScreen = () => (
-    <div className="text-center space-y-6 p-6">
-      <div className="w-20 h-20 bg-green-500/20 rounded-full flex items-center justify-center mx-auto">
-        <CheckCircle className="w-10 h-10 text-green-400" />
-      </div>
-
-      <div>
-        <h2 className="text-2xl font-bold text-white mb-2">Conta criada!</h2>
-        <p className="text-slate-400">
-          Sua conta foi criada com sucesso. Clique abaixo para fazer login.
-        </p>
-      </div>
-
-      <button
-        onClick={handleGoToLogin}
-        className="w-full bg-[#ff7551] hover:bg-[#ff7551]/80 text-white font-medium py-4 rounded-lg transition-colors"
-      >
-        Fazer login
-      </button>
-
-      <p className="text-slate-400 text-sm">
-        Use o e-mail e a senha que você acabou de criar.
-      </p>
-    </div>
-  );
 
   if (!isOpen) return null;
 
@@ -136,17 +74,29 @@ const RegisterModal: React.FC<RegisterModalProps> = ({
           <h2 className="text-xl font-semibold text-white">
             {showSuccess ? 'Registro concluído' : 'Criar Conta'}
           </h2>
-          <button
-            onClick={onClose}
-            className="p-2 rounded-lg hover:bg-slate-700/30 transition-colors"
-          >
+          <button onClick={onClose} className="p-2 rounded-lg hover:bg-slate-700/30 transition-colors">
             <X className="w-5 h-5 text-slate-400" />
           </button>
         </div>
 
         {/* Conteúdo */}
         {showSuccess ? (
-          <SuccessScreen />
+          <div className="text-center space-y-6 p-6">
+            <div className="w-20 h-20 bg-green-500/20 rounded-full flex items-center justify-center mx-auto">
+              <CheckCircle className="w-10 h-10 text-green-400" />
+            </div>
+            <div>
+              <h2 className="text-2xl font-bold text-white mb-2">Conta criada!</h2>
+              <p className="text-slate-400">Clique abaixo para fazer login.</p>
+            </div>
+            <button
+              onClick={handleGoToLogin}
+              className="w-full bg-[#ff7551] hover:bg-[#ff7551]/80 text-white font-medium py-4 rounded-lg transition-colors"
+            >
+              Fazer login
+            </button>
+            <p className="text-slate-400 text-sm">Use o e-mail e a senha que você acabou de criar.</p>
+          </div>
         ) : (
           <>
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
@@ -158,9 +108,7 @@ const RegisterModal: React.FC<RegisterModalProps> = ({
 
               {/* Nome */}
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-2">
-                  Nome Completo
-                </label>
+                <label className="block text-sm font-medium text-slate-300 mb-2">Nome Completo</label>
                 <div className="relative">
                   <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                   <input
@@ -176,9 +124,7 @@ const RegisterModal: React.FC<RegisterModalProps> = ({
 
               {/* Email */}
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-2">
-                  Email
-                </label>
+                <label className="block text-sm font-medium text-slate-300 mb-2">Email</label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                   <input
@@ -194,9 +140,7 @@ const RegisterModal: React.FC<RegisterModalProps> = ({
 
               {/* Senha */}
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-2">
-                  Senha
-                </label>
+                <label className="block text-sm font-medium text-slate-300 mb-2">Senha</label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                   <input
@@ -213,20 +157,14 @@ const RegisterModal: React.FC<RegisterModalProps> = ({
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors"
                     disabled={isSubmitting}
                   >
-                    {showPassword ? (
-                      <EyeOff className="w-4 h-4" />
-                    ) : (
-                      <Eye className="w-4 h-4" />
-                    )}
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
                 </div>
               </div>
 
               {/* Confirmar Senha */}
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-2">
-                  Confirmar Senha
-                </label>
+                <label className="block text-sm font-medium text-slate-300 mb-2">Confirmar Senha</label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                   <input
@@ -243,11 +181,7 @@ const RegisterModal: React.FC<RegisterModalProps> = ({
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors"
                     disabled={isSubmitting}
                   >
-                    {showConfirmPassword ? (
-                      <EyeOff className="w-4 h-4" />
-                    ) : (
-                      <Eye className="w-4 h-4" />
-                    )}
+                    {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
                 </div>
               </div>
