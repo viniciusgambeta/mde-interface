@@ -353,24 +353,6 @@ const Header: React.FC<HeaderProps> = ({ sidebarCollapsed, onSidebarToggle, onVi
                       {searchResults.length >= 8 && (
                         <div className="p-4 border-t border-slate-700/30 text-center">
                           <div className="text-slate-400 text-sm">
-                            Mostrando os primeiros 8 resultados
-                          </div>
-                        </div>
-                      )}
-                    </>
-                  ) : searchQuery.length >= 2 ? (
-                    <div className="p-6 text-center">
-                      <div className="text-slate-400 text-base">
-                        Nenhum resultado encontrado para "{searchQuery}"
-                      </div>
-                      <div className="text-slate-500 text-sm mt-2">
-                        Tente usar palavras-chave diferentes
-                      </div>
-                    </div>
-                  ) : null}
-                </div>
-              )}
-            </div>
           </div>
 
           {/* Right Section - User Menu */}
