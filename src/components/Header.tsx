@@ -265,22 +265,6 @@ const Header: React.FC<HeaderProps> = ({ sidebarCollapsed, onSidebarToggle, onVi
                   </button>
                 )}
               </div>
-                  <button
-                    onClick={handleBookmarksClick}
-                    className="flex items-center space-x-3 w-full px-5 py-3 text-slate-300 hover:text-white hover:bg-slate-700/30 transition-colors"
-                  >
-                    <Bookmark className="w-5 h-5" />
-                    <span className="text-base">Salvos</span>
-                  </button>
-                  
-                  <button
-                    onClick={handleHelpClick}
-                    className="flex items-center space-x-3 w-full px-5 py-3 text-slate-300 hover:text-white hover:bg-slate-700/30 transition-colors"
-                  >
-                    <HelpCircle className="w-5 h-5" />
-                    <span className="text-base">Ajuda</span>
-                  </button>
-                  
 
               {/* Search Results Dropdown */}
               {showSearchResults && (
@@ -358,16 +342,11 @@ const Header: React.FC<HeaderProps> = ({ sidebarCollapsed, onSidebarToggle, onVi
                         </div>
                       )}
                     </>
-                  ) : searchQuery.length >= 2 ? (
+                  ) : (
                     <div className="p-6 text-center">
-                      <div className="text-slate-400 text-base">
-                        Nenhum resultado encontrado para "{searchQuery}"
-                      </div>
-                      <div className="text-slate-500 text-sm mt-2">
-                        Tente usar palavras-chave diferentes
-                      </div>
+                      <div className="text-slate-400 text-base">Nenhum resultado encontrado</div>
                     </div>
-                  ) : null}
+                  )}
                 </div>
               )}
             </div>
@@ -410,6 +389,22 @@ const Header: React.FC<HeaderProps> = ({ sidebarCollapsed, onSidebarToggle, onVi
                       >
                         <User className="w-5 h-5" />
                         <span className="text-base">Minha Conta</span>
+                      </button>
+                      
+                      <button
+                        onClick={handleBookmarksClick}
+                        className="flex items-center space-x-3 w-full px-5 py-3 text-slate-300 hover:text-white hover:bg-slate-700/30 transition-colors"
+                      >
+                        <Bookmark className="w-5 h-5" />
+                        <span className="text-base">Salvos</span>
+                      </button>
+                      
+                      <button
+                        onClick={handleHelpClick}
+                        className="flex items-center space-x-3 w-full px-5 py-3 text-slate-300 hover:text-white hover:bg-slate-700/30 transition-colors"
+                      >
+                        <HelpCircle className="w-5 h-5" />
+                        <span className="text-base">Ajuda</span>
                       </button>
                       
                       <div className="border-t border-slate-700/30 my-2"></div>
