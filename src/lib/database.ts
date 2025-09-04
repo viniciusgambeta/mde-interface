@@ -1439,4 +1439,73 @@ export const commentsService = {
       return false;
     }
   },
+}; // Toggle comment like
+  async toggleCommentLike(commentId: string, userId: string): Promise<{ success: boolean; isLiked: boolean; likeCount: number }> {
+    if (!commentId || !userId) {
+      return { success: false, isLiked: false, likeCount: 0 };
+    }
+
+    try {
+      // Check if user already liked this comment
+      const { data: existingLike, error: checkError } = await supabase
+        .from('comment_likes')
+        .select('id')
+        .eq('comment_id', commentId)
+        .eq('user_id', userId)
+        .maybeSingle();
+
+      if (checkError && checkError.code !== 'PGRST116') {
+        console.error('Error checking existing like:', checkError);
+        return { success: false, isLiked: false, likeCount: 0 };
+      }
+
+      if (existingLike) {
+        // Remove like
+        const { error: deleteError } = await supabase
+          .from('comment_likes')
+          .delete()
+          .eq('comment_id', commentId)
+          .eq('user_id', userId);
+
+        if (deleteError) {
+          console.error('Error removing like:', deleteError);
+          return { success: false, isLiked: true, likeCount: 0 };
+        }
+      } else {
+        // Add like
+        const { error: insertError } = await supabase
+          .from('comment_likes')
+          .insert({
+            comment_id: commentId,
+            user_id: userId
+          });
+
+        if (insertError) {
+          console.error('Error adding like:', insertError);
+          return { success: false, isLiked: false, likeCount: 0 };
+        }
+      }
+
+      // Get updated like count
+      const { data: comment, error: countError } = await supabase
+        .from('comments')
+        .select('like_count')
+        .eq('id', commentId)
+        .single();
+
+      if (countError) {
+        console.error('Error getting like count:', countError);
+        return { success: false, isLiked: !existingLike, likeCount: 0 };
+      }
+
+      return { 
+        success: true, 
+        isLiked: !existingLike, 
+        likeCount: comment.like_count || 0 
+      };
+    } catch (error) {
+      console.error('Error toggling comment like:', error);
+      return { success: false, isLiked: false, likeCount: 0 };
+    }
+  }
 };
