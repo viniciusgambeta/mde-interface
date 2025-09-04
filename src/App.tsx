@@ -287,10 +287,10 @@ function App() {
 
 // Component that has access to auth context
 const AppWithAuth: React.FC = () => {
-  const { user, showOnboarding, completeOnboarding, isLoadingInitial } = useAuth();
+  const { user, showOnboarding, completeOnboarding, loading } = useAuth();
   
   // Show loading screen while auth is initializing
-  if (isLoadingInitial) {
+  if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-[#1f1d2b] via-[#1f1d2b] to-black flex items-center justify-center">
         <div className="flex items-center space-x-3">
