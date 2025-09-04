@@ -236,7 +236,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         } else {
           console.log('🚫 Navigation suppressed, but user state cleared');
         }
-      }
+      
     } catch (error) {
       console.error('❌ Error in auth state change:', error);
       setUser(null);
