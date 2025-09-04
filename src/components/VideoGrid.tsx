@@ -49,6 +49,12 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
   useEffect(() => {
     if (!user) return;
 
+    // Don't setup subscription if page is not visible
+    if (document.hidden) {
+      console.log('📱 Page not visible, skipping realtime subscription setup');
+      return;
+    }
+
     console.log('Setting up realtime subscription for user bookmarks');
     
     const subscription = supabase
@@ -101,6 +107,12 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
   // Load videos from database
   useEffect(() => {
     const loadVideos = async () => {
+      // Don't load if page is not visible
+      if (document.hidden) {
+        console.log('📱 Page not visible, skipping video load');
+        return;
+      }
+      
       setLoading(true);
       
       try {
@@ -183,6 +195,12 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
     const loadCategoryVideos = async () => {
       if (currentView !== 'discover') return;
       
+      // Don't load if page is not visible
+      if (document.hidden) {
+        console.log('📱 Page not visible, skipping category videos load');
+        return;
+      }
+      
       try {
         console.log('Loading category-specific videos...');
         
@@ -233,6 +251,12 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
   useEffect(() => {
     const loadFilterOptions = async () => {
       if (currentView === 'trending' || currentView === 'bookmark') {
+        // Don't load if page is not visible
+        if (document.hidden) {
+          console.log('📱 Page not visible, skipping filter options load');
+          return;
+        }
+        
         try {
           const [categoriesData, difficultiesData] = await Promise.all([
             categoryService.getCategories(),

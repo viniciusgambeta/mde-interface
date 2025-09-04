@@ -225,9 +225,15 @@ export const videoService = {
   } = {}) {
     console.log('🎬 getVideos called with options:', options);
     
+    // Don't execute if page is not visible (prevents background requests)
+    if (typeof document !== 'undefined' && document.hidden) {
+      console.log('📱 Page not visible, returning cached/empty results');
+      return [];
+    }
+    
     // Add AbortController for request cancellation
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+    const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
     
     let query = supabase
       .from('videos')
@@ -428,6 +434,12 @@ export const videoService = {
 
   // Get videos by category
   async getVideosByCategory(categorySlug: string, limit = 12, userId?: string) {
+    // Don't execute if page is not visible
+    if (typeof document !== 'undefined' && document.hidden) {
+      console.log('📱 Page not visible, returning empty category results');
+      return [];
+    }
+    
     return this.getVideos({ category: categorySlug, limit, userId });
   },
 

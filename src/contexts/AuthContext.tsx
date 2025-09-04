@@ -105,9 +105,24 @@ const convertAssinaturaToUser = (authUser: SupabaseUser, assinatura: Assinatura 
 
 // Helper function to fetch user data from assinaturas table
 let currentFetchController: AbortController | null = null;
+let isPageVisible = true;
+
+// Track page visibility to prevent unnecessary requests
+if (typeof document !== 'undefined') {
+  document.addEventListener('visibilitychange', () => {
+    isPageVisible = !document.hidden;
+    console.log('📱 Page visibility changed:', isPageVisible ? 'visible' : 'hidden');
+  });
+}
 
 const fetchUserData = async (authUser: SupabaseUser, retryCount = 0): Promise<User> => {
   console.log('🔍 Fetching user data for:', authUser.email);
+  
+  // Don't fetch if page is not visible
+  if (!isPageVisible && retryCount === 0) {
+    console.log('📱 Page not visible, skipping user data fetch');
+    return convertAssinaturaToUser(authUser, null);
+  }
   
   // Cancel any previous fetch to avoid overlaps
   if (currentFetchController) {
@@ -121,7 +136,7 @@ const fetchUserData = async (authUser: SupabaseUser, retryCount = 0): Promise<Us
   
   try {
     // Set timeout for 15 seconds
-    const timeoutId = setTimeout(() => controller.abort('Request timeout after 15 seconds'), 15000);
+    const timeoutId = setTimeout(() => controller.abort('Request timeout after 10 seconds'), 10000);
     
     const { data: assinatura, error } = await supabase
       .from('assinaturas')
@@ -219,6 +234,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [authLoading, setAuthLoading] = useState(true);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [initialized, setInitialized] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   
   // 🔒 Supressor de redirecionamentos durante operações críticas
   const suppressRedirectsRef = React.useRef(false);
@@ -253,6 +269,14 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   // Handle auth state changes (both initial and subsequent)
   const handleAuthStateChange = useCallback(async (event: AuthChangeEvent, session: Session | null) => {
     console.log('🔄 Handling auth state change:', { hasSession: !!session });
+    
+    // Prevent multiple simultaneous auth state changes
+    if (isRefreshing && event !== 'INITIAL_SESSION') {
+      console.log('🚫 Auth state change already in progress, skipping');
+      return;
+    }
+    
+    setIsRefreshing(true);
     setAuthLoading(true);
 
     try {
@@ -303,9 +327,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       setUser(null);
       setShowOnboarding(false);
     } finally {
+      setIsRefreshing(false);
       setAuthLoading(false);
     }
-  }, [location.pathname, navigate]);
+  }, [location.pathname, navigate, isRefreshing]);
 
   // Initialize auth state
   useEffect(() => {
@@ -335,6 +360,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   // Listen for auth changes
   useEffect(() => {
     if (!initialized) return;
+
+    // Don't setup listener if page is not visible
+    if (typeof document !== 'undefined' && document.hidden) {
+      console.log('📱 Page not visible, skipping auth listener setup');
+      return;
+    }
 
     console.log('👂 Setting up auth state listener...');
     
@@ -484,6 +515,13 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const refreshUser = async (): Promise<void> => {
     try {
       console.log('🔄 Refreshing user data...');
+      
+      // Don't refresh if page is not visible
+      if (!isPageVisible) {
+        console.log('📱 Page not visible, skipping user refresh');
+        return;
+      }
+      
       const { data: { session } } = await supabase.auth.getSession();
       await handleAuthStateChange('TOKEN_REFRESHED', session);
       console.log('✅ User refresh complete');

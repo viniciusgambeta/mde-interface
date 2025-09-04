@@ -146,6 +146,11 @@ const AppLayout: React.FC = () => {
 
   // Update page title based on current view
   useEffect(() => {
+    // Don't update title if page is not visible
+    if (document.hidden) {
+      return;
+    }
+    
     const getPageTitle = () => {
       const baseTitle = "Me dá um Exemplo | ";
       switch (currentView) {
