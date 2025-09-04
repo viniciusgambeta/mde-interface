@@ -22,6 +22,26 @@ const AffiliatesPage: React.FC = () => {
       answer: "As comissões são pagas automaticamente pela Hubla, diretamente na sua conta bancária cadastrada."
     },
     {
+      question: "Onde encontro meu link de afiliado?",
+      answer: "Seu link fica disponível na Hubla em: Produtos > Minhas afiliações > Links. Ou acesse diretamente: Dashboard Hubla (https://app.hub.la/dashboard/products)\n\n⚠️ Sempre use o link exclusivo gerado para você. Links genéricos ou compartilhados de outra forma não contabilizam comissão."
+    },
+    {
+      question: "Quando recebo minha comissão?",
+      answer: "As vendas podem levar até 36 horas para aparecer na Dashboard da Hubla.\nLiberação de valores:\n- 2 dias para pagamentos via Pix.\n- 15 dias para pagamentos no cartão de crédito."
+    },
+    {
+      question: "Vendi pelo meu link, mas não recebi a comissão. O que pode ter acontecido?",
+      answer: "Principais motivos:\n- Venda ainda dentro do prazo de compensação (até 36h).\n- Pagamento ainda não liberado pelo método escolhido.\n- Link incorreto ou compartilhado sem rastreio.\n- Cliente com bloqueio de cookies no navegador (impede o rastreamento).\n- Afiliado comprou com o próprio link (não é comissionado).\n- O programa de afiliados pode ter sido encerrado pelo produtor.\n\nSe não for nenhum desses casos, entre em contato com o suporte da Hubla: Central de Ajuda Hubla (https://help.hub.la/hc/pt-br)"
+    },
+    {
+      question: "Posso usar meu próprio link para assinar?",
+      answer: "Não. Compras feitas pelo próprio link não geram comissão."
+    },
+    {
+      question: "Posso divulgar em qualquer canal?",
+      answer: "Use apenas os links oficiais da Hubla.\n\nNão utilize práticas antiéticas, como spam, promessas enganosas ou uso de marcas registradas sem autorização. Afiliados que descumprirem boas práticas podem ser removidos do programa."
+    },
+    {
       question: "Quando recebo o pagamento?",
       answer: "Os pagamentos são processados mensalmente pela Hubla, seguindo o cronograma padrão da plataforma."
     },
@@ -60,10 +80,94 @@ const AffiliatesPage: React.FC = () => {
       {/* Header */}
       <div className="text-left">
         <h1 className="text-3xl font-bold text-white mb-4">Programa de Afiliados</h1>
-        <p className="text-slate-400 text-lg max-w-3xl">
+        <p className="text-slate-400 text-lg max-w-4xl leading-relaxed">
           Ganhe dinheiro indicando a comunidade Me dá um Exemplo para outras pessoas. 
-          Comissões atrativas e pagamentos recorrentes garantidos!
+          Nosso programa de afiliados oferece comissões atrativas tanto na primeira venda quanto nas renovações mensais/anuais.
+          <br /><br />
+          Como afiliado, você receberá um link exclusivo para compartilhar com sua audiência. Sempre que alguém se inscrever através do seu link, você ganha uma comissão imediata e também uma porcentagem de todas as renovações futuras dessa pessoa.
+          <br /><br />
+          É uma excelente oportunidade para monetizar seu conteúdo, seja em redes sociais, blog, YouTube ou qualquer outro canal onde você tenha audiência interessada em automação e inteligência artificial.
         </p>
+      </div>
+
+      {/* Commission Structure - Compact */}
+      <div className="space-y-6">
+        <h2 className="text-xl font-bold text-white">Estrutura de Comissões</h2>
+        
+        <div className="grid md:grid-cols-2 gap-4">
+          {/* First Sale Commission */}
+          <div className="bg-slate-700/30 border border-slate-600/30 rounded-lg p-6">
+            <div className="flex items-center space-x-3 mb-3">
+              <div className="w-10 h-10 bg-green-500/20 rounded-full flex items-center justify-center">
+                <Target className="w-5 h-5 text-green-400" />
+              </div>
+              <div>
+                <h3 className="text-white font-semibold">Primeira Venda</h3>
+                <div className="text-2xl font-bold text-green-400">50%</div>
+              </div>
+            </div>
+            <div className="space-y-2 text-sm">
+              <div className="flex justify-between">
+                <span className="text-slate-400">Mensal:</span>
+                <span className="text-white">até R$ 33,50</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-400">Anual:</span>
+                <span className="text-white">até R$ 299,00</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Recurring Commission */}
+          <div className="bg-slate-700/30 border border-slate-600/30 rounded-lg p-6">
+            <div className="flex items-center space-x-3 mb-3">
+              <div className="w-10 h-10 bg-[#ff7551]/20 rounded-full flex items-center justify-center">
+                <TrendingUp className="w-5 h-5 text-[#ff7551]" />
+              </div>
+              <div>
+                <h3 className="text-white font-semibold">Recorrências</h3>
+                <div className="text-2xl font-bold text-[#ff7551]">10%</div>
+              </div>
+            </div>
+            <div className="space-y-2 text-sm">
+              <div className="flex justify-between">
+                <span className="text-slate-400">Mensal:</span>
+                <span className="text-white">até R$ 6,70/mês</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-400">Anual:</span>
+                <span className="text-white">até R$ 59,00/ano</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Requirements - Compact */}
+      <div className="space-y-6">
+        <h2 className="text-xl font-bold text-white">Requisitos</h2>
+        
+        <div className="grid md:grid-cols-2 gap-4">
+          <div className="flex items-center space-x-4 p-4 bg-slate-700/30 border border-slate-600/30 rounded-lg">
+            <div className="w-10 h-10 bg-[#ff7551]/20 rounded-full flex items-center justify-center">
+              <Shield className="w-5 h-5 text-[#ff7551]" />
+            </div>
+            <div>
+              <h3 className="text-white font-semibold">Assinante Ativo</h3>
+              <p className="text-slate-400 text-sm">Membro da comunidade</p>
+            </div>
+          </div>
+
+          <div className="flex items-center space-x-4 p-4 bg-slate-700/30 border border-slate-600/30 rounded-lg">
+            <div className="w-10 h-10 bg-[#ff7551]/20 rounded-full flex items-center justify-center">
+              <Users className="w-5 h-5 text-[#ff7551]" />
+            </div>
+            <div>
+              <h3 className="text-white font-semibold">Conta na Hubla</h3>
+              <p className="text-slate-400 text-sm">Para gerenciar links e comissões</p>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* CTA Button */}
@@ -76,100 +180,6 @@ const AffiliatesPage: React.FC = () => {
           <span>Quero ser Afiliado</span>
           <ExternalLink className="w-5 h-5" />
         </button>
-      </div>
-
-      {/* Commission Structure */}
-      <div className="space-y-8">
-        <div className="text-left">
-          <h2 className="text-2xl font-bold text-white mb-4">Como Funciona a Comissão</h2>
-          <p className="text-slate-400">
-            Sistema de comissionamento justo e transparente
-          </p>
-        </div>
-
-        <div className="grid lg:grid-cols-2 gap-8">
-          {/* First Sale Commission */}
-          <div className="bg-slate-700/30 border border-slate-600/30 rounded-xl p-8">
-            <div className="text-left mb-6">
-              <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mb-4">
-                <Target className="w-8 h-8 text-green-400" />
-              </div>
-              <h3 className="text-2xl font-bold text-white mb-2">Primeira Venda</h3>
-              <div className="text-4xl font-bold text-green-400 mb-2">50%</div>
-              <p className="text-slate-400">de comissão na primeira venda</p>
-            </div>
-            
-            <div className="space-y-4">
-              <div className="flex items-center justify-between p-4 bg-slate-600/20 rounded-lg">
-                <span className="text-slate-300">Plano Mensal</span>
-                <span className="text-white font-semibold">até R$ 33,50</span>
-              </div>
-              <div className="flex items-center justify-between p-4 bg-slate-600/20 rounded-lg">
-                <span className="text-slate-300">Plano Anual</span>
-                <span className="text-white font-semibold">até R$ 299,00</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Recurring Commission */}
-          <div className="bg-slate-700/30 border border-slate-600/30 rounded-xl p-8">
-            <div className="text-left mb-6">
-              <div className="w-16 h-16 bg-[#ff7551]/20 rounded-full flex items-center justify-center mb-4">
-                <TrendingUp className="w-8 h-8 text-[#ff7551]" />
-              </div>
-              <h3 className="text-2xl font-bold text-white mb-2">Recorrências</h3>
-              <div className="text-4xl font-bold text-[#ff7551] mb-2">10%</div>
-              <p className="text-slate-400">de todas as renovações</p>
-            </div>
-            
-            <div className="space-y-4">
-              <div className="flex items-center justify-between p-4 bg-slate-600/20 rounded-lg">
-                <span className="text-slate-300">Mensal (por mês)</span>
-                <span className="text-white font-semibold">até R$ 6,70</span>
-              </div>
-              <div className="flex items-center justify-between p-4 bg-slate-600/20 rounded-lg">
-                <span className="text-slate-300">Anual (por ano)</span>
-                <span className="text-white font-semibold">até R$ 59,00</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Requirements */}
-      <div className="bg-slate-700/30 border border-slate-600/30 rounded-xl p-8">
-        <div className="text-left mb-8">
-          <h2 className="text-2xl font-bold text-white mb-4">Requisitos para ser Afiliado</h2>
-          <p className="text-slate-400">
-            Para participar do programa, você precisa atender aos seguintes critérios
-          </p>
-        </div>
-
-        <div className="grid md:grid-cols-2 gap-6">
-          <div className="flex items-start space-x-4 p-6 bg-slate-600/20 rounded-lg">
-            <div className="w-12 h-12 bg-[#ff7551]/20 rounded-full flex items-center justify-center flex-shrink-0">
-              <Shield className="w-6 h-6 text-[#ff7551]" />
-            </div>
-            <div>
-              <h3 className="text-white font-semibold text-lg mb-2">Assinante Ativo</h3>
-              <p className="text-slate-400">
-                Você deve ser um membro ativo da comunidade Me dá um Exemplo com assinatura em dia.
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-start space-x-4 p-6 bg-slate-600/20 rounded-lg">
-            <div className="w-12 h-12 bg-[#ff7551]/20 rounded-full flex items-center justify-center flex-shrink-0">
-              <Users className="w-6 h-6 text-[#ff7551]" />
-            </div>
-            <div>
-              <h3 className="text-white font-semibold text-lg mb-2">Conta na Hubla</h3>
-              <p className="text-slate-400">
-                É necessário ter uma conta na plataforma Hubla para gerenciar seus links e comissões.
-              </p>
-            </div>
-          </div>
-        </div>
       </div>
 
       {/* FAQ Section */}
@@ -202,7 +212,7 @@ const AffiliatesPage: React.FC = () => {
               {openFaqIndex === index && (
                 <div className="px-6 pb-6">
                   <div className="border-t border-slate-600/30 pt-4">
-                    <p className="text-slate-300 leading-relaxed">{faq.answer}</p>
+                    <p className="text-slate-300 leading-relaxed whitespace-pre-line">{faq.answer}</p>
                   </div>
                 </div>
               )}
