@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { MessageCircle, Send, Trash2, Reply, Instagram, Linkedin, MoreVertical, ArrowRight } from 'lucide-react';
+import { MessageCircle, Send, Trash2, Reply, Instagram, Linkedin, MoreVertical, ArrowRight, ThumbsUp, ChevronDown } from 'lucide-react';
 import { commentsService, type Comment } from '../lib/database';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
@@ -14,10 +14,9 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ videoId, videoTitle }
   const [comments, setComments] = useState<Comment[]>([]);
   const [loading, setLoading] = useState(true);
   const [newComment, setNewComment] = useState('');
-  const [replyingTo, setReplyingTo] = useState<string | null>(null);
-  const [replyContent, setReplyContent] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [expandedComments, setExpandedComments] = useState<Set<string>>(new Set());
+  const [sortBy, setSortBy] = useState<'recent' | 'oldest'>('recent');
 
   // Load comments
   useEffect(() => {
@@ -65,7 +64,7 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ videoId, videoTitle }
     }
   };
 
-  const handleSubmitReply = async (e: React.FormEvent, parentCommentId: string) => {
+  const handleSubmitReply = async (e: React.FormEvent, parentCommentId: string, replyContent: string, setReplyContent: (content: string) => void, setIsReplying: (replying: boolean) => void) => {
     e.preventDefault();
     
     if (!user || !replyContent.trim() || submitting) return;
@@ -78,7 +77,7 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ videoId, videoTitle }
       
       if (success) {
         setReplyContent('');
-        setReplyingTo(null);
+        setIsReplying(false);
         console.log('Reply submitted successfully, reloading comments');
         // Reload comments
         const updatedComments = await commentsService.getVideoComments(videoId);
@@ -134,13 +133,13 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ videoId, videoTitle }
       return 'agora';
     } else if (diffInSeconds < 3600) {
       const minutes = Math.floor(diffInSeconds / 60);
-      return `${minutes}min`;
+      return `${minutes} min ago`;
     } else if (diffInSeconds < 86400) {
       const hours = Math.floor(diffInSeconds / 3600);
-      return `${hours}h`;
+      return `${hours}h ago`;
     } else if (diffInSeconds < 604800) {
       const days = Math.floor(diffInSeconds / 86400);
-      return `${days}d`;
+      return `${days}d ago`;
     } else {
       return date.toLocaleDateString('pt-BR', {
         day: '2-digit',
@@ -148,6 +147,15 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ videoId, videoTitle }
       });
     }
   };
+
+  const sortedComments = React.useMemo(() => {
+    const sorted = [...comments];
+    if (sortBy === 'recent') {
+      return sorted.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+    } else {
+      return sorted.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+    }
+  }, [comments, sortBy]);
 
   const CommentComponent: React.FC<{ 
     comment: Comment; 
@@ -161,49 +169,25 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ videoId, videoTitle }
     const isExpanded = expandedComments.has(comment.id);
 
     // Handle reply form submission
-    const handleReplySubmit = async (e: React.FormEvent) => {
-      e.preventDefault();
-      
-      if (!user || !localReplyContent.trim() || submitting) return;
-
-      setSubmitting(true);
-      
-      try {
-        console.log('Submitting reply for user:', user.id, 'to comment:', comment.id);
-        const success = await commentsService.createComment(videoId, user.id, localReplyContent, comment.id);
-        
-        if (success) {
-          setLocalReplyContent('');
-          setIsReplying(false);
-          console.log('Reply submitted successfully, reloading comments');
-          // Reload comments
-          const updatedComments = await commentsService.getVideoComments(videoId);
-          setComments(updatedComments);
-        } else {
-          console.error('Failed to submit reply');
-        }
-      } catch (error) {
-        console.error('Error submitting reply:', error);
-      } finally {
-        setSubmitting(false);
-      }
+    const handleReplySubmit = (e: React.FormEvent) => {
+      handleSubmitReply(e, comment.id, localReplyContent, setLocalReplyContent, setIsReplying);
     };
 
     return (
-      <div className={`${isReply ? 'ml-8 pl-4 border-l-2 border-slate-600/20' : ''}`}>
+      <div className={`${isReply ? 'ml-12 border-l border-slate-700/30 pl-6' : ''}`}>
         <div className="flex space-x-4 group">
           {/* Avatar */}
           <img
             src={comment.user_avatar || '/avatar1.png'}
             alt={comment.user_name}
-            className="w-9 h-9 rounded-lg object-cover flex-shrink-0"
+            className="w-10 h-10 rounded-lg object-cover flex-shrink-0"
           />
           
           {/* Comment Content */}
           <div className="flex-1 min-w-0">
-            {/* User Info */}
-            <div className="flex items-center space-x-2 mb-1">
-              <span className="text-white font-semibold text-sm">
+            {/* User Info and Time */}
+            <div className="flex items-center space-x-3 mb-2">
+              <span className="text-white font-medium text-sm">
                 {comment.user_name}
               </span>
               
@@ -231,7 +215,7 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ videoId, videoTitle }
                 )}
               </div>
               
-              <span className="text-slate-500 text-xs font-medium">
+              <span className="text-slate-500 text-xs">
                 {formatTimeAgo(comment.created_at)}
               </span>
               
@@ -264,30 +248,38 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ videoId, videoTitle }
             </div>
             
             {/* Comment Text */}
-            <p className="text-slate-300 text-sm leading-relaxed mb-2 whitespace-pre-wrap">
+            <p className="text-slate-300 text-sm leading-relaxed mb-3 whitespace-pre-wrap">
               {comment.content}
             </p>
             
             {/* Actions */}
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-4">
+              {/* Like Button */}
+              <button className="flex items-center space-x-1.5 text-slate-500 hover:text-slate-300 transition-colors">
+                <ThumbsUp className="w-4 h-4" />
+                <span className="text-xs font-medium">0</span>
+              </button>
+              
+              {/* Reply Button */}
               {!isReply && user && (
                 <button
                   onClick={() => setIsReplying(!isReplying)}
-                  className="flex items-center space-x-1.5 px-3 py-1.5 bg-slate-700/30 hover:bg-slate-600/30 text-slate-400 hover:text-white rounded-lg transition-colors text-xs font-medium"
+                  className="flex items-center space-x-1.5 text-slate-500 hover:text-slate-300 transition-colors"
                 >
-                  <Reply className="w-3.5 h-3.5" />
-                  <span>Responder</span>
+                  <Reply className="w-4 h-4" />
+                  <span className="text-xs font-medium">Reply</span>
                 </button>
               )}
               
+              {/* Show Replies Button */}
               {hasReplies && !isReply && (
                 <button
                   onClick={() => toggleReplies(comment.id)}
-                  className="flex items-center space-x-1 text-slate-500 hover:text-slate-300 transition-colors text-xs font-medium"
+                  className="flex items-center space-x-1.5 text-slate-500 hover:text-slate-300 transition-colors"
                 >
-                  <ArrowRight className={`w-3 h-3 transition-transform ${isExpanded ? 'rotate-90' : ''}`} />
-                  <span>
-                    {isExpanded ? 'Ocultar' : 'Ver'} {comment.reply_count || comment.replies?.length || 0} resposta{(comment.reply_count || comment.replies?.length || 0) !== 1 ? 's' : ''}
+                  <ChevronDown className={`w-4 h-4 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+                  <span className="text-xs font-medium">
+                    {comment.reply_count || comment.replies?.length || 0} {(comment.reply_count || comment.replies?.length || 0) === 1 ? 'reply' : 'replies'}
                   </span>
                 </button>
               )}
@@ -295,52 +287,47 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ videoId, videoTitle }
             
             {/* Reply Form */}
             {isReplying && user && (
-              <div className="mt-4 bg-slate-700/20 rounded-xl p-4">
-                <form onSubmit={handleReplySubmit} className="space-y-3">
-                  <div className="relative">
-                    <div className="flex space-x-3">
-                      <img
-                        src={user.avatar || '/avatar1.png'}
-                        alt={user.name}
-                        className="w-10 h-10 rounded-lg object-cover flex-shrink-0"
+              <div className="mt-4">
+                <form onSubmit={handleReplySubmit} className="relative">
+                  <div className="flex space-x-3">
+                    <img
+                      src={user.avatar || '/avatar1.png'}
+                      alt={user.name}
+                      className="w-8 h-8 rounded-lg object-cover flex-shrink-0"
+                    />
+                    <div className="flex-1 relative">
+                      <textarea
+                        value={localReplyContent}
+                        onChange={(e) => setLocalReplyContent(e.target.value)}
+                        placeholder={`Reply to ${comment.user_name}...`}
+                        className="w-full pl-4 pr-12 py-3 bg-slate-800/50 border border-slate-700/30 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-[#ff7551]/30 focus:border-[#ff7551]/30 transition-all resize-none text-sm"
+                        rows={2}
+                        disabled={submitting}
                       />
-                      <div className="flex-1 relative">
-                        <textarea
-                          value={localReplyContent}
-                          onChange={(e) => setLocalReplyContent(e.target.value)}
-                          placeholder={`Responder para ${comment.user_name}...`}
-                          className="w-full pl-4 pr-16 py-3 bg-slate-700/30 border border-slate-600/20 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#ff7551]/30 focus:border-transparent transition-all resize-none text-sm"
-                          rows={3}
-                          disabled={submitting}
-                        />
-                        <button
-                          type="submit"
-                          disabled={!localReplyContent.trim() || submitting}
-                          className="absolute bottom-3 right-3 w-10 h-10 bg-[#ff7551] hover:bg-[#ff7551]/80 disabled:bg-[#ff7551]/50 text-white rounded-lg transition-colors disabled:cursor-not-allowed flex items-center justify-center"
-                        >
-                          {submitting ? (
-                            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                          ) : (
-                            <Send className="w-4 h-4" />
-                          )}
-                        </button>
-                      </div>
+                      <button
+                        type="submit"
+                        disabled={!localReplyContent.trim() || submitting}
+                        className="absolute bottom-3 right-3 w-8 h-8 bg-[#ff7551] hover:bg-[#ff7551]/80 disabled:bg-slate-600 disabled:cursor-not-allowed text-white rounded-lg transition-colors flex items-center justify-center"
+                      >
+                        {submitting ? (
+                          <div className="w-3 h-3 border border-white/30 border-t-white rounded-full animate-spin" />
+                        ) : (
+                          <Send className="w-3.5 h-3.5" />
+                        )}
+                      </button>
                     </div>
                   </div>
-                  <div className="flex items-center justify-between pl-13">
+                  <div className="flex items-center justify-between mt-2 ml-11">
                     <button
                       type="button"
                       onClick={() => {
                         setIsReplying(false);
                         setLocalReplyContent('');
                       }}
-                      className="px-4 py-2 text-slate-400 hover:text-white text-sm transition-colors font-medium"
+                      className="text-slate-500 hover:text-slate-300 text-xs transition-colors"
                     >
-                      Cancelar
+                      Cancel
                     </button>
-                    <div className="text-slate-500 text-xs">
-                      {localReplyContent.length}/500 caracteres
-                    </div>
                   </div>
                 </form>
               </div>
@@ -350,7 +337,7 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ videoId, videoTitle }
         
         {/* Replies */}
         {hasReplies && isExpanded && (
-          <div className="mt-3 space-y-3">
+          <div className="mt-4 space-y-4">
             {comment.replies!.map((reply) => (
               <CommentComponent key={reply.id} comment={reply} isReply={true} />
             ))}
@@ -362,91 +349,101 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ videoId, videoTitle }
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center space-x-3 pb-4 border-b border-slate-600/20">
-        <MessageCircle className="w-5 h-5 text-[#ff7551]" />
-        <h3 className="text-white font-semibold text-xl">
-          Comentários ({comments.length})
-        </h3>
-      </div>
-
       {/* New Comment Form */}
       {user ? (
-        <div className="bg-slate-700/20 rounded-xl p-6">
-          <form onSubmit={handleSubmitComment} className="space-y-3">
-            <div className="relative">
-              <div className="flex space-x-4">
-                <img
-                  src={user.avatar || '/avatar1.png'}
-                  alt={user.name}
-                  className="w-12 h-12 rounded-lg object-cover flex-shrink-0"
+        <div className="space-y-4">
+          <form onSubmit={handleSubmitComment} className="relative">
+            <div className="flex space-x-4">
+              <img
+                src={user.avatar || '/avatar1.png'}
+                alt={user.name}
+                className="w-12 h-12 rounded-lg object-cover flex-shrink-0 mt-1"
+              />
+              <div className="flex-1 relative">
+                <textarea
+                  value={newComment}
+                  onChange={(e) => setNewComment(e.target.value)}
+                  placeholder="Add comment"
+                  className="w-full pl-4 pr-16 py-4 bg-slate-800/50 border border-slate-700/30 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-[#ff7551]/30 focus:border-[#ff7551]/30 transition-all resize-none text-sm min-h-[60px]"
+                  rows={3}
+                  disabled={submitting}
                 />
-                <div className="flex-1 relative">
-                  <textarea
-                    value={newComment}
-                    onChange={(e) => setNewComment(e.target.value)}
-                    placeholder="Adicione um comentário..."
-                    className="w-full pl-4 pr-16 py-4 bg-slate-700/30 border border-slate-600/20 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#ff7551]/30 focus:border-transparent transition-all resize-none text-sm"
-                    rows={3}
-                    disabled={submitting}
-                  />
-                  <button
-                    type="submit"
-                    disabled={!newComment.trim() || submitting}
-                    className="absolute bottom-4 right-4 w-10 h-10 bg-[#ff7551] hover:bg-[#ff7551]/80 disabled:bg-[#ff7551]/50 text-white rounded-lg transition-colors disabled:cursor-not-allowed flex items-center justify-center"
-                  >
-                    {submitting ? (
-                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    ) : (
-                      <Send className="w-4 h-4" />
-                    )}
-                  </button>
-                </div>
-              </div>
-            </div>
-            <div className="flex items-center justify-between pl-16">
-              <div className="text-slate-500 text-xs">
-                {newComment.length}/500 caracteres
+                <button
+                  type="submit"
+                  disabled={!newComment.trim() || submitting}
+                  className="absolute bottom-4 right-4 px-4 py-2 bg-[#ff7551] hover:bg-[#ff7551]/80 disabled:bg-slate-600 disabled:cursor-not-allowed text-white rounded-lg transition-colors flex items-center justify-center text-sm font-medium"
+                >
+                  {submitting ? (
+                    <div className="w-4 h-4 border border-white/30 border-t-white rounded-full animate-spin" />
+                  ) : (
+                    'Comment'
+                  )}
+                </button>
               </div>
             </div>
           </form>
         </div>
       ) : (
-        <div className="text-center py-12 bg-slate-700/10 rounded-xl border border-slate-600/20">
-          <MessageCircle className="w-16 h-16 text-slate-600 mx-auto mb-4" />
-          <p className="text-slate-400 mb-6 text-lg">Faça login para comentar</p>
-          <button className="px-8 py-3 bg-[#ff7551] hover:bg-[#ff7551]/80 text-white font-medium rounded-lg transition-colors">
-            Entrar
+        <div className="text-center py-8 bg-slate-800/30 rounded-lg border border-slate-700/30">
+          <MessageCircle className="w-12 h-12 text-slate-600 mx-auto mb-3" />
+          <p className="text-slate-400 mb-4">Sign in to join the conversation</p>
+          <button className="px-6 py-2 bg-[#ff7551] hover:bg-[#ff7551]/80 text-white font-medium rounded-lg transition-colors">
+            Sign In
           </button>
         </div>
       )}
 
+      {/* Comments Header */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-3">
+          <h3 className="text-white font-semibold text-lg">
+            Comments
+          </h3>
+          <span className="bg-[#ff7551] text-white text-sm px-2 py-1 rounded font-medium">
+            {comments.length}
+          </span>
+        </div>
+        
+        {/* Sort Options */}
+        <div className="flex items-center space-x-4 text-sm">
+          <span className="text-slate-400">All</span>
+          <div className="flex items-center space-x-2">
+            <span className="text-slate-400">Most recent</span>
+            <ChevronDown className="w-4 h-4 text-slate-400" />
+          </div>
+        </div>
+      </div>
+
       {/* Comments List */}
       {loading ? (
-        <div className="space-y-8">
+        <div className="space-y-6">
           {Array.from({ length: 3 }).map((_, index) => (
             <div key={index} className="flex space-x-4">
               <div className="w-10 h-10 bg-slate-700/30 rounded-lg animate-pulse"></div>
-              <div className="flex-1 space-y-3">
+              <div className="flex-1 space-y-2">
                 <div className="h-4 bg-slate-700/30 rounded w-1/4 animate-pulse"></div>
                 <div className="h-4 bg-slate-700/20 rounded w-full animate-pulse"></div>
                 <div className="h-4 bg-slate-700/20 rounded w-3/4 animate-pulse"></div>
+                <div className="flex space-x-4 mt-3">
+                  <div className="h-3 bg-slate-700/20 rounded w-12 animate-pulse"></div>
+                  <div className="h-3 bg-slate-700/20 rounded w-12 animate-pulse"></div>
+                </div>
               </div>
             </div>
           ))}
         </div>
       ) : comments.length > 0 ? (
-        <div className="space-y-8">
-          {comments.map((comment) => (
+        <div className="space-y-6">
+          {sortedComments.map((comment) => (
             <CommentComponent key={comment.id} comment={comment} />
           ))}
         </div>
       ) : (
-        <div className="text-center py-20">
-          <MessageCircle className="w-20 h-20 text-slate-600 mx-auto mb-6" />
-          <h3 className="text-white font-medium mb-3 text-xl">Nenhum comentário ainda</h3>
-          <p className="text-slate-400 text-base">
-            Seja o primeiro a comentar sobre "{videoTitle}"
+        <div className="text-center py-16">
+          <MessageCircle className="w-16 h-16 text-slate-600 mx-auto mb-4" />
+          <h3 className="text-white font-medium mb-2 text-lg">No comments yet</h3>
+          <p className="text-slate-400">
+            Be the first to share your thoughts about "{videoTitle}"
           </p>
         </div>
       )}
