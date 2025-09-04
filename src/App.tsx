@@ -278,6 +278,7 @@ const AppLayout: React.FC = () => {
 };
 
 function App() {
+  console.log('🎯 App: Rendering main App component');
   return (
     <AuthProvider>
       <AppWithAuth />

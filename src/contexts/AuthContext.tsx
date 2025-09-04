@@ -215,17 +215,18 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             navigate('/');
           }
         }
+        
+        console.log('🔄 AuthProvider: Setting loading to false (auth event)');
+        setLoading(false);
       } catch (error) {
         console.error('❌ AuthProvider: Error in auth state change:', error);
         setUser(null);
         setShowOnboarding(false);
-      } finally {
-        // Set loading false after any auth state change
-        console.log('🔄 AuthProvider: Setting loading to false (auth event)');
+        console.log('🔄 AuthProvider: Setting loading to false (error in auth event)');
         setLoading(false);
       }
-    }
-    )
+    });
+    
     // Cleanup on unmount
     return () => {
       console.log('🧹 AuthProvider: Cleaning up...');
@@ -233,9 +234,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         clearTimeout(timeoutId);
       }
       subscription.unsubscribe();
-      }
-  }
-  )
+    };
+  }, [navigate]);
 
   const signIn = async (email: string, password: string): Promise<{ user: User | null; error: string | null }> => {
     try {
