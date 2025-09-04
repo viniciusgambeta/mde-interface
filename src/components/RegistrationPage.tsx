@@ -561,6 +561,7 @@ const RegistrationPage: React.FC = () => {
   }
 
   return (
+    <>
     <div className="min-h-screen bg-gradient-to-b from-[#1f1d2b] via-[#1f1d2b] to-black flex items-center justify-center p-4">
       <div className="bg-[#1f1d2b] border border-slate-700/30 rounded-xl w-full max-w-md">
         {/* Header */}
@@ -653,6 +654,19 @@ const RegistrationPage: React.FC = () => {
         </div>
       </div>
     </div>
+    
+    <div className="text-center mt-6 px-6">
+      <p className="text-slate-500 text-sm">
+        Já tem uma conta?{' '}
+        <button
+          onClick={() => navigate('/')}
+          className="text-slate-400 hover:text-white font-medium transition-colors underline"
+        >
+          Entrar
+        </button>
+      </p>
+    </div>
+    </>
   );
 };
 
