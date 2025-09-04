@@ -17,6 +17,7 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose, onSwitch
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
   const { signUp } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -53,11 +54,7 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose, onSwitch
       
       if (!result.error) {
         console.log('✅ Registration successful, closing modal');
-        onClose();
-        setName('');
-        setEmail('');
-        setPassword('');
-        setConfirmPassword('');
+        setShowSuccess(true);
       } else {
         console.log('❌ Registration failed, showing error');
         setError(result.error || 'Erro ao criar conta. Tente novamente.');
@@ -71,8 +68,82 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose, onSwitch
     }
   };
 
+  const handleGoToLogin = async () => {
+    console.log('🚪 Going to login, forcing logout first...');
+    
+    try {
+      // Force logout to ensure clean state
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.error('❌ Error during forced logout:', error);
+      }
+    } catch (error) {
+      console.error('💥 Exception during forced logout:', error);
+    }
+    
+    // Reset modal state
+    setShowSuccess(false);
+    setName('');
+    setEmail('');
+    setPassword('');
+    setConfirmPassword('');
+    setError('');
+    
+    // Switch to login modal
+    onSwitchToLogin();
+  };
+
+  // Success Screen Component
+  const SuccessScreen = () => (
+    <div className="text-center space-y-6 p-6">
+      <div className="w-20 h-20 bg-green-500/20 rounded-full flex items-center justify-center mx-auto">
+        <CheckCircle className="w-10 h-10 text-green-400" />
+      </div>
+      
+      <div>
+        <h2 className="text-2xl font-bold text-white mb-2">
+          Conta Criada com Sucesso!
+        </h2>
+        <p className="text-slate-400">
+          Sua conta foi criada com sucesso! Para sua segurança, você precisa fazer login para acessar a plataforma.
+        </p>
+      </div>
+      
+      <button
+        onClick={handleGoToLogin}
+        className="w-full bg-[#ff7551] hover:bg-[#ff7551]/80 text-white font-medium py-4 rounded-lg transition-colors"
+      >
+        Fazer Login
+      </button>
+      
+      <p className="text-slate-400 text-sm">
+        Use o email e senha que você acabou de criar para entrar na plataforma.
+      </p>
+    </div>
+  );
   if (!isOpen) return null;
 
+  // Show success screen if registration was successful
+  if (showSuccess) {
+    return (
+      <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div className="bg-[#1f1d2b] border border-slate-700/30 rounded-xl w-full max-w-md animate-fade-in">
+          {/* Header */}
+          <div className="flex items-center justify-between p-6 border-b border-slate-700/30">
+            <h2 className="text-xl font-semibold text-white">Registro Concluído</h2>
+            <button
+              onClick={onClose}
+              className="p-2 rounded-lg hover:bg-slate-700/30 transition-colors"
+            >
+              <X className="w-5 h-5 text-slate-400" />
+            </button>
+          </div>
+          
+          <SuccessScreen />
+        </div>
+      </div>
+    );
+  }
   return (
     <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
       <div className="bg-[#1f1d2b] border border-slate-700/30 rounded-xl w-full max-w-md animate-fade-in">
