@@ -112,7 +112,7 @@ const fetchUserData = async (authUser: SupabaseUser, retryCount = 0): Promise<Us
   // Cancel any previous fetch to avoid overlaps
   if (currentFetchController) {
     console.log('🚫 Cancelling previous fetch request');
-    currentFetchController.abort();
+    currentFetchController.abort('New fetch request initiated');
   }
   
   // Create new controller for this fetch
@@ -121,7 +121,7 @@ const fetchUserData = async (authUser: SupabaseUser, retryCount = 0): Promise<Us
   
   try {
     // Set timeout for 15 seconds
-    const timeoutId = setTimeout(() => controller.abort(), 15000);
+    const timeoutId = setTimeout(() => controller.abort('Request timeout after 15 seconds'), 15000);
     
     const { data: assinatura, error } = await supabase
       .from('assinaturas')
@@ -158,6 +158,12 @@ const fetchUserData = async (authUser: SupabaseUser, retryCount = 0): Promise<Us
     }
 
     if (error) {
+      // Handle abort errors gracefully
+      if (error.message?.includes('signal is aborted')) {
+        console.warn('⚠️ Request was aborted:', error.message);
+        return convertAssinaturaToUser(authUser, null);
+      }
+      
       console.error('❌ Error fetching assinatura:', error.message);
       // Return user with auth data only if assinaturas query fails
       return convertAssinaturaToUser(authUser, null);
@@ -179,7 +185,7 @@ const fetchUserData = async (authUser: SupabaseUser, retryCount = 0): Promise<Us
     clearTimeout(timeoutId);
     
     if (error.name === 'AbortError') {
-      console.warn('⚠️ User data query was aborted');
+      console.warn('⚠️ User data query was aborted:', error.message || 'No reason provided');
       
       // Retry with exponential backoff for transient errors
       if (retryCount < 2) {
@@ -187,6 +193,9 @@ const fetchUserData = async (authUser: SupabaseUser, retryCount = 0): Promise<Us
         console.log(`🔄 Retrying fetch in ${delay}ms (attempt ${retryCount + 1}/3)`);
         await new Promise(resolve => setTimeout(resolve, delay));
         return fetchUserData(authUser, retryCount + 1);
+      } else {
+        console.warn('⚠️ Max retries reached for aborted request, returning fallback user');
+        return convertAssinaturaToUser(authUser, null);
       }
     } else if (error.message?.includes('Failed to fetch') && retryCount < 2) {
       // Retry network errors
