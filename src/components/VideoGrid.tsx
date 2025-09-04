@@ -107,6 +107,8 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
       try {
         let videoData: Video[] = [];
         
+        console.log('Loading videos for view:', currentView);
+        
         if (currentView === 'discover') {
           videoData = await videoService.getVideos({ 
             limit: 20, 
@@ -131,6 +133,7 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
           videoData = await videoService.getVideosByCategory(currentView, 12, user?.id);
         }
         
+        console.log('Loaded videos:', videoData.length, 'videos');
         setVideos(videoData);
         setFilteredVideos(videoData);
         
@@ -596,6 +599,7 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
 
   // Enhanced loading component
   if (loading) {
+    console.log('🎬 VideoGrid: Showing loading state');
     return (
       <div className="flex items-center justify-center py-20">
         <div className="flex items-center space-x-3">

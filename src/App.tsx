@@ -1,382 +1,355 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
-import { User as SupabaseUser, Session, AuthChangeEvent } from '@supabase/supabase-js';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { supabase } from '../lib/supabase';
+import React from 'react';
+import { Routes, Route, useNavigate, useParams, useLocation } from 'react-router-dom';
+import { useEffect } from 'react';
+import { useAuth } from './contexts/AuthContext';
+import OnboardingFlow from './components/OnboardingFlow';
+import Header from './components/Header';
+import Sidebar from './components/Sidebar';
+import MainContent from './components/MainContent';
+import VideoPlayer from './components/VideoPlayer';
+import PromptViewer from './components/PromptViewer';
+import LiveViewer from './components/LiveViewer';
+import RegistrationPage from './components/RegistrationPage';
+import PasswordResetPage from './components/PasswordResetPage';
+import PrivacyPolicyPage from './components/PrivacyPolicyPage';
+import Footer from './components/Footer';
+import { AuthProvider } from './contexts/AuthContext';
+import { VideoProvider } from './contexts/VideoContext';
+import { videoService } from './lib/database';
 
-// Types
-export interface User {
-  id: string;
-  email: string;
-  name: string;
-  avatar?: string;
-  isPremium: boolean;
-  joinedAt: string;
-  onboardingCompleted: boolean;
-  phone?: string;
-  bio?: string;
-  instagram?: string;
-  linkedin?: string;
-  experienciaIa?: string;
-  objetivoPrincipal?: string;
-  tipoTrabalho?: string;
-  porteNegocio?: string;
-}
-
-interface Assinatura {
-  "ID da assinatura": string;
-  "Nome do cliente": string;
-  "Email do cliente": string;
-  "Telefone do cliente"?: number;
-  "Status da assinatura"?: string;
-  "Data de criação"?: string;
-  user_id?: string;
-  avatar_usuario?: string;
-  experiencia_ia?: string;
-  objetivo_principal?: string;
-  tipo_trabalho?: string;
-  porte_negocio?: string;
-  instagram?: string;
-  linkedin?: string;
-  bio?: string;
-  phone_number?: string;
-  is_premium?: boolean;
-  onboarding_completed?: boolean;
-  onboarding_data?: any;
-}
-
-interface AuthContextType {
-  user: User | null;
-  loading: boolean;
-  showOnboarding: boolean;
-  completeOnboarding: () => Promise<void>;
-  isAuthenticated: boolean;
-  signIn: (email: string, password: string) => Promise<{ user: User | null; error: string | null }>;
-  signUp: (email: string, password: string, name: string) => Promise<{ user: User | null; error: string | null }>;
-  signOut: () => Promise<{ error: string | null }>;
-  updateProfile: (data: Partial<Assinatura>) => Promise<boolean>;
-  refreshUser: () => Promise<void>;
-}
-
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
-};
-
-// Helper function to convert any value to boolean
-const toBool = (v: any): boolean => {
-  if (typeof v === 'boolean') return v;
-  if (typeof v === 'string') return ['true', 't', '1', 'yes', 'y'].includes(v.toLowerCase());
-  if (typeof v === 'number') return v === 1;
-  return false;
-};
-
-// Helper function to convert assinatura data to User
-const convertAssinaturaToUser = (authUser: SupabaseUser, assinatura: Assinatura | null): User => {
-  return {
-    id: authUser.id,
-    email: authUser.email || '',
-    name: assinatura?.["Nome do cliente"] || authUser.user_metadata?.name || authUser.email?.split('@')[0] || '',
-    avatar: assinatura?.avatar_usuario || authUser.user_metadata?.avatar_url || '/avatar1.png',
-    isPremium: toBool(assinatura?.is_premium) || assinatura?.["Status da assinatura"] === 'active' || false,
-    joinedAt: assinatura?.["Data de criação"] || authUser.created_at,
-    onboardingCompleted: toBool(assinatura?.onboarding_completed),
-    phone: assinatura?.phone_number || assinatura?.["Telefone do cliente"]?.toString() || '',
-    bio: assinatura?.bio || '',
-    instagram: assinatura?.instagram || '',
-    linkedin: assinatura?.linkedin || '',
-    experienciaIa: assinatura?.experiencia_ia || '',
-    objetivoPrincipal: assinatura?.objetivo_principal || '',
-    tipoTrabalho: assinatura?.tipo_trabalho || '',
-    porteNegocio: assinatura?.porte_negocio || ''
-  };
-};
-
-// Simple user data fetch - no abort, no retry, no timeout
-const fetchUserData = async (authUser: SupabaseUser): Promise<User> => {
-  try {
-    const { data: assinatura, error } = await supabase
-      .from('assinaturas')
-      .select(`
-        "ID da assinatura",
-        "Nome do cliente",
-        "Email do cliente", 
-        "Telefone do cliente",
-        "Status da assinatura",
-        "Data de criação",
-        user_id,
-        avatar_usuario,
-        experiencia_ia,
-        objetivo_principal,
-        tipo_trabalho,
-        porte_negocio,
-        instagram,
-        linkedin,
-        bio,
-        phone_number,
-        is_premium,
-        onboarding_completed,
-        onboarding_data
-      `)
-      .eq('user_id', authUser.id)
-      .maybeSingle();
-
-    if (error) {
-      console.error('Error fetching assinatura:', error.message);
-    }
-
-    return convertAssinaturaToUser(authUser, assinatura);
-  } catch (error) {
-    console.error('Exception fetching user data:', error);
-    return convertAssinaturaToUser(authUser, null);
-  }
-};
-
-export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+// Video Detail Page Component
+const VideoDetailPage: React.FC = () => {
+  const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [video, setVideo] = React.useState<any>(null);
+  const [loading, setLoading] = React.useState(true);
 
-  // Initialize auth and setup listener - run once only
-  useEffect(() => {
-    let timeoutId: NodeJS.Timeout;
-    
-    // Check session immediately on mount
-    const checkInitialSession = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        
-        if (session?.user) {
-          const userData = await fetchUserData(session.user);
-          setUser(userData);
-          setShowOnboarding(!userData.onboardingCompleted);
-          setLoading(false);
-        } else {
-          setUser(null);
-          setShowOnboarding(false);
-          setLoading(false);
-        }
-      } catch (error) {
-        console.error('❌ AuthProvider: Error checking initial session:', error);
-        setUser(null);
-        setShowOnboarding(false);
-        setLoading(false);
-      }
-    };
-    
-    // Check session immediately
-    checkInitialSession();
-    
-    // Safety timeout - ensure loading never stays true forever
-    timeoutId = setTimeout(() => {
-      setLoading(false);
-    }, 5000);
-    
-    // Setup auth listener - Supabase automatically fires INITIAL_SESSION event
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event: AuthChangeEvent, session: Session | null) => {
-      
-      // Clear timeout since we got an auth event
-      if (timeoutId) {
-        clearTimeout(timeoutId);
-      }
-
-      try {
-        if (session?.user) {
-          const userData = await fetchUserData(session.user);
-          setUser(userData);
-          setShowOnboarding(!userData.onboardingCompleted);
-          setLoading(false);
-        } else {
-          console.log('🔄 AuthProvider: No session in auth event');
-          setUser(null);
-          setShowOnboarding(false);
-          
-          // Only redirect on actual logout, not initial load
-          if (event === 'SIGNED_OUT') {
-            console.log('🔄 AuthProvider: User signed out, redirecting...');
-            navigate('/');
-          }
-        }
-        
-        console.log('🔄 AuthProvider: Setting loading to false (auth event)');
-        setLoading(false);
-      } catch (error) {
-        console.error('❌ AuthProvider: Error in auth state change:', error);
-        setUser(null);
-        setShowOnboarding(false);
-        console.log('🔄 AuthProvider: Setting loading to false (error in auth event)');
-        setLoading(false);
-      }
+  const handleVideoSelect = (selectedVideo: any) => {
+    console.log(`🚀 Navigating to ${selectedVideo.tipo || 'video'}:`, {
+      title: selectedVideo.title,
+      slug: selectedVideo.slug,
+      id: selectedVideo.id,
+      tipo: selectedVideo.tipo
     });
     
-    // Cleanup on unmount
-    return () => {
-      console.log('🧹 AuthProvider: Cleaning up...');
-      if (timeoutId) {
-        clearTimeout(timeoutId);
-      }
-      subscription.unsubscribe();
-    };
-  }, [navigate]);
-
-  const signIn = async (email: string, password: string): Promise<{ user: User | null; error: string | null }> => {
-    try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (error) {
-        return { user: null, error: error.message };
-      }
-
-      return { user: null, error: null };
-    } catch (error) {
-      return { user: null, error: 'Erro inesperado durante o login' };
+    // Prevent navigation if already on the same video page
+    const currentPath = location.pathname;
+    let targetPath = '/video/' + selectedVideo.slug;
+    if (selectedVideo.tipo === 'prompt') {
+      targetPath = '/prompt/' + selectedVideo.slug;
+    } else if (selectedVideo.tipo === 'live') {
+      targetPath = '/live/' + selectedVideo.slug;
     }
-  };
-
-  const signUp = async (email: string, password: string, name: string): Promise<{ user: User | null; error: string | null }> => {
-    try {
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            name: name,
-          }
-        }
-      });
-
-      if (error) {
-        return { user: null, error: error.message };
-      }
-
-      if (data.user) {
-        // Create assinatura record
-        const assinaturaData = {
-          "Nome do cliente": name,
-          "Email do cliente": email,
-          user_id: data.user.id,
-          onboarding_completed: false,
-          is_premium: false,
-          cadastro_mde: true
-        };
-
-        const { error: assinaturaError } = await supabase
-          .from('assinaturas')
-          .insert([assinaturaData]);
-
-        if (assinaturaError) {
-          console.error('Error creating assinatura:', assinaturaError.message);
-        }
-
-        // Force logout to show success screen
-        await supabase.auth.signOut();
-        
-        return { user: null, error: null };
-      }
-
-      return { user: null, error: 'Erro desconhecido' };
-    } catch (error) {
-      return { user: null, error: 'Erro inesperado durante o cadastro' };
-    }
-  };
-
-  const signOut = async (): Promise<{ error: string | null }> => {
-    try {
-      const { error } = await supabase.auth.signOut();
-      
-      if (error) {
-        return { error: error.message };
-      }
-      
-      return { error: null };
-    } catch (error) {
-      return { error: 'Erro inesperado durante o logout' };
-    }
-  };
-
-  const updateProfile = async (data: Partial<Assinatura>): Promise<boolean> => {
-    if (!user) {
-      return false;
-    }
-
-    try {
-      const { error } = await supabase
-        .from('assinaturas')
-        .upsert({ 
-          user_id: user.id, 
-          ...data 
-        }, {
-          onConflict: 'user_id'
-        });
-
-      if (error) {
-        console.error('Profile update error:', error.message);
-        return false;
-      }
-
-      // Refresh user data
-      await refreshUser();
-      
-      return true;
-    } catch (error) {
-      console.error('Profile update exception:', error);
-      return false;
-    }
-  };
-
-  const refreshUser = async (): Promise<void> => {
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session?.user) {
-        const userData = await fetchUserData(session.user);
-        setUser(userData);
-        setShowOnboarding(!userData.onboardingCompleted);
-      }
-    } catch (error) {
-      console.error('Error refreshing user:', error);
-    }
-  };
-
-  const completeOnboarding = async (): Promise<void> => {
-    if (!user) {
+    
+    if (currentPath === targetPath) {
+      console.log('🔄 Already on target page, skipping navigation');
       return;
     }
-
-    try {
-      const success = await updateProfile({ onboarding_completed: true });
-      
-      if (success) {
-        setShowOnboarding(false);
-      }
-    } catch (error) {
-      console.error('Error completing onboarding:', error);
+    
+    // Navigate to the appropriate URL based on content type
+    let urlPrefix = '/video/';
+    if (selectedVideo.tipo === 'prompt') {
+      urlPrefix = '/prompt/';
+    } else if (selectedVideo.tipo === 'live') {
+      urlPrefix = '/live/';
     }
+    navigate(urlPrefix + selectedVideo.slug);
   };
 
-  const value: AuthContextType = {
-    user,
-    loading,
-    showOnboarding,
-    completeOnboarding,
-    isAuthenticated: !loading && !!user,
-    signIn,
-    signUp,
-    signOut,
-    updateProfile,
-    refreshUser
+  React.useEffect(() => {
+    const loadVideo = async () => {
+      if (!slug) {
+        navigate('/');
+        return;
+      }
+
+      try {
+        const videoData = await videoService.getVideoBySlug(slug);
+        if (videoData) {
+          setVideo(videoData);
+          // Update page title
+          document.title = `Me dá um Exemplo | ${videoData.title}`;
+        } else {
+          // Video not found, redirect to home
+          navigate('/');
+        }
+      } catch (error) {
+        console.error('Error loading video:', error);
+        navigate('/');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadVideo();
+  }, [slug, navigate]);
+
+  const handleBack = () => {
+    navigate(-1); // Go back to previous page
   };
 
+  if (loading) {
+    return (
+      <div className="flex-1 flex items-center justify-center">
+        <div className="flex items-center space-x-3">
+          <div className="w-6 h-6 border-2 border-[#ff7551]/30 border-t-[#ff7551] rounded-full animate-spin"></div>
+          <span className="text-slate-400">Carregando...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (!video) {
+    return null;
+  }
+
+  // Return the video player/prompt viewer without layout wrapper
+  if (video.tipo === 'prompt') {
+    return (
+      <PromptViewer 
+        prompt={video}
+        onBack={handleBack}
+      />
+    );
+  } else if (video.tipo === 'live') {
+    return (
+      <LiveViewer 
+        live={video}
+        onBack={handleBack}
+      />
+    );
+  } else {
+    return (
+      <VideoPlayer 
+        video={video}
+        onBack={handleBack}
+      />
+    );
+  }
+};
+
+// Main App Layout Component
+const AppLayout: React.FC = () => {
+  const [sidebarCollapsed, setSidebarCollapsed] = React.useState(true);
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  // Get current view from URL
+  const getCurrentView = () => {
+    const path = location.pathname;
+    if (path === '/') return 'discover';
+    if (path.startsWith('/video/') || path.startsWith('/prompt/') || path.startsWith('/live/')) return 'video-detail';
+    return path.substring(1); // Remove leading slash
+  };
+
+  const currentView = getCurrentView();
+
+  // Update page title based on current view
+  useEffect(() => {
+    // Don't update title if page is not visible
+    if (document.hidden) {
+      return;
+    }
+    
+    const getPageTitle = () => {
+      const baseTitle = "Me dá um Exemplo | ";
+      switch (currentView) {
+        case 'discover': return baseTitle + 'Home';
+        case 'trending': return baseTitle + 'Trending';
+        case 'categories': return baseTitle + 'Categorias';
+        case 'discounts': return baseTitle + 'Descontos';
+        case 'affiliates': return baseTitle + 'Afiliados';
+        case 'bookmark': return baseTitle + 'Salvos';
+        case 'profile': return baseTitle + 'Minha Conta';
+        case 'request-lesson': return baseTitle + 'Pedir Aula';
+        case 'help': return baseTitle + 'Ajuda';
+        case 'video-detail': return document.title; // Keep existing title set by video page
+        default: return baseTitle + currentView.charAt(0).toUpperCase() + currentView.slice(1);
+      }
+    };
+
+    if (currentView !== 'video-detail') {
+      document.title = getPageTitle();
+    }
+  }, [currentView]);
+
+  const handleVideoSelect = (video: any) => {
+    console.log(`🚀 Navigating to ${video.tipo || 'video'}:`, {
+      title: video.title,
+      slug: video.slug,
+      id: video.id,
+      tipo: video.tipo
+    });
+    
+    // Navigate to the appropriate URL based on content type
+    let urlPrefix = '/video/';
+    if (video.tipo === 'prompt') {
+      urlPrefix = '/prompt/';
+    } else if (video.tipo === 'live') {
+      urlPrefix = '/live/';
+    }
+    navigate(urlPrefix + video.slug);
+  };
+
+  const handleViewChange = (view: string) => {
+    console.log('🔄 Changing view to:', view);
+    
+    // Map view names to URLs
+    const viewUrls: Record<string, string> = {
+      'discover': '/',
+      'trending': '/trending',
+      'categories': '/categories',
+      'bookmark': '/bookmark',
+      'discounts': '/discounts',
+      'affiliates': '/affiliates',
+      'profile': '/profile',
+      'request-lesson': '/request-lesson',
+      'help': '/help'
+    };
+    
+    const url = viewUrls[view] || '/';
+    navigate(url);
+  };
+
+  // For video detail pages, render with header and sidebar
+  if (currentView === 'video-detail') {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-[#1f1d2b] via-[#1f1d2b] to-black flex flex-col">
+        {/* Header - Full Width at Top */}
+        <Header 
+          sidebarCollapsed={sidebarCollapsed}
+          onSidebarToggle={() => setSidebarCollapsed(!sidebarCollapsed)}
+          onViewChange={handleViewChange}
+          onVideoSelect={handleVideoSelect}
+        />
+        
+        {/* Main Content Area */}
+        <div className="flex flex-1 min-h-0">
+          <Sidebar 
+            collapsed={sidebarCollapsed}
+            onToggle={() => setSidebarCollapsed(!sidebarCollapsed)}
+            currentView={currentView}
+            onViewChange={handleViewChange}
+          />
+          
+          <div className="flex-1 flex flex-col min-w-0">            
+            <VideoDetailPage />
+            <Footer />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // For all other pages, use normal layout
   return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
+    <div className="min-h-screen bg-gradient-to-b from-[#1f1d2b] via-[#1f1d2b] to-black flex flex-col">
+      {/* Header - Full Width at Top */}
+      <Header 
+        sidebarCollapsed={sidebarCollapsed}
+        onSidebarToggle={() => setSidebarCollapsed(!sidebarCollapsed)}
+        onViewChange={handleViewChange}
+        onVideoSelect={handleVideoSelect}
+      />
+      
+      {/* Main Content Area */}
+      <div className="flex flex-1 min-h-0">
+        <Sidebar 
+          collapsed={sidebarCollapsed}
+          onToggle={() => setSidebarCollapsed(!sidebarCollapsed)}
+          currentView={currentView}
+          onViewChange={handleViewChange}
+        />
+        
+        <div className="flex-1 flex flex-col min-w-0">            
+          <div className="px-6 sm:px-8 lg:px-10 pt-6 pb-8 max-w-[1600px] w-full">
+            <MainContent 
+              currentView={currentView}
+              onVideoSelect={handleVideoSelect}
+              onViewChange={handleViewChange}
+            />
+          </div>
+          
+          <Footer />
+        </div>
+      </div>
+    </div>
   );
 };
+
+function App() {
+  console.log('🎯 App: Rendering main App component');
+  return (
+    <AuthProvider>
+      <AppWithAuth />
+    </AuthProvider>
+  );
+}
+
+// Component that has access to auth context
+const AppWithAuth: React.FC = () => {
+  const { user, showOnboarding, completeOnboarding, loading } = useAuth();
+  
+  // Debug logs
+  console.log('🔍 AppWithAuth render:', { 
+    hasUser: !!user, 
+    showOnboarding, 
+    loading,
+    userEmail: user?.email 
+  });
+  
+  // Show loading screen while auth is initializing
+  if (loading) {
+    console.log('🔄 AppWithAuth: Showing loading screen');
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-[#1f1d2b] via-[#1f1d2b] to-black flex items-center justify-center">
+        <div className="flex items-center space-x-3">
+          <div className="w-6 h-6 border-2 border-[#ff7551]/30 border-t-[#ff7551] rounded-full animate-spin"></div>
+          <span className="text-slate-400">Carregando...</span>
+        </div>
+      </div>
+    );
+  }
+
+  // Show onboarding if user is logged in but hasn't completed onboarding
+  if (user && showOnboarding) {
+    console.log('🎯 Showing onboarding flow for user:', user.email);
+    console.log('🎯 AppWithAuth: Showing onboarding');
+    return (
+      <OnboardingFlow
+        userId={user.id}
+        userEmail={user.email}
+        onComplete={completeOnboarding}
+      />
+    );
+  }
+
+  console.log('🎯 AppWithAuth: Showing normal app routes');
+  // Normal app routes
+  return (
+    <VideoProvider>
+      <Routes>
+        {/* All routes now use the same layout structure */}
+        <Route path="/" element={<AppLayout />} />
+        <Route path="/trending" element={<AppLayout />} />
+        <Route path="/categories" element={<AppLayout />} />
+        <Route path="/bookmark" element={<AppLayout />} />
+        <Route path="/discounts" element={<AppLayout />} />
+        <Route path="/affiliates" element={<AppLayout />} />
+        <Route path="/profile" element={<AppLayout />} />
+        <Route path="/request-lesson" element={<AppLayout />} />
+        <Route path="/help" element={<AppLayout />} />
+        <Route path="/video/:slug" element={<AppLayout />} />
+        <Route path="/prompt/:slug" element={<AppLayout />} />
+        <Route path="/live/:slug" element={<AppLayout />} />
+        <Route path="/registro" element={<RegistrationPage />} />
+        <Route path="/redefinir-senha" element={<PasswordResetPage />} />
+        <Route path="/privacidade" element={<PrivacyPolicyPage />} />
+        
+        {/* Catch all route - redirect to home */}
+        <Route path="*" element={<AppLayout />} />
+      </Routes>
+    </VideoProvider>
+  );
+};
+export default App;
