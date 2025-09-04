@@ -175,6 +175,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     // Cleanup on unmount
     return () => {
       subscription.unsubscribe();
+      }
   }
   )
 
