@@ -164,7 +164,7 @@ const fetchUserData = async (authUser: SupabaseUser, retryCount = 0): Promise<Us
         return convertAssinaturaToUser(authUser, null);
       }
       
-      console.error('❌ Error fetching assinatura:', error.message);
+      console.error('❌ Error fetching assinatura:', error.message || error);
       // Return user with auth data only if assinaturas query fails
       return convertAssinaturaToUser(authUser, null);
     }
@@ -204,7 +204,7 @@ const fetchUserData = async (authUser: SupabaseUser, retryCount = 0): Promise<Us
       await new Promise(resolve => setTimeout(resolve, delay));
       return fetchUserData(authUser, retryCount + 1);
     } else {
-      console.error('❌ Exception fetching user data:', error);
+      console.error('❌ Exception fetching user data:', error.message || error);
     }
     // Return user with auth data only if exception occurs
     return convertAssinaturaToUser(authUser, null);
