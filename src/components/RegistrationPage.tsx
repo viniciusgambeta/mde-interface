@@ -589,7 +589,7 @@ const RegistrationPage: React.FC = () => {
         </div>
 
         {/* Footer */}
-        <div className="p-6 mt-0">
+        <div className="px-6 pt-6 pb-3 mt-0">
           <div className="flex justify-between">
             {/* Back Button */}
             {currentStep > 0 ? (
