@@ -638,15 +638,6 @@ const RegistrationPage: React.FC = () => {
 
           {/* Footer Links */}
           <div className="mt-6 text-center">
-            <p className="text-slate-400 text-sm">
-              Já tem uma conta?{' '}
-              <button
-                onClick={() => navigate('/')}
-                className="text-[#ff7551] hover:text-[#ff7551]/80 font-medium transition-colors"
-              >
-                Entrar
-              </button>
-            </p>
           </div>
         </div>
       </div>
