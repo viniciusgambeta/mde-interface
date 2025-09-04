@@ -71,6 +71,9 @@ const SuggestedPrompts: React.FC<{ currentPrompt: Video }> = ({ currentPrompt })
             <div className="relative">
               <img
                 src={currentPrompt.instructor?.avatar_url || '/avatar1.png'}
+                alt={currentPrompt.instructor?.name || 'Instrutor'}
+                className="w-16 h-12 rounded-lg object-cover"
+              />
             </div>
           </div>
           <div className="flex-1 min-w-0">
@@ -96,6 +99,7 @@ const SuggestedPrompts: React.FC<{ currentPrompt: Video }> = ({ currentPrompt })
 interface PromptViewerProps {
   prompt: Video;
   onBack: () => void;
+  onVideoSelect?: (video: Video) => void;
 }
 
 const PromptViewer: React.FC<PromptViewerProps> = ({ prompt, onBack, onVideoSelect }) => {
@@ -212,7 +216,7 @@ const PromptViewer: React.FC<PromptViewerProps> = ({ prompt, onBack, onVideoSele
             }
           }
         }, 300); // Small delay to ensure trigger has executed
-        }
+      }
     } catch (error) {
       console.error('Error toggling like:', error);
     } finally {
