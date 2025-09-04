@@ -51,7 +51,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   signIn: (email: string, password: string) => Promise<{ user: User | null; error: string | null }>;
   signUp: (email: string, password: string, name: string) => Promise<{ user: User | null; error: string | null }>;
-  signOut: () => Promise<void>;
+  signOut: () => Promise<{ error: string | null }>;
   updateProfile: (data: Partial<Assinatura>) => Promise<boolean>;
   refreshUser: () => Promise<void>;
 }
@@ -66,20 +66,30 @@ export const useAuth = () => {
   return context;
 };
 
+// Helper function to convert any value to boolean
+const toBool = (v: any): boolean => {
+  if (typeof v === 'boolean') return v;
+  if (typeof v === 'string') return ['true', 't', '1', 'yes', 'y'].includes(v.toLowerCase());
+  if (typeof v === 'number') return v === 1;
+  return false;
+};
+
 // Helper function to convert assinatura data to User
 const convertAssinaturaToUser = (authUser: SupabaseUser, assinatura: Assinatura | null): User => {
-  console.log('🔄 Converting assinatura to user:', { authUser: authUser.email, assinatura });
-  console.log('🎯 DEBUG onboarding_completed from DB:', assinatura?.onboarding_completed, 'type:', typeof assinatura?.onboarding_completed);
+  console.log('🔄 Converting assinatura to user:', { 
+    authUser: authUser.email, 
+    hasAssinatura: !!assinatura,
+    onboardingCompleted: assinatura?.onboarding_completed
+  });
   
   return {
     id: authUser.id,
     email: authUser.email || '',
     name: assinatura?.["Nome do cliente"] || authUser.user_metadata?.name || authUser.email?.split('@')[0] || '',
     avatar: assinatura?.avatar_usuario || authUser.user_metadata?.avatar_url || '/avatar1.png',
-    isPremium: assinatura?.is_premium || assinatura?.["Status da assinatura"] === 'active' || false,
+    isPremium: toBool(assinatura?.is_premium) || assinatura?.["Status da assinatura"] === 'active' || false,
     joinedAt: assinatura?.["Data de criação"] || authUser.created_at,
-    onboardingCompleted: assinatura?.onboarding_completed || false,
-    onboardingCompleted: assinatura?.onboarding_completed === true,
+    onboardingCompleted: toBool(assinatura?.onboarding_completed),
     phone: assinatura?.phone_number || assinatura?.["Telefone do cliente"]?.toString() || '',
     bio: assinatura?.bio || '',
     instagram: assinatura?.instagram || '',
@@ -91,13 +101,11 @@ const convertAssinaturaToUser = (authUser: SupabaseUser, assinatura: Assinatura 
   };
 };
 
-// Helper function to fetch user data from assinaturas
-const fetchAndConvertUser = async (authUser: SupabaseUser): Promise<User> => {
+// Helper function to fetch user data from assinaturas table
+const fetchUserData = async (authUser: SupabaseUser): Promise<User> => {
   console.log('🔍 Fetching user data for:', authUser.email);
   
   try {
-    console.log('🔍 Querying assinaturas table for user_id:', authUser.id);
-    
     const { data: assinatura, error } = await supabase
       .from('assinaturas')
       .select(`
@@ -125,83 +133,108 @@ const fetchAndConvertUser = async (authUser: SupabaseUser): Promise<User> => {
       .maybeSingle();
 
     if (error) {
-      console.error('❌ Error in assinaturas query:', error.message);
-      console.log('🔄 Continuing with auth data only due to query error');
+      console.error('❌ Error fetching assinatura:', error.message);
+      // Return user with auth data only if assinaturas query fails
       return convertAssinaturaToUser(authUser, null);
     }
 
-    console.log('📊 Assinatura data found:', !!assinatura, 'onboarding_completed:', assinatura?.onboarding_completed);
+    console.log('📊 Assinatura data:', { 
+      found: !!assinatura, 
+      onboardingCompleted: assinatura?.onboarding_completed 
+    });
+    
     return convertAssinaturaToUser(authUser, assinatura);
     
   } catch (error) {
-    console.error('❌ Exception in assinaturas query:', error instanceof Error ? error.message : 'Unknown error');
-    // Return user with auth data only if assinaturas query fails
+    console.error('❌ Exception fetching user data:', error);
+    // Return user with auth data only if exception occurs
     return convertAssinaturaToUser(authUser, null);
   }
 };
+
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [showOnboarding, setShowOnboarding] = useState(false);
-  
-  // Prevent double execution in StrictMode
-  const [isMounted, setIsMounted] = useState(false);
+  const [initialized, setInitialized] = useState(false);
 
-  // Initialize auth state
-  const initializeAuth = async () => {
-    try {
-      console.log('🚀 Initializing auth...');
-      
-      const { data: { session }, error } = await supabase.auth.getSession();
-      
-      if (error) {
-        console.error('❌ Error getting session:', error.message);
-        return;
-      }
-
-      if (session?.user) {
-        console.log('✅ Session found, fetching user data...');
-        const userData = await fetchAndConvertUser(session.user);
+  // Handle auth state changes (both initial and subsequent)
+  const handleAuthStateChange = async (session: Session | null) => {
+    console.log('🔄 Handling auth state change:', { hasSession: !!session });
+    
+    if (session?.user) {
+      try {
+        const userData = await fetchUserData(session.user);
         setUser(userData);
-        setShowOnboarding(userData.onboardingCompleted === false);
-        console.log('✅ User data set:', userData.email);
-        console.log('🎯 showOnboarding set to:', userData.onboardingCompleted === false);
-      } else {
-      }
-    } catch (error) {
-      console.error('💥 Error initializing auth:', error instanceof Error ? error.message : 'Unknown error');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    setIsMounted(true);
-    initializeAuth();
-
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event: AuthChangeEvent, session: Session | null) => {
-      console.log('🔄 Auth state changed:', event);
-      
-      // Prevent double execution in StrictMode
-      if (!isMounted) return;
-      
-      if (event === 'SIGNED_IN' && session?.user) {
-        const userData = await fetchAndConvertUser(session.user);
-        setUser(userData);
-        setShowOnboarding(userData.onboardingCompleted === false);
-        console.log('🎯 Auth change - showOnboarding set to:', userData.onboardingCompleted === false);
-      } else if (event === 'SIGNED_OUT') {
+        setShowOnboarding(!userData.onboardingCompleted);
+        console.log('✅ User data set:', { 
+          email: userData.email, 
+          onboardingCompleted: userData.onboardingCompleted,
+          showOnboarding: !userData.onboardingCompleted
+        });
+      } catch (error) {
+        console.error('❌ Error handling auth state change:', error);
         setUser(null);
         setShowOnboarding(false);
       }
-    });
+    } else {
+      console.log('🚪 No session, clearing user data');
+      setUser(null);
+      setShowOnboarding(false);
+    }
+  };
+
+  // Initialize auth state
+  useEffect(() => {
+    const initializeAuth = async () => {
+      try {
+        console.log('🚀 Initializing auth...');
+        
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          console.error('❌ Error getting initial session:', error.message);
+        } else {
+          await handleAuthStateChange(session);
+        }
+      } catch (error) {
+        console.error('💥 Error initializing auth:', error);
+      } finally {
+        setLoading(false);
+        setInitialized(true);
+        console.log('✅ Auth initialization complete');
+      }
+    };
+
+    initializeAuth();
+  }, []);
+
+  // Listen for auth changes
+  useEffect(() => {
+    if (!initialized) return;
+
+    console.log('👂 Setting up auth state listener...');
+    
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event: AuthChangeEvent, session: Session | null) => {
+        console.log('🔄 Auth state changed:', event);
+        
+        // Handle all auth events through the same function
+        if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION') {
+          await handleAuthStateChange(session);
+        } else if (event === 'SIGNED_OUT') {
+          setUser(null);
+          setShowOnboarding(false);
+          console.log('🚪 User signed out, state cleared');
+        }
+      }
+    );
 
     return () => {
-      setIsMounted(false);
+      console.log('🧹 Cleaning up auth listener');
       subscription.unsubscribe();
     };
-  }, [isMounted]);
+  }, [initialized]);
 
   const signIn = async (email: string, password: string): Promise<{ user: User | null; error: string | null }> => {
     try {
@@ -217,16 +250,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         return { user: null, error: error.message };
       }
 
-      if (data.user) {
-        const userData = await fetchAndConvertUser(data.user);
-        setUser(userData);
-        setShowOnboarding(userData.onboardingCompleted === false);
-        console.log('✅ Sign in successful for:', userData.email);
-        console.log('🎯 Sign in - showOnboarding set to:', userData.onboardingCompleted === false);
-        return { user: userData, error: null };
-      }
-
-      return { user: null, error: 'Erro desconhecido' };
+      console.log('✅ Sign in successful, auth state change will handle user data');
+      return { user: null, error: null }; // User will be set by auth state change
     } catch (error) {
       console.error('💥 Exception during sign in:', error);
       return { user: null, error: 'Erro inesperado durante o login' };
@@ -253,7 +278,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       }
 
       if (data.user) {
-        // Create assinatura record with cadastro_mde = true
+        // Create assinatura record
         const assinaturaData = {
           "Nome do cliente": name,
           "Email do cliente": email,
@@ -263,7 +288,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           cadastro_mde: true
         };
 
-        console.log('📝 Creating assinatura record:', assinaturaData);
+        console.log('📝 Creating assinatura record');
 
         const { error: assinaturaError } = await supabase
           .from('assinaturas')
@@ -275,12 +300,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           console.log('✅ Assinatura record created successfully');
         }
 
-        const userData = await fetchAndConvertUser(data.user);
-        setUser(userData);
-        setShowOnboarding(userData.onboardingCompleted === false);
-        console.log('✅ Sign up successful for:', userData.email);
-        console.log('🎯 Sign up - showOnboarding set to:', userData.onboardingCompleted === false);
-        return { user: userData, error: null };
+        console.log('✅ Sign up successful, auth state change will handle user data');
+        return { user: null, error: null }; // User will be set by auth state change
       }
 
       return { user: null, error: 'Erro desconhecido' };
@@ -290,14 +311,21 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
-  const signOut = async (): Promise<void> => {
+  const signOut = async (): Promise<{ error: string | null }> => {
     try {
       console.log('🚪 Signing out...');
-      await supabase.auth.signOut();
-      setUser(null);
-      console.log('✅ Sign out successful');
+      const { error } = await supabase.auth.signOut();
+      
+      if (error) {
+        console.error('❌ Error signing out:', error.message);
+        return { error: error.message };
+      }
+      
+      console.log('✅ Sign out successful, auth state change will handle cleanup');
+      return { error: null };
     } catch (error) {
-      console.error('❌ Error signing out:', error);
+      console.error('❌ Exception during sign out:', error);
+      return { error: 'Erro inesperado durante o logout' };
     }
   };
 
@@ -308,94 +336,31 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
 
     try {
-      console.log('🔄 Starting profile update for user:', user.id);
-      console.log('📤 Update data received:', data);
+      console.log('🔄 Updating profile for user:', user.id);
+      console.log('📤 Update data:', data);
 
-      // Prepare the update data using exact field names from assinaturas table
-      const updateData: any = {};
-
-      // Map the fields correctly
-      if (data["Nome do cliente"] !== undefined) {
-        updateData["Nome do cliente"] = data["Nome do cliente"];
-      }
-      
-      if (data["Telefone do cliente"] !== undefined) {
-        updateData["Telefone do cliente"] = data["Telefone do cliente"];
-      }
-      
-      if (data.phone_number !== undefined) {
-        updateData.phone_number = data.phone_number;
-      }
-      
-      if (data.avatar_usuario !== undefined) {
-        updateData.avatar_usuario = data.avatar_usuario;
-      }
-      
-      if (data.bio !== undefined) {
-        updateData.bio = data.bio;
-      }
-      
-      if (data.instagram !== undefined) {
-        updateData.instagram = data.instagram;
-      }
-      
-      if (data.linkedin !== undefined) {
-        updateData.linkedin = data.linkedin;
-      }
-      
-      if (data.experiencia_ia !== undefined) {
-        updateData.experiencia_ia = data.experiencia_ia;
-      }
-      
-      if (data.objetivo_principal !== undefined) {
-        updateData.objetivo_principal = data.objetivo_principal;
-      }
-      
-      if (data.tipo_trabalho !== undefined) {
-        updateData.tipo_trabalho = data.tipo_trabalho;
-      }
-      
-      if (data.porte_negocio !== undefined) {
-        updateData.porte_negocio = data.porte_negocio;
-      }
-      
-      if (data.onboarding_completed !== undefined) {
-        updateData.onboarding_completed = data.onboarding_completed;
-      }
-      
-      if (data.onboarding_data !== undefined) {
-        updateData.onboarding_data = data.onboarding_data;
-      }
-      
-      if (data.is_premium !== undefined) {
-        updateData.is_premium = data.is_premium;
-      }
-
-      console.log('📋 Final update payload:', updateData);
-
-      // Use upsert instead of update/insert pattern
       const { error } = await supabase
         .from('assinaturas')
         .upsert({ 
           user_id: user.id, 
-          ...updateData 
+          ...data 
         }, {
           onConflict: 'user_id'
         });
 
       if (error) {
-        console.error('❌ Profile upsert error:', error.message);
-        throw error;
+        console.error('❌ Profile update error:', error.message);
+        return false;
       }
 
       console.log('✅ Profile updated successfully');
-
+      
       // Refresh user data
       await refreshUser();
       
       return true;
     } catch (error) {
-      console.error('❌ Profile update error:', error instanceof Error ? error.message : 'Unknown error');
+      console.error('❌ Profile update exception:', error);
       return false;
     }
   };
@@ -404,11 +369,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     try {
       const { data: { user: authUser } } = await supabase.auth.getUser();
       if (authUser) {
-        const userData = await fetchAndConvertUser(authUser);
+        const userData = await fetchUserData(authUser);
         setUser(userData);
-        setShowOnboarding(userData.onboardingCompleted === false);
-        console.log('🎯 Refresh - showOnboarding set to:', userData.onboardingCompleted === false);
-      setShowOnboarding(!userData.onboardingCompleted);
+        setShowOnboarding(!userData.onboardingCompleted);
+        console.log('🔄 User data refreshed');
       }
     } catch (error) {
       console.error('❌ Error refreshing user:', error);
@@ -424,23 +388,14 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     try {
       console.log('✅ Completing onboarding for user:', user.id);
       
-      const { error } = await supabase
-        .from('assinaturas')
-        .upsert({ 
-          user_id: user.id,
-          onboarding_completed: true 
-        }, {
-          onConflict: 'user_id'
-        });
-
-      if (error) {
-        console.error('❌ Error completing onboarding:', error.message);
-        throw error;
+      const success = await updateProfile({ onboarding_completed: true });
+      
+      if (success) {
+        setShowOnboarding(false);
+        console.log('✅ Onboarding completed successfully');
+      } else {
+        console.error('❌ Failed to complete onboarding');
       }
-
-      setShowOnboarding(false);
-      await refreshUser();
-      console.log('✅ Onboarding completed successfully');
     } catch (error) {
       console.error('❌ Error completing onboarding:', error);
     }

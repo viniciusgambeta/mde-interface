@@ -54,7 +54,7 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onSwitchToRegi
     const result = await signIn(email, password);
     console.log('📥 Login result:', result);
     
-    if (result.user && !result.error) {
+    if (!result.error) {
       console.log('✅ Login successful, closing modal');
       onClose();
       // Clear form

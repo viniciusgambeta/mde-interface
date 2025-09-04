@@ -172,7 +172,8 @@ const RegistrationPage: React.FC = () => {
           }
         }
         
-        // Show success screen first, logout will happen when user clicks login button
+        // Force logout and show success screen
+        await supabase.auth.signOut();
         console.log('✅ Registration successful, showing success screen...');
         setShowSuccessScreen(true);
       }

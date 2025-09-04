@@ -100,9 +100,16 @@ const Header: React.FC<HeaderProps> = ({ sidebarCollapsed, onSidebarToggle, onVi
   }, [searchQuery]);
 
   const handleLogout = async () => {
-    const { error } = await signOut();
-    if (!error) {
-      // Force page reload to ensure clean state
+    try {
+      const { error } = await signOut();
+      if (error) {
+        console.error('Logout error:', error);
+      }
+      // Always redirect after logout attempt
+      window.location.href = '/';
+    } catch (error) {
+      console.error('Logout exception:', error);
+      // Force redirect even on error
       window.location.href = '/';
     }
     setShowUserMenu(false);

@@ -51,7 +51,7 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose, onSwitch
       const result = await signUp(email, password, name);
       console.log('📥 Registration result:', result);
       
-      if (result.user && !result.error) {
+      if (!result.error) {
         console.log('✅ Registration successful, closing modal');
         onClose();
         setName('');

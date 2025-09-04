@@ -148,13 +148,16 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
         setBookmarkStates(initialBookmarkStates);
       } catch (error) {
         console.error('Error loading videos:', error);
+        // Set empty arrays on error to prevent infinite loading
+        setVideos([]);
+        setFilteredVideos([]);
       } finally {
         setLoading(false);
       }
     };
 
     loadVideos();
-  }, [currentView, user?.id]);
+  }, [currentView, user?.id, loading]); // Add loading dependency to prevent race conditions
 
   // Load category-specific videos for discover page
   useEffect(() => {
