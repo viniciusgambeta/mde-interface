@@ -412,7 +412,23 @@ const Header: React.FC<HeaderProps> = ({ sidebarCollapsed, onSidebarToggle, onVi
                         <span className="text-base">Minha Conta</span>
                       </button>
                       
+                      <button
+                        onClick={handleHelpClick}
+                        className="flex items-center space-x-3 w-full px-5 py-3 text-slate-300 hover:text-white hover:bg-slate-700/30 transition-colors"
+                      >
+                        <HelpCircle className="w-5 h-5" />
+                        <span className="text-base">Ajuda</span>
+                      </button>
+                      
                       <div className="border-t border-slate-700/30 my-2"></div>
+                      
+                      <button
+                        onClick={handleBookmarksClick}
+                        className="flex items-center space-x-3 w-full px-5 py-3 text-slate-300 hover:text-white hover:bg-slate-700/30 transition-colors"
+                      >
+                        <Bookmark className="w-5 h-5" />
+                        <span className="text-base">Salvos</span>
+                      </button>
                       
                       <button
                         onClick={handleLogout}
