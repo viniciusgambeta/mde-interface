@@ -404,7 +404,6 @@ const RegistrationPage: React.FC = () => {
               {emailValid === true && subscriptionData && !isCheckingEmail && !hasExistingAccount && (
                 <div className="mt-3 p-3 bg-green-500/10 border border-green-500/20 rounded-lg">
                   <div className="flex items-center space-x-2">
-                    <CheckCircle className="w-4 h-4 text-green-400" />
                     <div>
                       <p className="text-green-400 text-sm font-medium">
                         ✓ Assinatura ativa encontrada!
