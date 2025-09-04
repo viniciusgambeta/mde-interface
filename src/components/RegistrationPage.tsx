@@ -567,9 +567,12 @@ const RegistrationPage: React.FC = () => {
         {/* Header */}
         <div className="p-6 border-b border-slate-700/30">
           <div className="text-center">
-            <img
-              src="/logo1_branco.png"
-              alt="Me dá um Exemplo"
+            <video
+              src="/src/images/outputgansotopo3.webm"
+              autoPlay
+              loop
+              muted
+              playsInline
               className="h-16 w-auto mx-auto"
             />
           </div>
