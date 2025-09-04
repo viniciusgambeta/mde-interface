@@ -348,16 +348,6 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ videoId, videoTitle }
     );
   };
 
-  // Sort comments based on selected option
-  const sortedComments = React.useMemo(() => {
-    const sorted = [...comments];
-    if (sortBy === 'recent') {
-      return sorted.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-    } else {
-      return sorted.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
-    }
-  }, [comments, sortBy]);
-
   return (
     <div className="space-y-6">
       {/* New Comment Form */}
