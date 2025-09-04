@@ -144,92 +144,73 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   // Initialize auth and setup listener - run once only
   useEffect(() => {
-    console.log('🚀 AuthProvider: useEffect started');
     let timeoutId: NodeJS.Timeout;
     
     // Check session immediately on mount
     const checkInitialSession = async () => {
-      console.log('🔍 AuthProvider: Checking initial session...');
       try {
         const { data: { session } } = await supabase.auth.getSession();
-        console.log('🔍 AuthProvider: Initial session result:', !!session);
         
         if (session?.user) {
-          console.log('🔍 AuthProvider: Session found, loading user data...');
           const userData = await fetchUserData(session.user);
-          console.log('🔍 AuthProvider: User data loaded:', userData.email);
           setUser(userData);
           setShowOnboarding(!userData.onboardingCompleted);
+          setLoading(false);
         } else {
-          console.log('🔍 AuthProvider: No session found');
           setUser(null);
           setShowOnboarding(false);
+          setLoading(false);
         }
-        console.log('🔍 AuthProvider: Setting loading to false (initial check)');
-        setLoading(false);
       } catch (error) {
         console.error('❌ AuthProvider: Error checking initial session:', error);
         setUser(null);
         setShowOnboarding(false);
-        console.log('🔍 AuthProvider: Setting loading to false (error)');
         setLoading(false);
       }
     };
     
     // Check session immediately
-    console.log('🔍 AuthProvider: Starting initial session check...');
     checkInitialSession();
     
     // Safety timeout - ensure loading never stays true forever
     timeoutId = setTimeout(() => {
-      console.warn('⏰ AuthProvider: Timeout reached, setting loading to false');
       setLoading(false);
     }, 5000);
     
     // Setup auth listener - Supabase automatically fires INITIAL_SESSION event
-    console.log('🔍 AuthProvider: Setting up auth listener...');
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event: AuthChangeEvent, session: Session | null) => {
-      console.log('🔄 AuthProvider: Auth state change:', event, 'hasSession:', !!session);
       
       // Clear timeout since we got an auth event
       if (timeoutId) {
-        console.log('🔄 AuthProvider: Clearing timeout due to auth event');
         clearTimeout(timeoutId);
       }
 
       try {
         if (session?.user) {
-          console.log('🔄 AuthProvider: Loading user data for auth event...');
           const userData = await fetchUserData(session.user);
-          console.log('🔄 AuthProvider: User data loaded for auth event:', userData.email);
           setUser(userData);
           setShowOnboarding(!userData.onboardingCompleted);
+          setLoading(false);
         } else {
-          console.log('🔄 AuthProvider: No session in auth event');
           setUser(null);
           setShowOnboarding(false);
+          setLoading(false);
           
           // Only redirect on actual logout, not initial load
           if (event === 'SIGNED_OUT') {
-            console.log('🔄 AuthProvider: User signed out, redirecting...');
             navigate('/');
           }
         }
-        
-        console.log('🔄 AuthProvider: Setting loading to false (auth event)');
-        setLoading(false);
       } catch (error) {
         console.error('❌ AuthProvider: Error in auth state change:', error);
         setUser(null);
         setShowOnboarding(false);
-        console.log('🔄 AuthProvider: Setting loading to false (error in auth event)');
         setLoading(false);
       }
     });
     
     // Cleanup on unmount
     return () => {
-      console.log('🧹 AuthProvider: Cleaning up...');
       if (timeoutId) {
         clearTimeout(timeoutId);
       }

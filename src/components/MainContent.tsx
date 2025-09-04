@@ -19,16 +19,7 @@ interface MainContentProps {
 }
 
 const MainContent: React.FC<MainContentProps> = ({ currentView, onVideoSelect, onViewChange }) => {
-  console.log('📺 MainContent render:', { currentView });
-  
   const handleVideoSelect = (video: any) => {
-    console.log(`📺 MainContent.handleVideoSelect called with ${video.tipo || 'video'}:`, {
-      title: video.title,
-      id: video.id,
-      slug: video.slug,
-      tipo: video.tipo
-    });
-    
     // Forward to App component
     onVideoSelect(video);
   };
