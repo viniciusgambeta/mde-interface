@@ -104,47 +104,58 @@ const convertAssinaturaToUser = (authUser: SupabaseUser, assinatura: Assinatura 
 };
 
 // Helper function to fetch user data from assinaturas table
-const fetchUserData = async (authUser: SupabaseUser): Promise<User> => {
+let currentFetchController: AbortController | null = null;
+
+const fetchUserData = async (authUser: SupabaseUser, retryCount = 0): Promise<User> => {
   console.log('🔍 Fetching user data for:', authUser.email);
   
+  // Cancel any previous fetch to avoid overlaps
+  if (currentFetchController) {
+    console.log('🚫 Cancelling previous fetch request');
+    currentFetchController.abort();
+  }
+  
+  // Create new controller for this fetch
+  currentFetchController = new AbortController();
+  const controller = currentFetchController;
+  
   try {
-    // Add AbortController and timeout to prevent hanging queries
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 8000);
+    // Set timeout for 15 seconds
+    const timeoutId = setTimeout(() => controller.abort(), 15000);
     
-    const { data: assinatura, error } = await Promise.race([
-      supabase
-        .from('assinaturas')
-        .select(`
-          "ID da assinatura",
-          "Nome do cliente",
-          "Email do cliente", 
-          "Telefone do cliente",
-          "Status da assinatura",
-          "Data de criação",
-          user_id,
-          avatar_usuario,
-          experiencia_ia,
-          objetivo_principal,
-          tipo_trabalho,
-          porte_negocio,
-          instagram,
-          linkedin,
-          bio,
-          phone_number,
-          is_premium,
-          onboarding_completed,
-          onboarding_data
-        `)
-        .eq('user_id', authUser.id)
-        .abortSignal(controller.signal)
-        .maybeSingle(),
-      new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Database query timeout')), 8000)
-      )
-    ]) as { data: any; error: any };
+    const { data: assinatura, error } = await supabase
+      .from('assinaturas')
+      .select(`
+        "ID da assinatura",
+        "Nome do cliente",
+        "Email do cliente", 
+        "Telefone do cliente",
+        "Status da assinatura",
+        "Data de criação",
+        user_id,
+        avatar_usuario,
+        experiencia_ia,
+        objetivo_principal,
+        tipo_trabalho,
+        porte_negocio,
+        instagram,
+        linkedin,
+        bio,
+        phone_number,
+        is_premium,
+        onboarding_completed,
+        onboarding_data
+      `)
+      .eq('user_id', authUser.id)
+      .abortSignal(controller.signal)
+      .maybeSingle();
     
     clearTimeout(timeoutId);
+    
+    // Clear controller reference if this is still the current one
+    if (currentFetchController === controller) {
+      currentFetchController = null;
+    }
 
     if (error) {
       console.error('❌ Error fetching assinatura:', error.message);
@@ -160,8 +171,27 @@ const fetchUserData = async (authUser: SupabaseUser): Promise<User> => {
     return convertAssinaturaToUser(authUser, assinatura);
     
   } catch (error) {
+    // Clear controller reference if this is still the current one
+    if (currentFetchController === controller) {
+      currentFetchController = null;
+    }
+    
     if (error.name === 'AbortError') {
-      console.warn('⚠️ User data query was aborted due to timeout');
+      console.warn('⚠️ User data query was aborted');
+      
+      // Retry with exponential backoff for transient errors
+      if (retryCount < 2) {
+        const delay = Math.pow(2, retryCount) * 1000; // 1s, 2s, 4s
+        console.log(`🔄 Retrying fetch in ${delay}ms (attempt ${retryCount + 1}/3)`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+        return fetchUserData(authUser, retryCount + 1);
+      }
+    } else if (error.message?.includes('Failed to fetch') && retryCount < 2) {
+      // Retry network errors
+      const delay = Math.pow(2, retryCount) * 1000;
+      console.log(`🔄 Retrying fetch due to network error in ${delay}ms (attempt ${retryCount + 1}/3)`);
+      await new Promise(resolve => setTimeout(resolve, delay));
+      return fetchUserData(authUser, retryCount + 1);
     } else {
       console.error('❌ Exception fetching user data:', error);
     }
@@ -236,29 +266,31 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       } else {
         console.log('❌ No session found, clearing user');
         setUser(null);
+        setShowOnboarding(false);
 
-       // Só redireciona se suppressRedirects não estiver ativo E não estivermos carregando
-       if (!suppressRedirectsRef.current && !authLoading) {
+        // Só redireciona se suppressRedirects não estiver ativo E não estivermos carregando
+        if (!suppressRedirectsRef.current && !authLoading) {
           // Redirecionar para login se estiver em rota protegida
-         const currentPath = location.pathname;
-         const isCurrentlyProtected = isProtectedRoute(currentPath);
+          const currentPath = location.pathname;
+          const isCurrentlyProtected = isProtectedRoute(currentPath);
           
-         if (isCurrentlyProtected) {
-           console.log('🔄 Redirecting to home from protected route:', currentPath);
-           navigate('/');
-         } else {
-           console.log('📍 On public route, no redirect needed:', currentPath);
+          if (isCurrentlyProtected) {
+            console.log('🔄 Redirecting to home from protected route:', currentPath);
+            navigate('/');
+          } else {
+            console.log('📍 On public route, no redirect needed:', currentPath);
           }
-       } else if (suppressRedirectsRef.current) {
-         console.log('🚫 Navigation suppressed, but user state cleared');
-       } else {
-         console.log('⏳ Still loading auth, deferring redirect decision');
+        } else if (suppressRedirectsRef.current) {
+          console.log('🚫 Navigation suppressed, but user state cleared');
+        } else {
+          console.log('⏳ Still loading auth, deferring redirect decision');
         }
-      }
+          }
       
     } catch (error) {
       console.error('❌ Error in auth state change:', error);
       setUser(null);
+      setShowOnboarding(false);
     } finally {
       setAuthLoading(false);
     }
