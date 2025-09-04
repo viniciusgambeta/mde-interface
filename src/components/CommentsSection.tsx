@@ -131,16 +131,16 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ videoId, videoTitle }
     const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
 
     if (diffInSeconds < 60) {
-      return 'agora';
+      return 'agora mesmo';
     } else if (diffInSeconds < 3600) {
       const minutes = Math.floor(diffInSeconds / 60);
-      return `${minutes} min ago`;
+      return `${minutes} min atrás`;
     } else if (diffInSeconds < 86400) {
       const hours = Math.floor(diffInSeconds / 3600);
-      return `${hours}h ago`;
+      return `${hours}h atrás`;
     } else if (diffInSeconds < 604800) {
       const days = Math.floor(diffInSeconds / 86400);
-      return `${days}d ago`;
+      return `${days}d atrás`;
     } else {
       return date.toLocaleDateString('pt-BR', {
         day: '2-digit',
@@ -300,22 +300,23 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ videoId, videoTitle }
                       <textarea
                         value={localReplyContent}
                         onChange={(e) => setLocalReplyContent(e.target.value)}
-                        placeholder={`Reply to ${comment.user_name}...`}
+                        placeholder={`Responder para ${comment.user_name}...`}
                         className="w-full pl-4 pr-12 py-3 bg-slate-800/50 border border-slate-700/30 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-[#ff7551]/30 focus:border-[#ff7551]/30 transition-all resize-none text-sm"
                         rows={2}
                         disabled={submitting}
                       />
-                      <button
-                        type="submit"
-                        disabled={!localReplyContent.trim() || submitting}
-                        className="absolute bottom-3 right-3 w-8 h-8 bg-[#ff7551] hover:bg-[#ff7551]/80 disabled:bg-slate-600 disabled:cursor-not-allowed text-white rounded-lg transition-colors flex items-center justify-center"
-                      >
-                        {submitting ? (
-                          <div className="w-3 h-3 border border-white/30 border-t-white rounded-full animate-spin" />
-                        ) : (
-                          <Send className="w-3.5 h-3.5" />
-                        )}
-                      </button>
+                    </div>
+                    <button
+                      type="submit"
+                      disabled={!localReplyContent.trim() || submitting}
+                      className="px-4 py-2 bg-[#ff7551] hover:bg-[#ff7551]/80 disabled:bg-slate-600 disabled:cursor-not-allowed text-white rounded-lg transition-colors flex items-center justify-center text-sm font-medium"
+                    >
+                      {submitting ? (
+                        <div className="w-4 h-4 border border-white/30 border-t-white rounded-full animate-spin" />
+                      ) : (
+                        'Comentar'
+                      )}
+                    </button>
                     </div>
                   </div>
                   <div className="flex items-center justify-between mt-2 ml-11">
@@ -364,7 +365,7 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ videoId, videoTitle }
                 <textarea
                   value={newComment}
                   onChange={(e) => setNewComment(e.target.value)}
-                  placeholder="Add comment"
+                  placeholder="Adicionar comentário"
                   className="w-full pl-4 pr-16 py-4 bg-slate-800/50 border border-slate-700/30 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-[#ff7551]/30 focus:border-[#ff7551]/30 transition-all resize-none text-sm min-h-[60px]"
                   rows={3}
                   disabled={submitting}
@@ -398,7 +399,7 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ videoId, videoTitle }
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-3">
           <h3 className="text-white font-semibold text-lg">
-            Comments
+            Comentários
           </h3>
           <span className="bg-[#ff7551] text-white text-sm px-2 py-1 rounded font-medium">
             {comments.length}
@@ -482,7 +483,7 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ videoId, videoTitle }
           <MessageCircle className="w-16 h-16 text-slate-600 mx-auto mb-4" />
           <h3 className="text-white font-medium mb-2 text-lg">No comments yet</h3>
           <p className="text-slate-400">
-            Be the first to share your thoughts about "{videoTitle}"
+            Seja o primeiro a comentar sobre "{videoTitle}"
           </p>
         </div>
       )}
