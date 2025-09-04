@@ -26,12 +26,10 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggle, currentView, onV
     { id: 'discover', label: 'Home', icon: Home },
     { id: 'trending', label: 'Trending', icon: TrendingUp },
     { id: 'categories', label: 'Categorias', icon: Grid3X3 },
-    { id: 'bookmark', label: 'Salvos', icon: Bookmark },
     { id: 'discounts', label: 'Descontos', icon: Gift },
     { id: 'affiliates', label: 'Afiliados', icon: DollarSign },
     { id: 'profile', label: 'Minha Conta', icon: User },
     { id: 'request-lesson', label: 'Pedir Aula', icon: MessageSquare },
-    { id: 'help', label: 'Ajuda', icon: HelpCircle },
   ];
 
   const SidebarLink = ({ item }: { item: any }) => (

@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Search, User, LogOut, ChevronDown, Menu, UserPlus, X, Play, Clock, Home } from 'lucide-react';
+import { Search, User, LogOut, ChevronDown, Menu, UserPlus, X, Play, Clock, Home, Bookmark, HelpCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useVideo } from '../contexts/VideoContext';
@@ -155,6 +155,19 @@ const Header: React.FC<HeaderProps> = ({ sidebarCollapsed, onSidebarToggle, onVi
     setShowUserMenu(false);
   };
 
+  const handleBookmarksClick = () => {
+    if (onViewChange) {
+      onViewChange('bookmark');
+    }
+    setShowUserMenu(false);
+  };
+
+  const handleHelpClick = () => {
+    if (onViewChange) {
+      onViewChange('help');
+    }
+    setShowUserMenu(false);
+  };
   const handleSearchInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
   };
@@ -252,6 +265,22 @@ const Header: React.FC<HeaderProps> = ({ sidebarCollapsed, onSidebarToggle, onVi
                   </button>
                 )}
               </div>
+                  <button
+                    onClick={handleBookmarksClick}
+                    className="flex items-center space-x-3 w-full px-5 py-3 text-slate-300 hover:text-white hover:bg-slate-700/30 transition-colors"
+                  >
+                    <Bookmark className="w-5 h-5" />
+                    <span className="text-base">Salvos</span>
+                  </button>
+                  
+                  <button
+                    onClick={handleHelpClick}
+                    className="flex items-center space-x-3 w-full px-5 py-3 text-slate-300 hover:text-white hover:bg-slate-700/30 transition-colors"
+                  >
+                    <HelpCircle className="w-5 h-5" />
+                    <span className="text-base">Ajuda</span>
+                  </button>
+                  
 
               {/* Search Results Dropdown */}
               {showSearchResults && (
