@@ -562,8 +562,8 @@ const RegistrationPage: React.FC = () => {
 
   return (
     <>
-    <div className="min-h-screen bg-gradient-to-b from-[#1f1d2b] via-[#1f1d2b] to-black flex items-center justify-center p-4">
-      {/* Video - Outside and above the form block */}
+    <div className="min-h-screen bg-gradient-to-b from-[#1f1d2b] via-[#1f1d2b] to-black flex flex-col items-center justify-center p-4">
+      {/* Video - Centered above the form block */}
       <div className="text-center mb-8">
         <video
           src="/src/images/outputgansotopo3.webm"
