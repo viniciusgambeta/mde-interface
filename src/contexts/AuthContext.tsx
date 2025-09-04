@@ -176,6 +176,8 @@ const fetchUserData = async (authUser: SupabaseUser, retryCount = 0): Promise<Us
       currentFetchController = null;
     }
     
+    clearTimeout(timeoutId);
+    
     if (error.name === 'AbortError') {
       console.warn('⚠️ User data query was aborted');
       
@@ -472,13 +474,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const refreshUser = async (): Promise<void> => {
     try {
-      const { data: { user: authUser } } = await supabase.auth.getUser();
-      if (authUser) {
-        const userData = await fetchUserData(authUser);
-        setUser(userData);
-        setShowOnboarding(!userData.onboardingCompleted);
-        console.log('🔄 User data refreshed');
-      }
+      console.log('🔄 Refreshing user data...');
+      const { data: { session } } = await supabase.auth.getSession();
+      await handleAuthStateChange('TOKEN_REFRESHED', session);
+      console.log('✅ User refresh complete');
     } catch (error) {
       console.error('❌ Error refreshing user:', error);
     }
