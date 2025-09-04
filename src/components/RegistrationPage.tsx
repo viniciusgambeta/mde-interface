@@ -654,15 +654,6 @@ const RegistrationPage: React.FC = () => {
     </div>
     
     <div className="text-center mt-6 px-6">
-      <p className="text-slate-500 text-sm">
-        Já tem uma conta?{' '}
-        <button
-          onClick={() => navigate('/')}
-          className="text-slate-400 hover:text-white font-medium transition-colors underline"
-        >
-          Entrar
-        </button>
-      </p>
     </div>
     </>
   );
