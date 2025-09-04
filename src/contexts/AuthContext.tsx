@@ -144,9 +144,48 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   // Initialize auth and setup listener - run once only
   useEffect(() => {
+    let timeoutId: NodeJS.Timeout;
+    
+    // Check session immediately on mount
+    const checkInitialSession = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        console.log('Initial session check:', !!session);
+        
+        if (session?.user) {
+          const userData = await fetchUserData(session.user);
+          setUser(userData);
+          setShowOnboarding(!userData.onboardingCompleted);
+        } else {
+          setUser(null);
+          setShowOnboarding(false);
+        }
+        setLoading(false);
+      } catch (error) {
+        console.error('Error checking initial session:', error);
+        setUser(null);
+        setShowOnboarding(false);
+        setLoading(false);
+      }
+    };
+    
+    // Check session immediately
+    checkInitialSession();
+    
+    // Safety timeout - ensure loading never stays true forever
+    timeoutId = setTimeout(() => {
+      console.warn('Auth timeout reached, setting loading to false');
+      setLoading(false);
+    }, 5000);
+    
     // Setup auth listener - Supabase automatically fires INITIAL_SESSION event
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event: AuthChangeEvent, session: Session | null) => {
       console.log('Auth state change:', event, 'hasSession:', !!session);
+      
+      // Clear timeout since we got an auth event
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
 
       try {
         if (session?.user) {
@@ -174,6 +213,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     )
     // Cleanup on unmount
     return () => {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
       subscription.unsubscribe();
       }
   }
