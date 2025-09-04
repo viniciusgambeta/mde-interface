@@ -523,7 +523,7 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ videoId, videoTitle }
       ) : (
         <div className="text-center py-16">
           <MessageCircle className="w-16 h-16 text-slate-600 mx-auto mb-4" />
-          <h3 className="text-white font-medium mb-2 text-lg">Nenhum comentário ainda</h3>
+      const updatedComments = await commentsService.getVideoComments(videoId, user?.id);
           <p className="text-slate-400">
             Seja o primeiro a comentar sobre "{videoTitle}"
           </p>
