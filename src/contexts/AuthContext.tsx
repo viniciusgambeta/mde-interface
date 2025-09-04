@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import { User as SupabaseUser, Session, AuthChangeEvent } from '@supabase/supabase-js';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
@@ -191,57 +191,55 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   // Handle auth state changes (both initial and subsequent)
-  const handleAuthStateChange = async (session: Session | null) => {
+  const handleAuthStateChange = useCallback(async (event: AuthChangeEvent, session: Session | null) => {
     console.log('🔄 Handling auth state change:', { hasSession: !!session });
-    
-    // 🚫 Se estamos suprimindo redirecionamentos, não faz nada
-    if (suppressRedirectsRef.current) {
-      console.log('🔒 Redirecionamentos suprimidos, ignorando mudança de auth');
-      return;
-    }
-    
-    if (session?.user) {
-      try {
-        // Add timeout to prevent hanging
-        const timeoutPromise = new Promise((_, reject) => {
-          setTimeout(() => reject(new Error('User data fetch timeout')), 10000);
-        });
-        
-        const userData = await Promise.race([
-          fetchUserData(session.user),
-          timeoutPromise
-        ]) as User;
-        setUser(userData);
-        setShowOnboarding(!userData.onboardingCompleted);
-        console.log('✅ User data set:', { 
-          email: userData.email, 
-          onboardingCompleted: userData.onboardingCompleted,
-          showOnboarding: !userData.onboardingCompleted
-        });
-        
-        // 🔄 Guard: redireciona usuário logado para home se estiver em rota de auth
-        if (location.pathname === '/registro' || location.pathname === '/redefinir-senha') {
-          console.log('🔄 Usuário logado em rota de auth, redirecionando para home');
-          navigate('/');
+    setAuthLoading(true);
+
+    try {
+      if (session?.user) {
+        const userData = await fetchUserData(session.user);
+        if (userData) {
+          setUser(userData);
+          console.log('✅ User data set successfully');
+
+          // Só redireciona se suppressRedirects não estiver ativo
+          if (!suppressRedirectsRef.current) {
+            // Redirecionar para dashboard se estiver na página de login
+            if (location.pathname === '/login' || location.pathname === '/register') {
+              console.log('🔄 Redirecting to dashboard from auth page');
+              navigate('/dashboard');
+            }
+          } else {
+            console.log('🚫 Navigation suppressed, but user state updated');
+          }
         }
-      } catch (error) {
-        console.error('❌ Error handling auth state change:', error);
-        // Don't block navigation on user data fetch errors
+      } else {
+        console.log('❌ No session found, clearing user');
         setUser(null);
-        setShowOnboarding(false);
+
+        // Só redireciona se suppressRedirects não estiver ativo
+        if (!suppressRedirectsRef.current) {
+          // Redirecionar para login se estiver em rota protegida
+          const protectedRoutes = ['/dashboard', '/video'];
+          const isProtectedRoute = protectedRoutes.some(route => 
+            location.pathname.startsWith(route)
+          );
+          
+          if (isProtectedRoute) {
+            console.log('🔄 Redirecting to login from protected route');
+            navigate('/login');
+          }
+        } else {
+          console.log('🚫 Navigation suppressed, but user state cleared');
+        }
       }
-    } else {
-      console.log('🚪 No session, clearing user data');
+    } catch (error) {
+      console.error('❌ Error in auth state change:', error);
       setUser(null);
-      setShowOnboarding(false);
-      
-      // 🔄 Guard: redireciona usuário não logado para home se estiver em rota protegida
-      if (isProtectedRoute(location.pathname) && location.pathname !== '/') {
-        console.log('🔄 Usuário não logado em rota protegida, redirecionando para home');
-        navigate('/');
-      }
+    } finally {
+      setAuthLoading(false);
     }
-  };
+  }, [location.pathname, navigate]);
 
   // Initialize auth state
   useEffect(() => {
@@ -254,7 +252,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         if (error) {
           console.error('❌ Error getting initial session:', error.message);
         } else {
-          await handleAuthStateChange(session);
+          await handleAuthStateChange('INITIAL_SESSION', session);
         }
       } catch (error) {
         console.error('💥 Error initializing auth:', error);
@@ -274,26 +272,13 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
     console.log('👂 Setting up auth state listener...');
     
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event: AuthChangeEvent, session: Session | null) => {
-        console.log('🔄 Auth state changed:', event);
-        
-        // Handle all auth events through the same function
-        if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION') {
-          await handleAuthStateChange(session);
-        } else if (event === 'SIGNED_OUT') {
-          setUser(null);
-          setShowOnboarding(false);
-          console.log('🚪 User signed out, state cleared');
-        }
-      }
-    );
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(handleAuthStateChange);
 
     return () => {
       console.log('🧹 Cleaning up auth listener');
       subscription.unsubscribe();
     };
-  }, [initialized]);
+  }, [initialized, handleAuthStateChange]);
 
   const signIn = async (email: string, password: string): Promise<{ user: User | null; error: string | null }> => {
     try {
