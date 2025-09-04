@@ -217,18 +217,22 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         console.log('❌ No session found, clearing user');
         setUser(null);
 
-        // Só redireciona se suppressRedirects não estiver ativo
-        if (!suppressRedirectsRef.current) {
+       // Só redireciona se suppressRedirects não estiver ativo E não estivermos carregando
+       if (!suppressRedirectsRef.current && !authLoading) {
           // Redirecionar para login se estiver em rota protegida
-          const protectedRoutes = ['/dashboard', '/video'];
-          const isProtectedRoute = protectedRoutes.some(route => 
-            location.pathname.startsWith(route)
-          );
+         const currentPath = location.pathname;
+         const isCurrentlyProtected = isProtectedRoute(currentPath);
           
-          if (isProtectedRoute) {
-            console.log('🔄 Redirecting to login from protected route');
-            navigate('/login');
+         if (isCurrentlyProtected) {
+           console.log('🔄 Redirecting to home from protected route:', currentPath);
+           navigate('/');
+         } else {
+           console.log('📍 On public route, no redirect needed:', currentPath);
           }
+       } else if (suppressRedirectsRef.current) {
+         console.log('🚫 Navigation suppressed, but user state cleared');
+       } else {
+         console.log('⏳ Still loading auth, deferring redirect decision');
         } else {
           console.log('🚫 Navigation suppressed, but user state cleared');
         }
