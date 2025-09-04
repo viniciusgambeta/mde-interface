@@ -100,19 +100,27 @@ const Header: React.FC<HeaderProps> = ({ sidebarCollapsed, onSidebarToggle, onVi
   }, [searchQuery]);
 
   const handleLogout = async () => {
+    console.log('🚪 Header: Logout button clicked');
+    setShowUserMenu(false);
+    
     try {
-      const { error } = await signOut();
-      if (error) {
-        console.error('Logout error:', error);
+      console.log('🔄 Header: Calling signOut...');
+      const result = await signOut();
+      
+      if (result.error) {
+        console.error('❌ Header: Logout error:', result.error);
+      } else {
+        console.log('✅ Header: Logout successful');
       }
-      // Always redirect after logout attempt
+      
+      // Force page reload to ensure clean state
+      console.log('🔄 Header: Forcing page reload...');
       window.location.href = '/';
     } catch (error) {
-      console.error('Logout exception:', error);
+      console.error('💥 Header: Logout exception:', error);
       // Force redirect even on error
       window.location.href = '/';
     }
-    setShowUserMenu(false);
   };
 
   const handleProfileClick = () => {
