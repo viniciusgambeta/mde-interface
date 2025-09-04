@@ -144,45 +144,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   // Initialize auth and setup listener - run once only
   useEffect(() => {
-    const initializeAuth = async () => {
-      try {
-        // Setup auth listener first
-        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event: AuthChangeEvent, session: Session | null) => {
-          console.log('Auth state change:', event, 'hasSession:', !!session);
+    // Setup auth listener - Supabase automatically fires INITIAL_SESSION event
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event: AuthChangeEvent, session: Session | null) => {
+      console.log('Auth state change:', event, 'hasSession:', !!session);
 
-          try {
-            if (session?.user) {
-              const userData = await fetchUserData(session.user);
-              setUser(userData);
-              setShowOnboarding(!userData.onboardingCompleted);
-            } else {
-              setUser(null);
-              setShowOnboarding(false);
-              
-              // Only redirect on actual logout, not initial load
-              if (event === 'SIGNED_OUT') {
-                navigate('/');
-              }
-            }
-          } catch (error) {
-            console.error('Error in auth state change:', error);
-            setUser(null);
-            setShowOnboarding(false);
-          } finally {
-            // Only set loading false after initial session check
-            if (event === 'INITIAL_SESSION') {
-              setLoading(false);
-            }
-          }
-        });
-        
-        // Get initial session
-        const { data: { session }, error } = await supabase.auth.getSession();
-        if (error) {
-          console.error('Error getting initial session:', error.message);
-        }
-        
-        // Handle initial session manually to ensure loading is set to false
+      try {
         if (session?.user) {
           const userData = await fetchUserData(session.user);
           setUser(userData);
@@ -190,19 +156,20 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         } else {
           setUser(null);
           setShowOnboarding(false);
+          
+          // Only redirect on actual logout, not initial load
+          if (event === 'SIGNED_OUT') {
+            navigate('/');
+          }
         }
-        setLoading(false);
-        
-        // Return cleanup function
-        return () => subscription.unsubscribe();
       } catch (error) {
-        console.error('Error initializing auth:', error);
+        console.error('Error in auth state change:', error);
+        setUser(null);
+        setShowOnboarding(false);
+      } finally {
+        // Set loading false after any auth state change
         setLoading(false);
-        return () => {};
       }
-    };
-
-    // Initialize and get cleanup function
     let cleanup: (() => void) | undefined;
     initializeAuth().then((cleanupFn) => {
       cleanup = cleanupFn;
@@ -210,9 +177,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     
     // Cleanup on unmount
     return () => {
-      if (cleanup) cleanup();
-    };
-  }, []); // No dependencies - runs only once
+      subscription.unsubscribe();
 
   const signIn = async (email: string, password: string): Promise<{ user: User | null; error: string | null }> => {
     try {
