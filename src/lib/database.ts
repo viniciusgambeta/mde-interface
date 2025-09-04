@@ -225,16 +225,6 @@ export const videoService = {
   } = {}) {
     console.log('🎬 getVideos called with options:', options);
     
-    // Don't execute if page is not visible (prevents background requests)
-    if (typeof document !== 'undefined' && document.hidden) {
-      console.log('📱 Page not visible, returning cached/empty results');
-      return [];
-    }
-    
-    // Add AbortController for request cancellation
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
-    
     let query = supabase
       .from('videos')
       .select(`
@@ -249,7 +239,6 @@ export const videoService = {
       `)
       .eq('status', 'published')
       .order('published_at', { ascending: false })
-      .abortSignal(controller.signal);
 
     if (options.category) {
       // For the main getVideos function, we'll keep the direct category filter
@@ -298,7 +287,6 @@ export const videoService = {
 
     try {
       const { data, error } = await query;
-      clearTimeout(timeoutId);
 
       console.log('📊 getVideos result:', { 
         dataCount: data?.length || 0, 
@@ -338,12 +326,7 @@ export const videoService = {
 
       return videos;
     } catch (error) {
-      clearTimeout(timeoutId);
-      if (error.name === 'AbortError') {
-        console.warn('Video query was aborted due to timeout');
-      } else {
-        console.error('Error in getVideos:', error);
-      }
+      console.error('Error in getVideos:', error);
       return [];
     }
   },
@@ -434,12 +417,6 @@ export const videoService = {
 
   // Get videos by category
   async getVideosByCategory(categorySlug: string, limit = 12, userId?: string) {
-    // Don't execute if page is not visible
-    if (typeof document !== 'undefined' && document.hidden) {
-      console.log('📱 Page not visible, returning empty category results');
-      return [];
-    }
-    
     return this.getVideos({ category: categorySlug, limit, userId });
   },
 
