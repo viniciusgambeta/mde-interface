@@ -143,7 +143,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [loading, setLoading] = useState(true);
   const [showOnboarding, setShowOnboarding] = useState(false);
 
-  // Simple auth state handler
+  // Simple auth state handler - no dependencies to prevent recreations
   const handleAuthStateChange = useCallback(async (event: AuthChangeEvent, session: Session | null) => {
     console.log('Auth state change:', event, 'hasSession:', !!session);
 
@@ -158,7 +158,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         
         // Only redirect on actual logout, not initial load
         if (event === 'SIGNED_OUT') {
-          navigate('/');
+          window.location.href = '/';
         }
       }
     } catch (error) {
@@ -171,9 +171,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         setLoading(false);
       }
     }
-  }, [navigate]);
+  }, []); // No dependencies to prevent constant recreations
 
-  // Initialize auth - run once
+  // Initialize auth and setup listener - run once only
   useEffect(() => {
     const initializeAuth = async () => {
       try {
@@ -188,14 +188,15 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       }
     };
 
-    initializeAuth();
-  }, [handleAuthStateChange]);
-
-  // Listen for auth changes - simple listener
-  useEffect(() => {
+    // Setup auth listener immediately
     const { data: { subscription } } = supabase.auth.onAuthStateChange(handleAuthStateChange);
+    
+    // Initialize auth state
+    initializeAuth();
+    
+    // Cleanup listener on unmount
     return () => subscription.unsubscribe();
-  }, [handleAuthStateChange]);
+  }, []); // No dependencies - runs only once
 
   const signIn = async (email: string, password: string): Promise<{ user: User | null; error: string | null }> => {
     try {
