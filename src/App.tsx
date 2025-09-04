@@ -16,6 +16,7 @@ import Footer from './components/Footer';
 import { AuthProvider } from './contexts/AuthContext';
 import { VideoProvider } from './contexts/VideoContext';
 import { videoService } from './lib/database';
+import { testSupabaseConnection, debugAuthState } from './utils/supabase-test';
 
 // Video Detail Page Component
 const VideoDetailPage: React.FC = () => {
@@ -293,9 +294,21 @@ const AppWithAuth: React.FC = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-[#1f1d2b] via-[#1f1d2b] to-black flex items-center justify-center">
-        <div className="flex items-center space-x-3">
-          <div className="w-6 h-6 border-2 border-[#ff7551]/30 border-t-[#ff7551] rounded-full animate-spin"></div>
-          <span className="text-slate-400">Carregando...</span>
+        <div className="flex flex-col items-center space-y-4">
+          <div className="flex items-center space-x-3">
+            <div className="w-6 h-6 border-2 border-[#ff7551]/30 border-t-[#ff7551] rounded-full animate-spin"></div>
+            <span className="text-slate-400">Carregando...</span>
+          </div>
+          {/* Debug Button - Remove after fixing auth issues */}
+          <button
+            onClick={() => {
+              testSupabaseConnection();
+              debugAuthState();
+            }}
+            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm transition-colors"
+          >
+            🔍 Debug Supabase
+          </button>
         </div>
       </div>
     );
