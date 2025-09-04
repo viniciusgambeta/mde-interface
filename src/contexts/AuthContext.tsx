@@ -334,10 +334,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             name: name,
           }
         }
-        
-        // 🚪 Força logout e show success screen
-        console.log('🚪 Forçando logout após signup para mostrar tela de sucesso');
-        await supabase.auth.signOut();
       });
 
       if (error) {
