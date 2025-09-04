@@ -108,7 +108,10 @@ const fetchUserData = async (authUser: SupabaseUser): Promise<User> => {
   console.log('🔍 Fetching user data for:', authUser.email);
   
   try {
-    // Add timeout to prevent hanging queries
+    // Add AbortController and timeout to prevent hanging queries
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 8000);
+    
     const { data: assinatura, error } = await Promise.race([
       supabase
         .from('assinaturas')
@@ -134,11 +137,14 @@ const fetchUserData = async (authUser: SupabaseUser): Promise<User> => {
           onboarding_data
         `)
         .eq('user_id', authUser.id)
+        .abortSignal(controller.signal)
         .maybeSingle(),
       new Promise((_, reject) => 
         setTimeout(() => reject(new Error('Database query timeout')), 8000)
       )
     ]) as { data: any; error: any };
+    
+    clearTimeout(timeoutId);
 
     if (error) {
       console.error('❌ Error fetching assinatura:', error.message);
@@ -154,7 +160,11 @@ const fetchUserData = async (authUser: SupabaseUser): Promise<User> => {
     return convertAssinaturaToUser(authUser, assinatura);
     
   } catch (error) {
-    console.error('❌ Exception fetching user data:', error);
+    if (error.name === 'AbortError') {
+      console.warn('⚠️ User data query was aborted due to timeout');
+    } else {
+      console.error('❌ Exception fetching user data:', error);
+    }
     // Return user with auth data only if exception occurs
     return convertAssinaturaToUser(authUser, null);
   }
@@ -183,6 +193,15 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       console.log('🔓 Redirecionamentos liberados');
     }, ms);
   };
+
+  // Cleanup timer on unmount
+  useEffect(() => {
+    return () => {
+      if (releaseTimerRef.current) {
+        clearTimeout(releaseTimerRef.current);
+      }
+    };
+  }, []);
 
   // Função para verificar se é rota protegida
   const isProtectedRoute = (path: string) => {
