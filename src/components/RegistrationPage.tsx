@@ -537,7 +537,6 @@ const RegistrationPage: React.FC = () => {
               </div>
               {subscriptionData && (
                 <div className="flex items-center space-x-2">
-                  <CheckCircle className="w-4 h-4 text-green-400" />
                   <span className="text-slate-400 text-sm">Plano:</span>
                   <span className="text-green-400 font-medium">{subscriptionData['Plano']}</span>
                 </div>
