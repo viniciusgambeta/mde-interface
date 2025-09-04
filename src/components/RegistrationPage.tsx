@@ -635,7 +635,6 @@ const RegistrationPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Discrete Login Link - Outside main container */}
         <div className="text-center mt-6 px-6">
           <p className="text-slate-500 text-sm">
             Já tem uma conta?{' '}
