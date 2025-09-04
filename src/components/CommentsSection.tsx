@@ -193,20 +193,11 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ videoId, videoTitle }
         console.error('Error toggling comment like:', error);
       }
     };
-
-    // Handle reply form submission
+    
     const handleReplySubmit = (e: React.FormEvent) => {
       handleSubmitReply(e, comment.id, localReplyContent, setLocalReplyContent, setIsReplying);
     };
 
-    // Handle like button click
-    const handleLikeClick = async () => {
-      if (!user || isLiking) return;
-      
-      setIsLiking(true);
-      await handleToggleCommentLike(comment.id);
-      setIsLiking(false);
-    };
     return (
       <div className={`${isReply ? 'ml-12 border-l border-slate-700/30 pl-6' : ''}`}>
         <div className="flex space-x-4 group">
@@ -217,11 +208,6 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ videoId, videoTitle }
               alt={comment.user_name}
               className="w-10 h-10 rounded-lg object-cover"
             />
-            {comment.user_nivel === 'instrutor' && (
-              <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-[#ff7551] rounded-full flex items-center justify-center border-2 border-[#1f1d2b]">
-                <CheckCircle className="w-3 h-3 text-white" fill="currentColor" />
-              </div>
-            )}
           </div>
           
           {/* Comment Content */}
@@ -234,7 +220,7 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ videoId, videoTitle }
               
               {/* Instructor Badge */}
               {comment.user_nivel === 'instrutor' && (
-                <span className="bg-[#ff7551] text-white text-xs px-2 py-0.5 rounded font-medium">
+                <span className="bg-slate-600/50 text-slate-300 text-xs px-2 py-0.5 rounded">
                   Instrutor
                 </span>
               )}
@@ -523,7 +509,7 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ videoId, videoTitle }
       ) : (
         <div className="text-center py-16">
           <MessageCircle className="w-16 h-16 text-slate-600 mx-auto mb-4" />
-      const updatedComments = await commentsService.getVideoComments(videoId, user?.id);
+          <h3 className="text-white font-medium mb-2 text-lg">Nenhum comentário ainda</h3>
           <p className="text-slate-400">
             Seja o primeiro a comentar sobre "{videoTitle}"
           </p>
