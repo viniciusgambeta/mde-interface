@@ -44,7 +44,6 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
   const [boltVideos, setBoltVideos] = useState<Video[]>([]);
   const [liveVideos, setLiveVideos] = useState<Video[]>([]);
   const [promptVideos, setPromptVideos] = useState<Video[]>([]);
-  const [categoriesLoaded, setCategoriesLoaded] = useState(false);
 
   // Setup realtime subscription for bookmarks - MUST be at top level
   useEffect(() => {
@@ -157,12 +156,12 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
     };
 
     loadVideos();
-  }, [currentView, user?.id, loading]); // Add loading dependency to prevent race conditions
+  }, [currentView, user?.id]); // Remove loading dependency to prevent infinite loops
 
   // Load category-specific videos for discover page
   useEffect(() => {
     const loadCategoryVideos = async () => {
-      if (currentView !== 'discover' || categoriesLoaded) return;
+      if (currentView !== 'discover') return;
       
       try {
         console.log('Loading category-specific videos...');
@@ -202,15 +201,13 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
         // Set live and prompt videos from all videos
         setLiveVideos(allVideosData.filter(v => v.tipo === 'live'));
         setPromptVideos(allVideosData.filter(v => v.tipo === 'prompt'));
-        
-        setCategoriesLoaded(true);
       } catch (error) {
         console.error('Error loading category videos:', error);
       }
     };
 
     loadCategoryVideos();
-  }, [currentView, user?.id, categoriesLoaded]);
+  }, [currentView, user?.id]);
 
   // Load filter options for trending and bookmark pages
   useEffect(() => {
@@ -801,22 +798,6 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
           videos={[]}
           scrollRef={latestScrollRef}
         />
-        
-        {currentView === 'discover' && (
-          <>
-            <ScrollableVideoRow
-              title="Tutoriais"
-              videos={[]}
-              scrollRef={tutorialsScrollRef}
-            />
-            
-            <ScrollableVideoRow
-              title="Design"
-              videos={[]}
-              scrollRef={designScrollRef}
-            />
-          </>
-        )}
       </section>
     );
   }
