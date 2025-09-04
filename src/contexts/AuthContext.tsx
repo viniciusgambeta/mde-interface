@@ -321,7 +321,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         } else {
           console.log('⏳ Still loading auth, deferring redirect decision');
         }
-          }
+      }
       
     } catch (error) {
       console.error('❌ Error in auth state change:', error);
@@ -335,6 +335,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         setIsUserSessionRefreshing(false);
       }
     }
+  }, [navigate, location.pathname, isUserSessionRefreshing, isLoadingInitial]);
+
   // Initialize auth state
   useEffect(() => {
     const initializeAuth = async () => {
@@ -351,6 +353,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       } catch (error) {
         console.error('💥 Error initializing auth:', error);
       } finally {
+        setIsLoadingInitial(false);
         setInitialized(true);
         console.log('✅ Auth initialization complete');
       }
