@@ -288,33 +288,10 @@ function App() {
 
 // Component that has access to auth context
 const AppWithAuth: React.FC = () => {
-  const { user, showOnboarding, completeOnboarding, loading } = useAuth();
+  const { user, showOnboarding, completeOnboarding } = useAuth();
   
-  // Debug logs
-  console.log('🔍 AppWithAuth render:', { 
-    hasUser: !!user, 
-    showOnboarding, 
-    loading,
-    userEmail: user?.email 
-  });
-  
-  // Show loading screen while auth is initializing
-  if (loading) {
-    console.log('🔄 AppWithAuth: Showing loading screen');
-    return (
-      <div className="min-h-screen bg-gradient-to-b from-[#1f1d2b] via-[#1f1d2b] to-black flex items-center justify-center">
-        <div className="flex items-center space-x-3">
-          <div className="w-6 h-6 border-2 border-[#ff7551]/30 border-t-[#ff7551] rounded-full animate-spin"></div>
-          <span className="text-slate-400">Carregando...</span>
-        </div>
-      </div>
-    );
-  }
-
   // Show onboarding if user is logged in but hasn't completed onboarding
   if (user && showOnboarding) {
-    console.log('🎯 Showing onboarding flow for user:', user.email);
-    console.log('🎯 AppWithAuth: Showing onboarding');
     return (
       <OnboardingFlow
         userId={user.id}
@@ -324,7 +301,6 @@ const AppWithAuth: React.FC = () => {
     );
   }
 
-  console.log('🎯 AppWithAuth: Showing normal app routes');
   // Normal app routes
   return (
     <VideoProvider>
