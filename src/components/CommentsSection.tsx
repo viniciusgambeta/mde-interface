@@ -154,9 +154,40 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ videoId, videoTitle }
     isReply?: boolean;
   }> = ({ comment, isReply = false }) => {
     const [showMenu, setShowMenu] = useState(false);
+    const [localReplyContent, setLocalReplyContent] = useState('');
+    const [isReplying, setIsReplying] = useState(false);
     const isOwner = user?.id === comment.user_id;
     const hasReplies = comment.replies && comment.replies.length > 0;
     const isExpanded = expandedComments.has(comment.id);
+
+    // Handle reply form submission
+    const handleReplySubmit = async (e: React.FormEvent) => {
+      e.preventDefault();
+      
+      if (!user || !localReplyContent.trim() || submitting) return;
+
+      setSubmitting(true);
+      
+      try {
+        console.log('Submitting reply for user:', user.id, 'to comment:', comment.id);
+        const success = await commentsService.createComment(videoId, user.id, localReplyContent, comment.id);
+        
+        if (success) {
+          setLocalReplyContent('');
+          setIsReplying(false);
+          console.log('Reply submitted successfully, reloading comments');
+          // Reload comments
+          const updatedComments = await commentsService.getVideoComments(videoId);
+          setComments(updatedComments);
+        } else {
+          console.error('Failed to submit reply');
+        }
+      } catch (error) {
+        console.error('Error submitting reply:', error);
+      } finally {
+        setSubmitting(false);
+      }
+    };
 
     return (
       <div className={`${isReply ? 'ml-8 pl-4 border-l-2 border-slate-600/20' : ''}`}>
@@ -241,8 +272,8 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ videoId, videoTitle }
             <div className="flex items-center space-x-3">
               {!isReply && user && (
                 <button
-                  onClick={() => setReplyingTo(replyingTo === comment.id ? null : comment.id)}
-                  className="flex items-center space-x-1 text-slate-500 hover:text-slate-300 transition-colors text-xs font-medium"
+                  onClick={() => setIsReplying(!isReplying)}
+                  className="flex items-center space-x-1.5 px-3 py-1.5 bg-slate-700/30 hover:bg-slate-600/30 text-slate-400 hover:text-white rounded-lg transition-colors text-xs font-medium"
                 >
                   <Reply className="w-3.5 h-3.5" />
                   <span>Responder</span>
@@ -263,50 +294,56 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ videoId, videoTitle }
             </div>
             
             {/* Reply Form */}
-            {replyingTo === comment.id && user && (
-              <form onSubmit={(e) => handleSubmitReply(e, comment.id)} className="mt-3">
-                <div className="flex space-x-3 items-start">
-                  <img
-                    src={user.avatar || '/avatar1.png'}
-                    alt={user.name}
-                    className="w-7 h-7 rounded-md object-cover flex-shrink-0"
-                  />
-                  <div className="flex-1">
-                    <textarea
-                      value={replyContent}
-                      onChange={(e) => setReplyContent(e.target.value)}
-                      placeholder={`Responder para ${comment.user_name}...`}
-                      className="w-full px-3 py-2 bg-slate-700/20 border border-slate-600/20 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-[#ff7551]/30 focus:border-transparent transition-all resize-none text-sm"
-                      rows={2}
-                      disabled={submitting}
-                    />
-                    <div className="flex items-center justify-between mt-2.5">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setReplyingTo(null);
-                          setReplyContent('');
-                        }}
-                        className="text-slate-500 hover:text-slate-300 text-xs transition-colors font-medium"
-                      >
-                        Cancelar
-                      </button>
-                      <button
-                        type="submit"
-                        disabled={!replyContent.trim() || submitting}
-                        className="flex items-center space-x-1.5 px-3 py-1.5 bg-[#ff7551] hover:bg-[#ff7551]/80 disabled:bg-[#ff7551]/50 text-white text-xs font-medium rounded-md transition-colors disabled:cursor-not-allowed"
-                      >
-                        {submitting ? (
-                          <div className="w-3 h-3 border border-white/30 border-t-white rounded-full animate-spin" />
-                        ) : (
-                          <Send className="w-3.5 h-3.5" />
-                        )}
-                        <span>Responder</span>
-                      </button>
+            {isReplying && user && (
+              <div className="mt-4 bg-slate-700/20 rounded-xl p-4">
+                <form onSubmit={handleReplySubmit} className="space-y-3">
+                  <div className="relative">
+                    <div className="flex space-x-3">
+                      <img
+                        src={user.avatar || '/avatar1.png'}
+                        alt={user.name}
+                        className="w-10 h-10 rounded-lg object-cover flex-shrink-0"
+                      />
+                      <div className="flex-1 relative">
+                        <textarea
+                          value={localReplyContent}
+                          onChange={(e) => setLocalReplyContent(e.target.value)}
+                          placeholder={`Responder para ${comment.user_name}...`}
+                          className="w-full pl-4 pr-16 py-3 bg-slate-700/30 border border-slate-600/20 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#ff7551]/30 focus:border-transparent transition-all resize-none text-sm"
+                          rows={3}
+                          disabled={submitting}
+                        />
+                        <button
+                          type="submit"
+                          disabled={!localReplyContent.trim() || submitting}
+                          className="absolute bottom-3 right-3 w-10 h-10 bg-[#ff7551] hover:bg-[#ff7551]/80 disabled:bg-[#ff7551]/50 text-white rounded-lg transition-colors disabled:cursor-not-allowed flex items-center justify-center"
+                        >
+                          {submitting ? (
+                            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                          ) : (
+                            <Send className="w-4 h-4" />
+                          )}
+                        </button>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </form>
+                  <div className="flex items-center justify-between pl-13">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsReplying(false);
+                        setLocalReplyContent('');
+                      }}
+                      className="px-4 py-2 text-slate-400 hover:text-white text-sm transition-colors font-medium"
+                    >
+                      Cancelar
+                    </button>
+                    <div className="text-slate-500 text-xs">
+                      {localReplyContent.length}/500 caracteres
+                    </div>
+                  </div>
+                </form>
+              </div>
             )}
           </div>
         </div>
@@ -335,9 +372,89 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ videoId, videoTitle }
 
       {/* New Comment Form */}
       {user ? (
-        <div className="bg-slate-700/20 rounded-xl p-4">
+        <div className="bg-slate-700/20 rounded-xl p-6">
           <form onSubmit={handleSubmitComment} className="space-y-3">
-            <div className="flex space-x-4 items-start">
+            <div className="relative">
+              <div className="flex space-x-4">
+                <img
+                  src={user.avatar || '/avatar1.png'}
+                  alt={user.name}
+                  className="w-12 h-12 rounded-lg object-cover flex-shrink-0"
+                />
+                <div className="flex-1 relative">
+                  <textarea
+                    value={newComment}
+                    onChange={(e) => setNewComment(e.target.value)}
+                    placeholder="Adicione um comentário..."
+                    className="w-full pl-4 pr-16 py-4 bg-slate-700/30 border border-slate-600/20 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#ff7551]/30 focus:border-transparent transition-all resize-none text-sm"
+                    rows={3}
+                    disabled={submitting}
+                  />
+                  <button
+                    type="submit"
+                    disabled={!newComment.trim() || submitting}
+                    className="absolute bottom-4 right-4 w-10 h-10 bg-[#ff7551] hover:bg-[#ff7551]/80 disabled:bg-[#ff7551]/50 text-white rounded-lg transition-colors disabled:cursor-not-allowed flex items-center justify-center"
+                  >
+                    {submitting ? (
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    ) : (
+                      <Send className="w-4 h-4" />
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div className="flex items-center justify-between pl-16">
+              <div className="text-slate-500 text-xs">
+                {newComment.length}/500 caracteres
+              </div>
+            </div>
+          </form>
+        </div>
+      ) : (
+        <div className="text-center py-12 bg-slate-700/10 rounded-xl border border-slate-600/20">
+          <MessageCircle className="w-16 h-16 text-slate-600 mx-auto mb-4" />
+          <p className="text-slate-400 mb-6 text-lg">Faça login para comentar</p>
+          <button className="px-8 py-3 bg-[#ff7551] hover:bg-[#ff7551]/80 text-white font-medium rounded-lg transition-colors">
+            Entrar
+          </button>
+        </div>
+      )}
+
+      {/* Comments List */}
+      {loading ? (
+        <div className="space-y-8">
+          {Array.from({ length: 3 }).map((_, index) => (
+            <div key={index} className="flex space-x-4">
+              <div className="w-10 h-10 bg-slate-700/30 rounded-lg animate-pulse"></div>
+              <div className="flex-1 space-y-3">
+                <div className="h-4 bg-slate-700/30 rounded w-1/4 animate-pulse"></div>
+                <div className="h-4 bg-slate-700/20 rounded w-full animate-pulse"></div>
+                <div className="h-4 bg-slate-700/20 rounded w-3/4 animate-pulse"></div>
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : comments.length > 0 ? (
+        <div className="space-y-8">
+          {comments.map((comment) => (
+            <CommentComponent key={comment.id} comment={comment} />
+          ))}
+        </div>
+      ) : (
+        <div className="text-center py-20">
+          <MessageCircle className="w-20 h-20 text-slate-600 mx-auto mb-6" />
+          <h3 className="text-white font-medium mb-3 text-xl">Nenhum comentário ainda</h3>
+          <p className="text-slate-400 text-base">
+            Seja o primeiro a comentar sobre "{videoTitle}"
+          </p>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default CommentsSection;
               <img
                 src={user.avatar || '/avatar1.png'}
                 alt={user.name}
