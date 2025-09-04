@@ -19,11 +19,38 @@ const AffiliatesPage: React.FC = () => {
     },
     {
       question: "Como recebo minhas comissões?",
-      answer: "As comissões são pagas automaticamente pela Hubla, diretamente na sua conta bancária cadastrada."
+      answer: (
+        <span>
+          As comissões são pagas automaticamente pela Hubla, diretamente na sua conta bancária cadastrada. 
+          Acompanhe seus pagamentos na{' '}
+          <a 
+            href="https://app.hub.la/dashboard/financial" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="text-[#ff7551] hover:text-[#ff7551]/80 transition-colors underline"
+          >
+            carteira da Hubla
+          </a>.
+        </span>
+      )
     },
     {
       question: "Onde encontro meu link de afiliado?",
-      answer: "Seu link fica disponível na Hubla em: Produtos > Minhas afiliações > Links. Ou acesse diretamente: Dashboard Hubla (https://app.hub.la/dashboard/products)\n\n⚠️ Sempre use o link exclusivo gerado para você. Links genéricos ou compartilhados de outra forma não contabilizam comissão."
+      answer: (
+        <span>
+          Seu link fica disponível na Hubla em: Produtos > Minhas afiliações > Links. Ou acesse diretamente:{' '}
+          <a 
+            href="https://app.hub.la/dashboard/products" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="text-[#ff7551] hover:text-[#ff7551]/80 transition-colors underline"
+          >
+            Dashboard Hubla
+          </a>
+          <br /><br />
+          ⚠️ Sempre use o link exclusivo gerado para você. Links genéricos ou compartilhados de outra forma não contabilizam comissão.
+        </span>
+      )
     },
     {
       question: "Quando recebo minha comissão?",
@@ -31,7 +58,27 @@ const AffiliatesPage: React.FC = () => {
     },
     {
       question: "Vendi pelo meu link, mas não recebi a comissão. O que pode ter acontecido?",
-      answer: "Principais motivos:\n- Venda ainda dentro do prazo de compensação (até 36h).\n- Pagamento ainda não liberado pelo método escolhido.\n- Link incorreto ou compartilhado sem rastreio.\n- Cliente com bloqueio de cookies no navegador (impede o rastreamento).\n- Afiliado comprou com o próprio link (não é comissionado).\n- O programa de afiliados pode ter sido encerrado pelo produtor.\n\nSe não for nenhum desses casos, entre em contato com o suporte da Hubla: Central de Ajuda Hubla (https://help.hub.la/hc/pt-br)"
+      answer: (
+        <span>
+          Principais motivos:
+          <br />- Venda ainda dentro do prazo de compensação (até 36h).
+          <br />- Pagamento ainda não liberado pelo método escolhido.
+          <br />- Link incorreto ou compartilhado sem rastreio.
+          <br />- Cliente com bloqueio de cookies no navegador (impede o rastreamento).
+          <br />- Afiliado comprou com o próprio link (não é comissionado).
+          <br />- O programa de afiliados pode ter sido encerrado pelo produtor.
+          <br /><br />
+          Se não for nenhum desses casos, entre em contato com o suporte da{' '}
+          <a 
+            href="https://help.hub.la/hc/pt-br" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="text-[#ff7551] hover:text-[#ff7551]/80 transition-colors underline"
+          >
+            Central de Ajuda Hubla
+          </a>
+        </span>
+      )
     },
     {
       question: "Posso usar meu próprio link para assinar?",
@@ -42,16 +89,25 @@ const AffiliatesPage: React.FC = () => {
       answer: "Use apenas os links oficiais da Hubla.\n\nNão utilize práticas antiéticas, como spam, promessas enganosas ou uso de marcas registradas sem autorização. Afiliados que descumprirem boas práticas podem ser removidos do programa."
     },
     {
-      question: "Quando recebo o pagamento?",
-      answer: "Os pagamentos são processados mensalmente pela Hubla, seguindo o cronograma padrão da plataforma."
-    },
-    {
       question: "Posso indicar quantas pessoas quiser?",
       answer: "Sim! Não há limite de indicações. Quanto mais pessoas você indicar, maior será sua renda."
     },
     {
       question: "Como acompanho minhas vendas?",
-      answer: "Através do painel da Hubla você tem acesso a relatórios completos com todas suas vendas e comissões."
+      answer: (
+        <span>
+          Através do{' '}
+          <a 
+            href="https://app.hub.la/dashboard/sales" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="text-[#ff7551] hover:text-[#ff7551]/80 transition-colors underline"
+          >
+            painel da Hubla
+          </a>
+          {' '}você tem acesso a relatórios completos com todas suas vendas e comissões.
+        </span>
+      )
     },
     {
       question: "E se a pessoa cancelar a assinatura?",
@@ -60,18 +116,6 @@ const AffiliatesPage: React.FC = () => {
     {
       question: "Quais são os requisitos para ser afiliado?",
       answer: "Você deve ser um assinante ativo da comunidade Me dá um Exemplo e ter uma conta na plataforma Hubla para gerenciar seus links e comissões."
-    },
-    {
-      question: "Como funciona o sistema de comissões?",
-      answer: "Você recebe 50% do valor da primeira venda (até R$33,50 no plano mensal e R$299 no anual) + 10% do valor de todas as recorrências (até R$6,70 no mensal e R$59 no anual)."
-    },
-    {
-      question: "Como gero meus links de afiliado?",
-      answer: "Você deve gerar seus próprios links de afiliados através da plataforma Hubla. Após se cadastrar no programa, você terá acesso aos links personalizados."
-    },
-    {
-      question: "Posso usar meus links em qualquer lugar?",
-      answer: "Sim! Você pode compartilhar seus links de afiliado em redes sociais, blogs, YouTube, WhatsApp ou qualquer outro canal que desejar."
     }
   ];
 
@@ -218,34 +262,6 @@ const AffiliatesPage: React.FC = () => {
               )}
             </div>
           ))}
-        </div>
-      </div>
-
-      {/* Contact */}
-      <div className="bg-slate-700/30 border border-slate-600/30 rounded-xl p-8">
-        <h3 className="text-white font-semibold text-xl mb-4">Dúvidas sobre o Programa?</h3>
-        <p className="text-slate-400 mb-6">
-          Nossa equipe está pronta para ajudar você a começar no programa de afiliados
-        </p>
-        
-        <div className="flex flex-col sm:flex-row gap-4">
-          <a
-            href="mailto:afiliados@medaumexemplo.com"
-            className="inline-flex items-center space-x-2 px-6 py-3 bg-slate-600/30 hover:bg-slate-500/30 text-white rounded-lg transition-colors"
-          >
-            <Mail className="w-5 h-5" />
-            <span>afiliados@medaumexemplo.com</span>
-          </a>
-          
-          <a
-            href="https://wa.me/5511999999999"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center space-x-2 px-6 py-3 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors"
-          >
-            <MessageCircle className="w-5 h-5" />
-            <span>WhatsApp</span>
-          </a>
         </div>
       </div>
     </div>
