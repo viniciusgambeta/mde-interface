@@ -166,9 +166,33 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ videoId, videoTitle }
     const [localReplyContent, setLocalReplyContent] = useState('');
     const [isReplying, setIsReplying] = useState(false);
     const [isLiking, setIsLiking] = useState(false);
+    const [localLikeCount, setLocalLikeCount] = useState(comment.like_count || 0);
+    const [localIsLiked, setLocalIsLiked] = useState(comment.is_liked || false);
     const isOwner = user?.id === comment.user_id;
     const hasReplies = comment.replies && comment.replies.length > 0;
     const isExpanded = expandedComments.has(comment.id);
+
+    // Handle toggle comment like
+    const handleToggleCommentLike = async (commentId: string) => {
+      if (!user) return;
+      
+      try {
+        // Optimistic update
+        const newIsLiked = !localIsLiked;
+        const newLikeCount = newIsLiked ? localLikeCount + 1 : localLikeCount - 1;
+        
+        setLocalIsLiked(newIsLiked);
+        setLocalLikeCount(newLikeCount);
+        
+        // Call API
+        await commentsService.toggleCommentLike(commentId, user.id);
+      } catch (error) {
+        // Revert optimistic update on error
+        setLocalIsLiked(!localIsLiked);
+        setLocalLikeCount(localIsLiked ? localLikeCount + 1 : localLikeCount - 1);
+        console.error('Error toggling comment like:', error);
+      }
+    };
 
     // Handle reply form submission
     const handleReplySubmit = (e: React.FormEvent) => {
@@ -283,13 +307,13 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ videoId, videoTitle }
                 onClick={handleLikeClick}
                 disabled={!user || isLiking}
                 className={`flex items-center space-x-1.5 transition-colors disabled:cursor-not-allowed ${
-                  comment.is_liked 
+                  localIsLiked 
                     ? 'text-[#ff7551]' 
                     : 'text-slate-500 hover:text-slate-300'
                 } ${isLiking ? 'animate-pulse' : ''}`}
               >
                 <ThumbsUp className="w-4 h-4" />
-                <span className="text-xs font-medium">{comment.like_count || 0}</span>
+                <span className="text-xs font-medium">{localLikeCount}</span>
               </button>
               
               {/* Reply Button */}
