@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ExternalLink, Search, Filter, ChevronDown, Star, Users, Zap, Globe, Code, Palette, BarChart3, Loader2 } from 'lucide-react';
+import { ExternalLink, Search, Filter, ChevronDown, Star, Users, Zap, Globe, Code, Palette, BarChart3, Loader2, DollarSign } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
 interface HallFerramenta {
@@ -86,37 +86,21 @@ const PoderzinhosPage: React.FC = () => {
   }, [ferramentas, searchQuery, selectedCategory]);
 
   const getCategoryIcon = (tipo_ferramenta: string) => {
-    const iconMap: Record<string, React.ReactNode> = {
-      'IA': <Zap className="w-5 h-5" />,
-      'Automação': <BarChart3 className="w-5 h-5" />,
-      'Design': <Palette className="w-5 h-5" />,
-      'Produtividade': <Code className="w-5 h-5" />,
-      'Marketing': <Globe className="w-5 h-5" />,
-      'Desenvolvimento': <Code className="w-5 h-5" />
-    };
-    
-    return iconMap[tipo_ferramenta] || <Zap className="w-5 h-5" />;
+    return <DollarSign className="w-4 h-4" />;
   };
 
   const FerramentaCard: React.FC<{ ferramenta: HallFerramenta }> = ({ ferramenta }) => {
-    const handleClick = () => {
-      window.open(ferramenta.link_ferramenta, '_blank', 'noopener,noreferrer');
-    };
-
     return (
-      <div 
-        onClick={handleClick}
-        className="bg-slate-700/30 border border-slate-600/30 rounded-xl p-6 hover:bg-slate-600/20 transition-all duration-300 cursor-pointer group hover:scale-105 hover:shadow-xl"
-      >
+      <div className="bg-slate-700/30 border border-slate-600/30 rounded-xl p-6">
         {/* Header */}
         <div className="flex items-start justify-between mb-4">
           <div className="flex items-center space-x-3">
-            <div className="w-12 h-12 bg-slate-600/30 rounded-lg flex items-center justify-center overflow-hidden">
+            <div className="w-16 h-16 bg-slate-600/30 rounded-lg flex items-center justify-center overflow-hidden">
               {ferramenta.img_ferramenta ? (
                 <img 
                   src={ferramenta.img_ferramenta} 
                   alt={ferramenta.nome_ferramenta}
-                  className="w-full h-full object-contain"
+                  className="w-full h-full object-cover rounded-lg"
                   onError={(e) => {
                     const target = e.target as HTMLImageElement;
                     target.style.display = 'none';
@@ -125,12 +109,12 @@ const PoderzinhosPage: React.FC = () => {
                   }}
                 />
               ) : null}
-              <div className={`w-full h-full bg-slate-600/30 rounded-lg ${ferramenta.img_ferramenta ? 'hidden' : 'flex'} items-center justify-center text-2xl`}>
+              <div className={`w-full h-full bg-slate-600/30 rounded-lg ${ferramenta.img_ferramenta ? 'hidden' : 'flex'} items-center justify-center`}>
                 <ExternalLink className="w-6 h-6 text-slate-400" />
               </div>
             </div>
             <div>
-              <h3 className="text-white font-semibold text-lg group-hover:text-[#ff7551] transition-colors">
+              <h3 className="text-white font-semibold text-lg">
                 {ferramenta.nome_ferramenta}
               </h3>
               <span className="text-xs px-2 py-1 bg-slate-600/30 text-slate-300 rounded">
@@ -138,8 +122,6 @@ const PoderzinhosPage: React.FC = () => {
               </span>
             </div>
           </div>
-          
-          <ExternalLink className="w-5 h-5 text-slate-400 group-hover:text-[#ff7551] transition-colors" />
         </div>
 
         {/* Description */}
@@ -153,8 +135,21 @@ const PoderzinhosPage: React.FC = () => {
           </p>
         )}
 
+        {/* Access Button */}
+        <div className="mt-6">
+          <a
+            href={ferramenta.link_ferramenta}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-full flex items-center justify-center space-x-2 py-3 px-4 bg-[#ff7551] hover:bg-[#ff7551]/80 text-white font-medium rounded-lg transition-colors"
+          >
+            <ExternalLink className="w-4 h-4" />
+            <span>Acessar Ferramenta</span>
+          </a>
+        </div>
+
         {/* Footer Info */}
-        <div className="flex items-center justify-between text-xs text-slate-400">
+        <div className="flex items-center justify-between text-xs text-slate-400 mt-4">
           <div className="flex items-center space-x-4">
             {ferramenta.tipo_ferramenta && (
               <div className="flex items-center space-x-1">
@@ -174,10 +169,6 @@ const PoderzinhosPage: React.FC = () => {
                 <span>{ferramenta.usuarios}</span>
               </div>
             )}
-            <div className="flex items-center space-x-1">
-              <ExternalLink className="w-3 h-3" />
-              <span>Link externo</span>
-            </div>
           </div>
           {ferramenta.preco && (
             <div className="text-[#ff7551] font-medium">
