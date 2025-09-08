@@ -80,15 +80,15 @@ const PoderzinhosPage: React.FC = () => {
         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent group-hover:from-black/95 group-hover:via-black/70 transition-all duration-300" />
         
         {/* Content Overlay */}
-        <div className="absolute inset-0 flex flex-col justify-end p-6">
+        <div className="absolute inset-0 flex flex-col justify-end p-6 pb-4">
           {/* Tool Name - Always visible, moves up on hover */}
-          <h3 className="text-white font-bold text-2xl mb-2 leading-tight transition-all duration-300 group-hover:-translate-y-4">
+          <h3 className="text-white font-bold text-2xl mb-2 leading-tight transition-all duration-300 group-hover:-translate-y-16">
             {ferramenta.nome_ferramenta}
           </h3>
 
           {/* Tool Type - Always visible, moves up on hover */}
           {ferramenta.tipo_ferramenta && (
-            <div className="flex items-center space-x-2 mb-4 transition-all duration-300 group-hover:-translate-y-4">
+            <div className="flex items-center space-x-2 mb-4 transition-all duration-300 group-hover:-translate-y-16">
               <DollarSign className="w-3 h-3 text-[#ff7551]" />
               <span className="text-xs px-2 py-1 bg-[#ff7551]/20 text-[#ff7551] rounded-full font-medium border border-[#ff7551]/30">
                 {ferramenta.tipo_ferramenta}
@@ -97,7 +97,7 @@ const PoderzinhosPage: React.FC = () => {
           )}
 
           {/* Description - Only visible on hover */}
-          <div className="opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-4 group-hover:translate-y-0">
+          <div className="opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-8 group-hover:translate-y-0">
             {ferramenta.descricao_ferramenta ? (
               <p className="text-slate-200 text-sm leading-relaxed mb-4 line-clamp-2">
                 {ferramenta.descricao_ferramenta}
@@ -110,7 +110,7 @@ const PoderzinhosPage: React.FC = () => {
           </div>
 
           {/* Access Button - Only visible on hover */}
-          <div className="opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-4 group-hover:translate-y-0">
+          <div className="opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-8 group-hover:translate-y-0">
             <a
               href={ferramenta.link_ferramenta}
               target="_blank"
