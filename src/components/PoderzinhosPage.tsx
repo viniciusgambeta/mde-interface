@@ -77,10 +77,10 @@ const PoderzinhosPage: React.FC = () => {
         </div>
         
         {/* Dark overlay that appears on hover */}
-        {/* Gradient overlay - always present, intensifies on hover */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent group-hover:from-black/80 group-hover:via-black/40 group-hover:to-black/10 transition-all duration-500 z-10"></div>
+        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all duration-500 z-10"></div>
         
         {/* Content Overlay */}
+        <div className="absolute inset-0 flex flex-col justify-end p-6 pb-0 z-20">
           
           {/* Tool Name - Always visible, moves up on hover */}
           <h3 className="text-white font-bold text-2xl mb-1 leading-tight transition-all duration-500 group-hover:-translate-y-32">
@@ -122,7 +122,6 @@ const PoderzinhosPage: React.FC = () => {
               <span>Acessar Ferramenta</span>
             </a>
           </div>
-        </div>
         </div>
       </div>
     );
