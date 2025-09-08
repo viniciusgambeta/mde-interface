@@ -80,8 +80,8 @@ const PoderzinhosPage: React.FC = () => {
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
         
         {/* Content at bottom */}
-        <div className="absolute bottom-0 left-0 right-0 p-4">
-          <h3 className="text-white font-bold text-lg mb-2 leading-tight">
+        <div className="absolute bottom-0 left-0 right-0 p-6">
+          <h3 className="text-white font-bold text-xl mb-3 leading-tight">
             {ferramenta.nome_ferramenta}
           </h3>
           
@@ -95,14 +95,14 @@ const PoderzinhosPage: React.FC = () => {
           )}
           
           {/* Description - shown on hover */}
-          <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 mb-3">
+          <div className="hidden group-hover:block mb-3">
             <p className="text-slate-200 text-sm leading-relaxed line-clamp-2">
               {ferramenta.descricao_ferramenta || 'Acesse esta ferramenta útil através do link fornecido.'}
             </p>
           </div>
           
           {/* Button - shown on hover */}
-          <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+          <div className="hidden group-hover:block">
             <a
               href={ferramenta.link_ferramenta}
               target="_blank"
