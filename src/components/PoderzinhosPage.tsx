@@ -198,5 +198,3 @@ const PoderzinhosPage: React.FC = () => {
 };
 
 export default PoderzinhosPage;
-
-export default PoderzinhosPage
