@@ -108,81 +108,44 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   }, [navigate]);
 
   const signIn = async (email: string, password: string): Promise<{ user: User | null; error: string | null }> => {
-    try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
 
-      if (error) {
-        return { user: null, error: error.message };
-      }
-
-      return { user: null, error: null };
-    } catch (error) {
-      return { user: null, error: 'Erro inesperado durante o login' };
+    if (error) {
+      return { user: null, error: error.message };
     }
+
+    return { user: null, error: null };
   };
 
   const signUp = async (email: string, password: string, name: string): Promise<{ user: User | null; error: string | null }> => {
-    try {
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            name: name,
-          }
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          name: name,
         }
-      });
-
-      if (error) {
-        return { user: null, error: error.message };
       }
+    });
 
-      if (data.user) {
-        // Create assinatura record
-        const assinaturaData = {
-          "Nome do cliente": name,
-          "Email do cliente": email,
-          user_id: data.user.id,
-          onboarding_completed: false,
-          is_premium: false,
-          cadastro_mde: true
-        };
-
-        const { error: assinaturaError } = await supabase
-          .from('assinaturas')
-          .insert([assinaturaData]);
-
-        if (assinaturaError) {
-          console.error('Error creating assinatura:', assinaturaError.message);
-        }
-
-        // Force logout to show success screen
-        await supabase.auth.signOut();
-        
-        return { user: null, error: null };
-      }
-
-      return { user: null, error: 'Erro desconhecido' };
-    } catch (error) {
-      return { user: null, error: 'Erro inesperado durante o cadastro' };
+    if (error) {
+      return { user: null, error: error.message };
     }
+
+    return { user: null, error: null };
   };
 
   const signOut = async (): Promise<{ error: string | null }> => {
-    try {
-      const { error } = await supabase.auth.signOut();
-      
-      if (error) {
-        return { error: error.message };
-      }
-      
-      return { error: null };
-    } catch (error) {
-      return { error: 'Erro inesperado durante o logout' };
+    const { error } = await supabase.auth.signOut();
+    
+    if (error) {
+      return { error: error.message };
     }
+    
+    return { error: null };
   };
 
   const value: AuthContextType = {
