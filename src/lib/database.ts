@@ -142,7 +142,7 @@ export interface Comment {
 }
 // Consolidated Assinatura type - now contains all user data
 export interface Assinatura {
-  "ID da assinatura": string;
+  id_assinatura: string;
   user_id: string;
   "Nome do cliente": string;
   "Email do cliente": string;

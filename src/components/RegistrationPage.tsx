@@ -16,7 +16,7 @@ import {
 } from 'lucide-react';
 
 interface AssinaturaData {
-  'ID da assinatura': string;
+  id_assinatura: string;
   'Nome do cliente': string;
   'Email do cliente': string;
   'Status da assinatura': string;
@@ -84,7 +84,7 @@ const RegistrationPage: React.FC = () => {
         const { data, error } = await supabase
           .from('assinaturas')
           .select(`
-            "ID da assinatura",
+            id_assinatura,
             "Nome do cliente", 
             "Email do cliente",
             "Status da assinatura",
@@ -229,7 +229,7 @@ const RegistrationPage: React.FC = () => {
               onboarding_completed: false,
               cadastro_mde: true
             })
-            .eq("ID da assinatura", subscriptionData["ID da assinatura"]);
+            .eq("id_assinatura", subscriptionData.id_assinatura);
 
           if (updateError) {
             console.error('❌ Error updating existing assinatura record:', updateError);
@@ -244,7 +244,7 @@ const RegistrationPage: React.FC = () => {
               user_id: authData.user.id,
               "Nome do cliente": formData.name,
               "Email do cliente": formData.email,
-              "ID da assinatura": authData.user.id,
+              id_assinatura: authData.user.id,
               "Status da assinatura": 'free',
               "Plano": 'Free Plan',
               "Data de criação": new Date().toISOString().split('T')[0],

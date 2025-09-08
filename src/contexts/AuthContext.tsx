@@ -23,7 +23,7 @@ export interface User {
 }
 
 interface Assinatura {
-  "ID da assinatura": string;
+  id_assinatura: string;
   "Nome do cliente": string;
   "Email do cliente": string;
   "Telefone do cliente"?: number;
@@ -102,7 +102,7 @@ const fetchUserData = async (authUser: SupabaseUser): Promise<User> => {
     const { data: assinatura, error } = await supabase
       .from('assinaturas')
       .select(`
-        "ID da assinatura",
+        id_assinatura,
         "Nome do cliente",
         "Email do cliente", 
         "Telefone do cliente",
