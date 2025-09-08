@@ -311,6 +311,7 @@ const AppWithAuth: React.FC = () => {
         <Route path="/video/:slug" element={<AppLayout />} />
         <Route path="/prompt/:slug" element={<AppLayout />} />
         <Route path="/live/:slug" element={<AppLayout />} />
+        <Route path="/onboarding" element={<OnboardingFlow />} />
         <Route path="/registro" element={<RegistrationPage />} />
         <Route path="/redefinir-senha" element={<PasswordResetPage />} />
         <Route path="/privacidade" element={<PrivacyPolicyPage />} />
