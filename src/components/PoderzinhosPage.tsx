@@ -196,9 +196,9 @@ const PoderzinhosPage: React.FC = () => {
           <p className="text-slate-400 max-w-md mx-auto">
             Não encontramos ferramentas para exibir no momento.
           </p>
-          {(searchQuery || selectedCategory !== 'all') && (
-            <button
-              onClick={() => {
+        </div>
+      )}
+    </div>
   );
 };
 
