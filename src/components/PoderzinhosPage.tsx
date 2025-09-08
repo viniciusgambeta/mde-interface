@@ -80,7 +80,7 @@ const PoderzinhosPage: React.FC = () => {
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent group-hover:from-black/90 group-hover:via-black/40 group-hover:to-black/10 transition-all duration-500 z-10"></div>
         
         {/* Content Container */}
-        <div className="absolute inset-0 flex flex-col justify-end p-6 z-20">
+        <div className="absolute bottom-0 left-0 right-0 p-6 z-20">
           {/* Always Visible Content - Title and Type */}
           <div className="transform transition-all duration-500 group-hover:-translate-y-20">
             {/* Tool Name - Always visible */}
