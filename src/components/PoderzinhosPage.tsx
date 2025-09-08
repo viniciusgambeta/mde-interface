@@ -81,12 +81,8 @@ const PoderzinhosPage: React.FC = () => {
         
         {/* Content at bottom */}
         <div className="absolute bottom-0 left-0 right-0 p-6">
-          <h3 className="text-white font-bold text-xl mb-3 leading-tight">
-            {ferramenta.nome_ferramenta}
-          </h3>
-          
           {ferramenta.tipo_ferramenta && (
-            <div className="flex items-center space-x-2 mb-3">
+            <div className="flex items-center space-x-2 mb-2">
               <DollarSign className="w-3 h-3 text-[#ff7551]" />
               <span className="text-xs px-2 py-1 bg-[#ff7551]/20 text-[#ff7551] rounded-full font-medium">
                 {ferramenta.tipo_ferramenta}
@@ -94,15 +90,19 @@ const PoderzinhosPage: React.FC = () => {
             </div>
           )}
           
+          <h3 className="text-white font-bold text-2xl mb-3 leading-tight">
+            {ferramenta.nome_ferramenta}
+          </h3>
+          
           {/* Description - shown on hover */}
-          <div className="hidden group-hover:block mb-3">
+          <div className="hidden group-hover:block mb-3 animate-fade-in">
             <p className="text-slate-200 text-sm leading-relaxed line-clamp-2">
               {ferramenta.descricao_ferramenta || 'Acesse esta ferramenta útil através do link fornecido.'}
             </p>
           </div>
           
           {/* Button - shown on hover */}
-          <div className="hidden group-hover:block">
+          <div className="hidden group-hover:block animate-fade-in">
             <a
               href={ferramenta.link_ferramenta}
               target="_blank"
