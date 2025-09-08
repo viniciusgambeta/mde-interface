@@ -103,8 +103,21 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         const { data: { session } } = await supabase.auth.getSession();
         
         if (session?.user) {
-          const userData = await loadUserDataFromAssinaturas(session.user);
-          setUser(userData);
+          try {
+            const userData = await loadUserDataFromAssinaturas(session.user);
+            setUser(userData);
+          } catch (error) {
+            console.error('Error loading user data in checkSession:', error);
+            // Fallback to basic user data
+            setUser({
+              id: session.user.id,
+              email: session.user.email || '',
+              name: session.user.user_metadata?.name || session.user.email?.split('@')[0] || '',
+              avatar: session.user.user_metadata?.avatar_url || '/avatar1.png',
+              isPremium: false,
+              joinedAt: session.user.created_at
+            });
+          }
         } else {
           setUser(null);
         }
@@ -133,8 +146,21 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         }
 
         if (session?.user) {
-          const userData = await loadUserDataFromAssinaturas(session.user);
-          setUser(userData);
+          try {
+            const userData = await loadUserDataFromAssinaturas(session.user);
+            setUser(userData);
+          } catch (error) {
+            console.error('Error loading user data in auth state change:', error);
+            // Fallback to basic user data
+            setUser({
+              id: session.user.id,
+              email: session.user.email || '',
+              name: session.user.user_metadata?.name || session.user.email?.split('@')[0] || '',
+              avatar: session.user.user_metadata?.avatar_url || '/avatar1.png',
+              isPremium: false,
+              joinedAt: session.user.created_at
+            });
+          }
         } else {
           setUser(null);
           
