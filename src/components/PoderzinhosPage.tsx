@@ -30,10 +30,10 @@ const PoderzinhosPage: React.FC = () => {
     const loadFerramentas = async () => {
       setLoading(true);
       try {
-        console.log('🔧 Loading ferramentas from ferramentas_links table...');
+        console.log('🔧 Loading ferramentas from hall_ferramentas table...');
         
         const { data, error } = await supabase
-          .from('ferramentas_links')
+          .from('hall_ferramentas')
           .select('*')
           .order('created_at', { ascending: false });
 
@@ -49,8 +49,9 @@ const PoderzinhosPage: React.FC = () => {
         setFerramentas(data || []);
         
         // Extract unique categories
-        // Since ferramentas_links doesn't have categoria, we'll create default categories
-        setAvailableCategories(['Ferramentas', 'Links', 'Recursos']);
+        // Extract unique categories from hall_ferramentas
+        const uniqueCategories = [...new Set(data?.map(item => item.categoria).filter(Boolean))].sort();
+        setAvailableCategories(uniqueCategories);
         
       } catch (error) {
         console.error('Exception loading ferramentas:', error);
@@ -71,23 +72,31 @@ const PoderzinhosPage: React.FC = () => {
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter(ferramenta =>
-        ferramenta.nome.toLowerCase().includes(query)
+        ferramenta.nome.toLowerCase().includes(query) ||
+        (ferramenta.descricao && ferramenta.descricao.toLowerCase().includes(query)) ||
+        (ferramenta.categoria && ferramenta.categoria.toLowerCase().includes(query))
       );
     }
 
-    // Skip category filter for now since ferramentas_links doesn't have categoria
+    // Apply category filter
+    if (selectedCategory !== 'all') {
+      filtered = filtered.filter(ferramenta => ferramenta.categoria === selectedCategory);
+    }
 
     setFilteredFerramentas(filtered);
   }, [ferramentas, searchQuery, selectedCategory]);
 
   const getCategoryIcon = (categoria: string) => {
     const iconMap: Record<string, React.ReactNode> = {
-      'Ferramentas': <Zap className="w-5 h-5" />,
-      'Links': <Globe className="w-5 h-5" />,
-      'Recursos': <Code className="w-5 h-5" />
+      'IA': <Zap className="w-5 h-5" />,
+      'Automação': <BarChart3 className="w-5 h-5" />,
+      'Design': <Palette className="w-5 h-5" />,
+      'Produtividade': <Code className="w-5 h-5" />,
+      'Marketing': <Globe className="w-5 h-5" />,
+      'Desenvolvimento': <Code className="w-5 h-5" />
     };
     
-    return iconMap[categoria] || <ExternalLink className="w-5 h-5" />;
+    return iconMap[categoria] || <Zap className="w-5 h-5" />;
   };
 
   const FerramentaCard: React.FC<{ ferramenta: HallFerramenta }> = ({ ferramenta }) => {
@@ -122,18 +131,47 @@ const PoderzinhosPage: React.FC = () => {
         </div>
 
         {/* Description */}
-        <p className="text-slate-300 text-sm leading-relaxed mb-4 line-clamp-3">
-          Acesse esta ferramenta útil através do link fornecido.
-        </p>
+        {ferramenta.descricao ? (
+          <p className="text-slate-300 text-sm leading-relaxed mb-4 line-clamp-3">
+            {ferramenta.descricao}
+          </p>
+        ) : (
+          <p className="text-slate-300 text-sm leading-relaxed mb-4 line-clamp-3">
+            Acesse esta ferramenta útil através do link fornecido.
+          </p>
+        )}
 
         {/* Footer Info */}
         <div className="flex items-center justify-between text-xs text-slate-400">
           <div className="flex items-center space-x-4">
+            {ferramenta.categoria && (
+              <div className="flex items-center space-x-1">
+                {getCategoryIcon(ferramenta.categoria)}
+                <span>{ferramenta.categoria}</span>
+              </div>
+            )}
+            {ferramenta.avaliacao && (
+              <div className="flex items-center space-x-1">
+                <Star className="w-3 h-3 text-yellow-400" />
+                <span>{ferramenta.avaliacao}</span>
+              </div>
+            )}
+            {ferramenta.usuarios && (
+              <div className="flex items-center space-x-1">
+                <Users className="w-3 h-3" />
+                <span>{ferramenta.usuarios}</span>
+              </div>
+            )}
             <div className="flex items-center space-x-1">
               <ExternalLink className="w-3 h-3" />
               <span>Link externo</span>
             </div>
           </div>
+          {ferramenta.preco && (
+            <div className="text-[#ff7551] font-medium">
+              {ferramenta.preco}
+            </div>
+          )}
         </div>
       </div>
     );
