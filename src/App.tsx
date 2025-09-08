@@ -288,7 +288,11 @@ function App() {
 
 // Component that has access to auth context
 const AppWithAuth: React.FC = () => {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return <div>Carregando...</div>;
+  }
 
   // Normal app routes
   return (
