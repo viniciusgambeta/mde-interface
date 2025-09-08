@@ -40,7 +40,7 @@ const Header: React.FC<HeaderProps> = ({ sidebarCollapsed, onSidebarToggle, onVi
         return;
       }
     };
-  }, []);
+  }, [user]);
 
   // Check for login parameter in URL
   useEffect(() => {
@@ -380,13 +380,13 @@ const Header: React.FC<HeaderProps> = ({ sidebarCollapsed, onSidebarToggle, onVi
                 >
                   <div className="hidden sm:block text-right pl-3">
                     <div className="text-white font-medium text-base group-hover:text-[#ff7551] transition-colors">
-                      {userData?.name || user?.email?.split('@')[0] || 'Usuário'}
+                      {user?.name || user?.email?.split('@')[0] || 'Usuário'}
                     </div>
                   </div>
                   <div className="relative">
                     <img
-                      src={userData?.avatar || '/avatar1.png'}
-                      alt={userData?.name || 'User'}
+                      src={user?.avatar || '/avatar1.png'}
+                      alt={user?.name || 'User'}
                      className="w-12 h-12 rounded-xl object-cover"
                     />
                   </div>
