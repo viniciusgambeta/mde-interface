@@ -10,7 +10,6 @@ export interface User {
   name: string;
   avatar?: string;
   joinedAt: string;
-  isPremium?: boolean;
 }
 
 interface AuthContextType {
@@ -43,39 +42,37 @@ const convertSupabaseUser = (authUser: SupabaseUser): User => {
   };
 };
 
-// Function to load user data from assinaturas table
-const loadUserDataFromAssinaturas = async (userId: string): Promise<Partial<User>> => {
-  try {
-    const { data, error } = await supabase
-      .from('assinaturas')
-      .select('"Nome do cliente", avatar_usuario, is_premium')
-      .eq('user_id', userId)
-      .maybeSingle();
-
-    if (error) {
-      console.error('Error loading user data from assinaturas:', error);
-      return {};
-    }
-
-    if (data) {
-      return {
-        name: data["Nome do cliente"] || undefined,
-        avatar: data.avatar_usuario || undefined,
-        isPremium: data.is_premium || false
-      };
-    }
-
-    return {};
-  } catch (error) {
-    console.error('Exception loading user data from assinaturas:', error);
-    return {};
-  }
-};
-
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const navigate = useNavigate();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+
+  // Função para verificar status do onboarding
+  const checkOnboardingStatus = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('assinaturas')
+        .select('onboarding_completed')
+        .eq('user_id', userId)
+        .maybeSingle();
+
+      if (error) {
+        console.error('Error checking onboarding status:', error);
+        return true; // Em caso de erro, não redireciona
+      }
+
+      // Se não encontrou registro OU onboarding_completed é false, precisa fazer onboarding
+      if (!data || !data.onboarding_completed) {
+        console.log('🔄 User needs to complete onboarding');
+        return false;
+      }
+
+      return true;
+    } catch (error) {
+      console.error('Exception checking onboarding:', error);
+      return true; // Em caso de erro, não redireciona
+    }
+  };
 
   useEffect(() => {
     let timeoutId: NodeJS.Timeout;
@@ -90,20 +87,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         } else {
           setUser(null);
         }
-        const baseUser = convertSupabaseUser(session.user);
-        
-        // Load additional data from assinaturas table
-        const additionalData = await loadUserDataFromAssinaturas(session.user.id);
-        
-        // Merge the data, keeping base user data as fallback
-        const enrichedUser = {
-          ...baseUser,
-          name: additionalData.name || baseUser.name,
-          avatar: additionalData.avatar || baseUser.avatar,
-          isPremium: additionalData.isPremium || false
-        };
-        
-        setUser(enrichedUser);
+      } catch (error) {
         console.error('Error checking session:', error);
         setUser(null);
       } finally {
@@ -128,20 +112,22 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         }
 
         if (session?.user) {
-          const baseUser = convertSupabaseUser(session.user);
+          const convertedUser = convertSupabaseUser(session.user);
+          setUser(convertedUser);
           
-          // Load additional data from assinaturas table
-          const additionalData = await loadUserDataFromAssinaturas(session.user.id);
-          
-          // Merge the data, keeping base user data as fallback
-          const enrichedUser = {
-            ...baseUser,
-            name: additionalData.name || baseUser.name,
-            avatar: additionalData.avatar || baseUser.avatar,
-            isPremium: additionalData.isPremium || false
-          };
-          
-          setUser(enrichedUser);
+          // Verificar onboarding apenas em login bem-sucedido (não em page refresh)
+          if (event === 'SIGNED_IN') {
+            console.log('🔍 Checking onboarding status for user:', convertedUser.id);
+            const hasCompletedOnboarding = await checkOnboardingStatus(convertedUser.id);
+            
+            if (!hasCompletedOnboarding) {
+              console.log('➡️ Redirecting to onboarding');
+              // Pequeno delay para garantir que o estado foi atualizado
+              setTimeout(() => {
+                navigate('/onboarding');
+              }, 100);
+            }
+          }
         } else {
           setUser(null);
           
