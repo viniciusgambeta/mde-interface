@@ -55,7 +55,7 @@ const PoderzinhosPage: React.FC = () => {
 
   const FerramentaCard: React.FC<{ ferramenta: HallFerramenta }> = ({ ferramenta }) => {
     return (
-      <div className="relative bg-slate-700/30 border border-slate-600/30 rounded-xl overflow-hidden aspect-[2/3] group cursor-pointer">
+      <div className="relative bg-slate-700/30 border border-slate-600/30 rounded-xl overflow-hidden aspect-[3/4] group cursor-pointer">
         {/* Background Image */}
         <div className="absolute inset-0">
           {ferramenta.img_ferramenta ? (
@@ -77,18 +77,18 @@ const PoderzinhosPage: React.FC = () => {
         </div>
 
         {/* Gradient Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent group-hover:from-black/95 group-hover:via-black/60 transition-all duration-300" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent group-hover:from-black/95 group-hover:via-black/70 transition-all duration-300" />
         
         {/* Content Overlay */}
-        <div className="absolute inset-0 flex flex-col justify-end p-4">
-          {/* Tool Name */}
-          <h3 className="text-white font-bold text-2xl mb-3 leading-tight">
+        <div className="absolute inset-0 flex flex-col justify-end p-6">
+          {/* Tool Name - Always visible, moves up on hover */}
+          <h3 className="text-white font-bold text-2xl mb-2 leading-tight transition-all duration-300 group-hover:-translate-y-4">
             {ferramenta.nome_ferramenta}
           </h3>
 
-          {/* Tool Type */}
+          {/* Tool Type - Always visible, moves up on hover */}
           {ferramenta.tipo_ferramenta && (
-            <div className="flex items-center space-x-2 mb-4">
+            <div className="flex items-center space-x-2 mb-4 transition-all duration-300 group-hover:-translate-y-4">
               <DollarSign className="w-3 h-3 text-[#ff7551]" />
               <span className="text-xs px-2 py-1 bg-[#ff7551]/20 text-[#ff7551] rounded-full font-medium border border-[#ff7551]/30">
                 {ferramenta.tipo_ferramenta}
@@ -96,26 +96,26 @@ const PoderzinhosPage: React.FC = () => {
             </div>
           )}
 
-          {/* Description */}
-          <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+          {/* Description - Only visible on hover */}
+          <div className="opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-4 group-hover:translate-y-0">
             {ferramenta.descricao_ferramenta ? (
-              <p className="text-slate-200 text-sm leading-relaxed mb-4 line-clamp-3">
+              <p className="text-slate-200 text-sm leading-relaxed mb-4 line-clamp-2">
                 {ferramenta.descricao_ferramenta}
               </p>
             ) : (
-              <p className="text-slate-200 text-sm leading-relaxed mb-4 line-clamp-3">
+              <p className="text-slate-200 text-sm leading-relaxed mb-4 line-clamp-2">
                 Acesse esta ferramenta útil através do link fornecido.
               </p>
             )}
           </div>
 
-          {/* Access Button */}
-          <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+          {/* Access Button - Only visible on hover */}
+          <div className="opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-4 group-hover:translate-y-0">
             <a
               href={ferramenta.link_ferramenta}
               target="_blank"
               rel="noopener noreferrer"
-              className="w-full flex items-center justify-center space-x-2 py-3 px-4 bg-[#ff7551] hover:bg-[#ff7551]/80 text-white font-semibold rounded-lg transition-colors"
+              className="w-full flex items-center justify-center space-x-2 py-3 px-4 bg-[#ff7551] hover:bg-[#ff7551]/80 text-white font-semibold rounded-lg transition-colors transform hover:scale-105"
             >
               <ExternalLink className="w-4 h-4" />
               <span>Acessar Ferramenta</span>
@@ -176,7 +176,7 @@ const PoderzinhosPage: React.FC = () => {
 
       {/* Ferramentas Grid */}
       {ferramentas.length > 0 ? (
-        <div className="grid md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {ferramentas.map((ferramenta, index) => (
             <div
               key={ferramenta.id}
