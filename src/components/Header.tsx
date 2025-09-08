@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useVideo } from '../contexts/VideoContext';
 import { videoService, type Video } from '../lib/database';
+import { supabase } from '../lib/supabase';
 import LoginModal from './auth/LoginModal';
 import RegisterModal from './auth/RegisterModal';
 import ProfileModal from './auth/ProfileModal';
@@ -29,6 +30,56 @@ const Header: React.FC<HeaderProps> = ({ sidebarCollapsed, onSidebarToggle, onVi
   const userMenuRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLDivElement>(null);
   const { user, isAuthenticated, signOut } = useAuth();
+  const [userData, setUserData] = useState<{name: string; avatar: string} | null>(null);
+
+  // Load user data from assinaturas table
+  useEffect(() => {
+    const loadUserData = async () => {
+      if (!user) {
+        setUserData(null);
+        return;
+      }
+
+      try {
+        const { data, error } = await supabase
+          .from('assinaturas')
+          .select('"Nome do cliente", avatar_usuario')
+          .eq('user_id', user.id)
+          .maybeSingle();
+
+        if (error) {
+          console.error('Error loading user data for header:', error);
+          // Fallback to auth user data
+          setUserData({
+            name: user.email?.split('@')[0] || 'Usuário',
+            avatar: '/avatar1.png'
+          });
+          return;
+        }
+
+        if (data) {
+          setUserData({
+            name: data["Nome do cliente"] || user.email?.split('@')[0] || 'Usuário',
+            avatar: data.avatar_usuario || '/avatar1.png'
+          });
+        } else {
+          // No data found, use fallback
+          setUserData({
+            name: user.email?.split('@')[0] || 'Usuário',
+            avatar: '/avatar1.png'
+          });
+        }
+      } catch (error) {
+        console.error('Exception loading user data for header:', error);
+        setUserData({
+          name: user.email?.split('@')[0] || 'Usuário',
+          avatar: '/avatar1.png'
+        });
+      }
+    };
+
+    loadUserData();
+  }, [user?.id]);
 
   // Check for login parameter in URL
   useEffect(() => {
@@ -367,12 +418,14 @@ const Header: React.FC<HeaderProps> = ({ sidebarCollapsed, onSidebarToggle, onVi
                   className="flex items-center space-x-4 p-3 rounded-lg hover:bg-slate-700/30 transition-colors group"
                 >
                   <div className="hidden sm:block text-right pl-3">
-                    <div className="text-white font-medium text-base group-hover:text-[#ff7551] transition-colors">{user?.name}</div>
+                    <div className="text-white font-medium text-base group-hover:text-[#ff7551] transition-colors">
+                      {userData?.name || user?.email?.split('@')[0] || 'Usuário'}
+                    </div>
                   </div>
                   <div className="relative">
                     <img
-                      src={user?.avatar || '/avatar1.png'}
-                      alt="User"
+                      src={userData?.avatar || '/avatar1.png'}
+                      alt={userData?.name || 'User'}
                      className="w-12 h-12 rounded-xl object-cover"
                     />
                   </div>
