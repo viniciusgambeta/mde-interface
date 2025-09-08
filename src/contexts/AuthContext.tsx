@@ -9,6 +9,7 @@ export interface User {
   email: string;
   name: string;
   avatar?: string;
+  isPremium?: boolean;
   joinedAt: string;
 }
 
@@ -19,6 +20,7 @@ interface AuthContextType {
   signIn: (email: string, password: string) => Promise<{ user: User | null; error: string | null }>;
   signUp: (email: string, password: string, name: string) => Promise<{ user: User | null; error: string | null }>;
   signOut: () => Promise<{ error: string | null }>;
+  updateProfile: (updates: any) => Promise<boolean>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -31,15 +33,60 @@ export const useAuth = () => {
   return context;
 };
 
-// Convert Supabase user to our User type
-const convertSupabaseUser = (authUser: SupabaseUser): User => {
-  return {
-    id: authUser.id,
-    email: authUser.email || '',
-    name: authUser.user_metadata?.name || authUser.email?.split('@')[0] || '',
-    avatar: authUser.user_metadata?.avatar_url || '/avatar1.png',
-    joinedAt: authUser.created_at
-  };
+// Load user data from assinaturas table
+const loadUserDataFromAssinaturas = async (authUser: SupabaseUser): Promise<User> => {
+  try {
+    const { data, error } = await supabase
+      .from('assinaturas')
+      .select('"Nome do cliente", avatar_usuario, is_premium')
+      .eq('user_id', authUser.id)
+      .maybeSingle();
+
+    if (error) {
+      console.error('Error loading user data from assinaturas:', error);
+      // Fallback to auth user data
+      return {
+        id: authUser.id,
+        email: authUser.email || '',
+        name: authUser.user_metadata?.name || authUser.email?.split('@')[0] || '',
+        avatar: authUser.user_metadata?.avatar_url || '/avatar1.png',
+        isPremium: false,
+        joinedAt: authUser.created_at
+      };
+    }
+
+    if (data) {
+      return {
+        id: authUser.id,
+        email: authUser.email || '',
+        name: data["Nome do cliente"] || authUser.user_metadata?.name || authUser.email?.split('@')[0] || '',
+        avatar: data.avatar_usuario || authUser.user_metadata?.avatar_url || '/avatar1.png',
+        isPremium: data.is_premium || false,
+        joinedAt: authUser.created_at
+      };
+    } else {
+      // No data found, use fallback
+      return {
+        id: authUser.id,
+        email: authUser.email || '',
+        name: authUser.user_metadata?.name || authUser.email?.split('@')[0] || '',
+        avatar: authUser.user_metadata?.avatar_url || '/avatar1.png',
+        isPremium: false,
+        joinedAt: authUser.created_at
+      };
+    }
+  } catch (error) {
+    console.error('Exception loading user data from assinaturas:', error);
+    // Fallback to auth user data
+    return {
+      id: authUser.id,
+      email: authUser.email || '',
+      name: authUser.user_metadata?.name || authUser.email?.split('@')[0] || '',
+      avatar: authUser.user_metadata?.avatar_url || '/avatar1.png',
+      isPremium: false,
+      joinedAt: authUser.created_at
+    };
+  }
 };
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
@@ -56,7 +103,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         const { data: { session } } = await supabase.auth.getSession();
         
         if (session?.user) {
-          setUser(convertSupabaseUser(session.user));
+          const userData = await loadUserDataFromAssinaturas(session.user);
+          setUser(userData);
         } else {
           setUser(null);
         }
@@ -85,7 +133,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         }
 
         if (session?.user) {
-          setUser(convertSupabaseUser(session.user));
+          const userData = await loadUserDataFromAssinaturas(session.user);
+          setUser(userData);
         } else {
           setUser(null);
           
@@ -148,13 +197,46 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     return { error: null };
   };
 
+  const updateProfile = async (updates: any): Promise<boolean> => {
+    if (!user) return false;
+
+    try {
+      const { error } = await supabase
+        .from('assinaturas')
+        .upsert({ 
+          user_id: user.id, 
+          ...updates 
+        }, {
+          onConflict: 'user_id'
+        });
+
+      if (error) {
+        console.error('Error updating profile:', error);
+        return false;
+      }
+
+      // Reload user data after update
+      const { data: { user: authUser } } = await supabase.auth.getUser();
+      if (authUser) {
+        const userData = await loadUserDataFromAssinaturas(authUser);
+        setUser(userData);
+      }
+
+      return true;
+    } catch (error) {
+      console.error('Exception updating profile:', error);
+      return false;
+    }
+  };
+
   const value: AuthContextType = {
     user,
     loading,
     isAuthenticated: !loading && !!user,
     signIn,
     signUp,
-    signOut
+    signOut,
+    updateProfile
   };
 
   return (
