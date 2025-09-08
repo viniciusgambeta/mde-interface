@@ -78,14 +78,17 @@ const PoderzinhosPage: React.FC = () => {
         
         {/* Content Overlay */}
         <div className="absolute inset-0 flex flex-col justify-end p-6 pb-4">
+          {/* Dark overlay that appears on hover */}
+          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all duration-500 -z-10"></div>
+          
           {/* Tool Name - Always visible, moves up on hover */}
-          <h3 className="text-white font-bold text-2xl mb-2 leading-tight transition-all duration-300 group-hover:-translate-y-20">
+          <h3 className="text-white font-bold text-2xl mb-1 leading-tight transition-all duration-500 group-hover:-translate-y-24">
             {ferramenta.nome_ferramenta}
           </h3>
 
           {/* Tool Type - Always visible, moves up on hover */}
           {ferramenta.tipo_ferramenta && (
-            <div className="flex items-center space-x-2 mb-4 transition-all duration-300 group-hover:-translate-y-20">
+            <div className="flex items-center space-x-2 mb-2 transition-all duration-500 group-hover:-translate-y-24">
               <DollarSign className="w-3 h-3 text-[#ff7551]" />
               <span className="text-xs px-2 py-1 bg-[#ff7551]/20 text-[#ff7551] rounded-full font-medium border border-[#ff7551]/30">
                 {ferramenta.tipo_ferramenta}
