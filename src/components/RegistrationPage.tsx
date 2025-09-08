@@ -91,7 +91,9 @@ const RegistrationPage: React.FC = () => {
             "Plano",
             cadastro_mde
           `)
-          .eq('Email do cliente', formData.email.toLowerCase())
+          .eq('Email do cliente', formData.email.toLowerCase().trim())
+          .eq('"Status da assinatura"', 'active')
+          .eq('cadastro_mde', false)
           .maybeSingle();
 
         console.log('📊 Subscription query result:', { data, error });
@@ -101,14 +103,15 @@ const RegistrationPage: React.FC = () => {
           setEmailValid(false);
           setSubscriptionData(null);
         } else if (!data) {
-          console.log('❌ No subscription found for email:', formData.email);
+          console.log('❌ No valid subscription found for email:', formData.email);
           setEmailValid(false);
           setSubscriptionData(null);
         } else {
-          console.log('✅ Subscription found:', data);
+          console.log('✅ Valid subscription found:', data);
           setEmailValid(true);
           setSubscriptionData(data);
-          setHasExistingAccount(data.cadastro_mde || false);
+          setHasExistingAccount(false); // Se chegou aqui, cadastro_mde é false
+          
           // Auto-fill name if available
           if (data["Nome do cliente"] && !formData.name) {
             setFormData(prev => ({ ...prev, name: data["Nome do cliente"] }));
