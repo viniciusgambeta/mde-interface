@@ -380,13 +380,13 @@ const Header: React.FC<HeaderProps> = ({ sidebarCollapsed, onSidebarToggle, onVi
                 >
                   <div className="hidden sm:block text-right pl-3">
                     <div className="text-white font-medium text-base group-hover:text-[#ff7551] transition-colors">
-                      {user?.name || user?.email?.split('@')[0] || 'Usuário'}
+                      {userData?.name || user?.email?.split('@')[0] || 'Usuário'}
                     </div>
                   </div>
                   <div className="relative">
                     <img
-                      src={user?.avatar || '/avatar1.png'}
-                      alt={user?.name || 'User'}
+                      src={userData?.avatar || '/avatar1.png'}
+                      alt={userData?.name || 'User'}
                      className="w-12 h-12 rounded-xl object-cover"
                     />
                   </div>
