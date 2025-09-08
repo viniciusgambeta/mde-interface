@@ -19,7 +19,6 @@ interface AuthContextType {
   signIn: (email: string, password: string) => Promise<{ user: User | null; error: string | null }>;
   signUp: (email: string, password: string, name: string) => Promise<{ user: User | null; error: string | null }>;
   signOut: () => Promise<{ error: string | null }>;
-  updateProfile: (updates: any) => Promise<boolean>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -85,86 +84,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           clearTimeout(timeoutId);
         }
 
-        console.log('🔐 Auth state change event:', event, 'Session exists:', !!session);
-
-        console.log('🔐 Auth state change event:', event, 'Session exists:', !!session);
-
         if (session?.user) {
           setUser(convertSupabaseUser(session.user));
-          
-          // Check onboarding status only on SIGNED_IN event
-          if (event === 'SIGNED_IN') {
-            console.log('✅ User signed in, checking onboarding status...');
-            
-            // Small delay to ensure user state is updated
-            setTimeout(async () => {
-              try {
-                console.log('🔍 Querying onboarding status for user:', session.user.id);
-                
-                const { data: assinaturaData, error } = await supabase
-                  .from('assinaturas')
-                  .select('onboarding_completed')
-                  .eq('user_id', session.user.id)
-                  .maybeSingle();
-
-                if (error) {
-                  console.error('❌ Error checking onboarding status:', error);
-                  return;
-                }
-
-                console.log('📊 Onboarding data:', assinaturaData);
-                
-                const onboardingCompleted = assinaturaData?.onboarding_completed;
-                console.log('🎯 Onboarding completed:', onboardingCompleted);
-                
-                if (!onboardingCompleted) {
-                  console.log('🚀 Redirecting to onboarding...');
-                  navigate('/onboarding');
-                } else {
-                  console.log('✅ Onboarding already completed, user can continue');
-                }
-              } catch (error) {
-                console.error('💥 Exception checking onboarding status:', error);
-              }
-            }, 100);
-          }
-          
-          // Check onboarding status only on SIGNED_IN event
-          if (event === 'SIGNED_IN') {
-            console.log('✅ User signed in, checking onboarding status...');
-            
-            // Small delay to ensure user state is updated
-            setTimeout(async () => {
-              try {
-                console.log('🔍 Querying onboarding status for user:', session.user.id);
-                
-                const { data: assinaturaData, error } = await supabase
-                  .from('assinaturas')
-                  .select('onboarding_completed')
-                  .eq('user_id', session.user.id)
-                  .maybeSingle();
-
-                if (error) {
-                  console.error('❌ Error checking onboarding status:', error);
-                  return;
-                }
-
-                console.log('📊 Onboarding data:', assinaturaData);
-                
-                const onboardingCompleted = assinaturaData?.onboarding_completed;
-                console.log('🎯 Onboarding completed:', onboardingCompleted);
-                
-                if (!onboardingCompleted) {
-                  console.log('🚀 Redirecting to onboarding...');
-                  navigate('/onboarding');
-                } else {
-                  console.log('✅ Onboarding already completed, user can continue');
-                }
-              } catch (error) {
-                console.error('💥 Exception checking onboarding status:', error);
-              }
-            }, 100);
-          }
         } else {
           setUser(null);
           
@@ -227,39 +148,13 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     return { error: null };
   };
 
-  const updateProfile = async (updates: any): Promise<boolean> => {
-    if (!user) return false;
-
-    try {
-      const { error } = await supabase
-        .from('assinaturas')
-        .upsert({ 
-          user_id: user.id, 
-          ...updates 
-        }, {
-          onConflict: 'user_id'
-        });
-
-      if (error) {
-        console.error('Error updating profile:', error);
-        return false;
-      }
-
-      return true;
-    } catch (error) {
-      console.error('Exception updating profile:', error);
-      return false;
-    }
-  };
-
   const value: AuthContextType = {
     user,
     loading,
     isAuthenticated: !loading && !!user,
     signIn,
     signUp,
-    signOut,
-    updateProfile
+    signOut
   };
 
   return (

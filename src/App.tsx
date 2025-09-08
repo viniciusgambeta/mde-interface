@@ -1,544 +1,324 @@
-import React, { useState, useRef } from 'react';
-import { Camera, Upload, ArrowRight, ArrowLeft, CheckCircle, Loader2 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
-import { supabase } from './lib/supabase';
-import { useAuth } from '../contexts/AuthContext';
-interface OnboardingFlowProps {
-  userId?: string;
-  userEmail?: string;
-  onComplete?: () => void;
-}
+import React from 'react';
+import { Routes, Route, useNavigate, useParams, useLocation } from 'react-router-dom';
+import { useEffect } from 'react';
+import { useAuth } from './contexts/AuthContext';
+import OnboardingFlow from './components/OnboardingFlow';
+import Header from './components/Header';
+import Sidebar from './components/Sidebar';
+import MainContent from './components/MainContent';
+import VideoPlayer from './components/VideoPlayer';
+import PromptViewer from './components/PromptViewer';
+import LiveViewer from './components/LiveViewer';
+import RegistrationPage from './components/RegistrationPage';
+import PasswordResetPage from './components/PasswordResetPage';
+import PrivacyPolicyPage from './components/PrivacyPolicyPage';
+import Footer from './components/Footer';
+import { AuthProvider } from './contexts/AuthContext';
+import { VideoProvider } from './contexts/VideoContext';
+import { videoService } from './lib/database';
 
-interface OnboardingData {
-  avatar_url?: string;
-  experiencia_ia?: string;
-  objetivo_principal?: string;
-  tipo_trabalho?: string;
-  porte_negocio?: string;
-  instagram?: string;
-}
-
-const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ userId, userEmail, onComplete }) => {
+// Video Detail Page Component
+const VideoDetailPage: React.FC = () => {
+  const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
-  const { user } = useAuth();
-  const [currentStep, setCurrentStep] = useState(0);
-  const [isLoading, setIsLoading] = useState(false);
-  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
-  const [selectedPresetAvatar, setSelectedPresetAvatar] = useState<string | null>(null);
-  const [avatarMode, setAvatarMode] = useState<'preset' | 'upload'>('preset');
-  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
-  const { updateProfile } = useAuth();
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  
-  const [onboardingData, setOnboardingData] = useState<OnboardingData>({});
+  const [video, setVideo] = React.useState<any>(null);
+  const [loading, setLoading] = React.useState(true);
 
-  // Use user from context if props not provided
-  const currentUserId = userId || user?.id;
-  const currentUserEmail = userEmail || user?.email;
+  const handleVideoSelect = (selectedVideo: any) => {
+    console.log(`🚀 Navigating to ${selectedVideo.tipo || 'video'}:`, {
+      title: selectedVideo.title,
+      slug: selectedVideo.slug,
+      id: selectedVideo.id,
+      tipo: selectedVideo.tipo
+    });
+    
+    // Prevent navigation if already on the same video page
+    const currentPath = location.pathname;
+    let targetPath = '/video/' + selectedVideo.slug;
+    if (selectedVideo.tipo === 'prompt') {
+      targetPath = '/prompt/' + selectedVideo.slug;
+    } else if (selectedVideo.tipo === 'live') {
+      targetPath = '/live/' + selectedVideo.slug;
+    }
+    
+    if (currentPath === targetPath) {
+      console.log('🔄 Already on target page, skipping navigation');
+      return;
+    }
+    
+    // Navigate to the appropriate URL based on content type
+    let urlPrefix = '/video/';
+    if (selectedVideo.tipo === 'prompt') {
+      urlPrefix = '/prompt/';
+    } else if (selectedVideo.tipo === 'live') {
+      urlPrefix = '/live/';
+    }
+    navigate(urlPrefix + selectedVideo.slug);
+  };
 
-  // Redirect if no user
   React.useEffect(() => {
-    if (!currentUserId) {
-      console.log('🚫 No user found for onboarding, redirecting to home');
-      navigate('/');
-    }
-  }, [currentUserId, navigate]);
-  const steps = [
-    'avatar',
-    'experiencia',
-    'objetivo',
-    'trabalho',
-    'porte',
-    'social'
-  ];
-
-  const handleAvatarClick = () => {
-    fileInputRef.current?.click();
-  };
-
-  const handlePresetAvatarSelect = (avatarPath: string) => {
-    setSelectedPresetAvatar(avatarPath);
-    setAvatarPreview(null);
-    setAvatarMode('preset');
-    setOnboardingData(prev => ({ ...prev, avatar_url: avatarPath }));
-  };
-
-  const handleAvatarChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    // Validate file type
-    if (!file.type.startsWith('image/')) {
-      alert('Por favor, selecione apenas arquivos de imagem.');
-      return;
-    }
-
-    // Validate file size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      alert('A imagem deve ter no máximo 5MB.');
-      return;
-    }
-
-    setIsUploadingAvatar(true);
-
-    try {
-      // Create preview
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setAvatarPreview(e.target?.result as string);
-        setSelectedPresetAvatar(null);
-        setAvatarMode('upload');
-      };
-      reader.readAsDataURL(file);
-
-      // Generate unique filename
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${userId}/avatar.${fileExt}`;
-
-      // Delete existing avatar if it exists
-      const { data: existingFiles } = await supabase.storage
-        .from('avatars')
-        .list(userId);
-
-      if (existingFiles && existingFiles.length > 0) {
-        await supabase.storage
-          .from('avatars')
-          .remove([`${userId}/${existingFiles[0].name}`]);
+    const loadVideo = async () => {
+      if (!slug) {
+        navigate('/');
+        return;
       }
 
-      // Upload new avatar
-      const { error: uploadError } = await supabase.storage
-        .from('avatars')
-        .upload(fileName, file, {
-          cacheControl: '3600',
-          upsert: true
-        });
-
-      if (uploadError) {
-        throw uploadError;
+      try {
+        const videoData = await videoService.getVideoBySlug(slug);
+        if (videoData) {
+          setVideo(videoData);
+          // Update page title
+          document.title = `Me dá um Exemplo | ${videoData.title}`;
+        } else {
+          // Video not found, redirect to home
+          navigate('/');
+        }
+      } catch (error) {
+        console.error('Error loading video:', error);
+        navigate('/');
+      } finally {
+        setLoading(false);
       }
+    };
 
-      // Get public URL
-      const { data: { publicUrl } } = supabase.storage
-        .from('avatars')
-        .getPublicUrl(fileName);
-
-      setOnboardingData(prev => ({ ...prev, avatar_url: publicUrl }));
-
-    } catch (error) {
-      console.error('Error uploading avatar:', error);
-      alert('Erro ao fazer upload da imagem. Tente novamente.');
-      setAvatarPreview(null);
-    } finally {
-      setIsUploadingAvatar(false);
-    }
-  };
-
-  const handleNext = () => {
-    if (currentStep < steps.length - 1) {
-      setCurrentStep(currentStep + 1);
-    } else {
-      handleComplete();
-    }
-  };
+    loadVideo();
+  }, [slug, navigate]);
 
   const handleBack = () => {
-    if (currentStep > 0) {
-      setCurrentStep(currentStep - 1);
-    }
+    navigate(-1); // Go back to previous page
   };
 
-  const handleSkipAvatar = () => {
-    if (currentStep < steps.length - 1) {
-      setCurrentStep(currentStep + 1);
-    } else {
-      handleComplete();
-    }
+  if (loading) {
+    return (
+      <div className="flex-1 flex items-center justify-center">
+        <div className="flex items-center space-x-3">
+          <div className="w-6 h-6 border-2 border-[#ff7551]/30 border-t-[#ff7551] rounded-full animate-spin"></div>
+          <span className="text-slate-400">Carregando...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (!video) {
+    return null;
+  }
+
+  // Return the video player/prompt viewer without layout wrapper
+  if (video.tipo === 'prompt') {
+    return (
+      <PromptViewer 
+        prompt={video}
+        onBack={handleBack}
+      />
+    );
+  } else if (video.tipo === 'live') {
+    return (
+      <LiveViewer 
+        live={video}
+        onBack={handleBack}
+      />
+    );
+  } else {
+    return (
+      <VideoPlayer 
+        video={video}
+        onBack={handleBack}
+      />
+    );
+  }
+};
+
+// Main App Layout Component
+const AppLayout: React.FC = () => {
+  const [sidebarCollapsed, setSidebarCollapsed] = React.useState(true);
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  // Get current view from URL
+  const getCurrentView = () => {
+    const path = location.pathname;
+    if (path === '/') return 'discover';
+    if (path.startsWith('/video/') || path.startsWith('/prompt/') || path.startsWith('/live/')) return 'video-detail';
+    return path.substring(1); // Remove leading slash
   };
 
-  const handleComplete = async () => {
-    setIsLoading(true);
+  const currentView = getCurrentView();
 
-    try {
-      // Update the assinaturas table with all onboarding data
-      const updatePayload = {
-        avatar_usuario: onboardingData.avatar_url || '/avatar1.png',
-        experiencia_ia: onboardingData.experiencia_ia,
-        objetivo_principal: onboardingData.objetivo_principal,
-        tipo_trabalho: onboardingData.tipo_trabalho,
-        porte_negocio: onboardingData.porte_negocio,
-        instagram: onboardingData.instagram,
-        onboarding_data: onboardingData,
-        onboarding_completed: true
-      };
-
-      const success = await updateProfile(updatePayload);
-
-      if (success) {
-        console.log('Onboarding completed successfully');
-        onComplete();
-      } else {
-        console.error('Failed to complete onboarding via updateProfile');
-        onComplete();
+  // Update page title based on current view
+  useEffect(() => {
+    // Don't update title if page is not visible
+    if (document.hidden) {
+      return;
+    }
+    
+    const getPageTitle = () => {
+      const baseTitle = "Me dá um Exemplo | ";
+      switch (currentView) {
+        case 'discover': return baseTitle + 'Home';
+        case 'trending': return baseTitle + 'Trending';
+        case 'categories': return baseTitle + 'Categorias';
+        case 'discounts': return baseTitle + 'Descontos';
+        case 'affiliates': return baseTitle + 'Afiliados';
+        case 'bookmark': return baseTitle + 'Salvos';
+        case 'profile': return baseTitle + 'Minha Conta';
+        case 'request-lesson': return baseTitle + 'Pedir Aula';
+        case 'help': return baseTitle + 'Ajuda';
+        case 'video-detail': return document.title; // Keep existing title set by video page
+        default: return baseTitle + currentView.charAt(0).toUpperCase() + currentView.slice(1);
       }
-    } catch (error) {
-      console.error('Error completing onboarding:', error);
-      onComplete();
-    } finally {
-      setIsLoading(false);
+    };
+
+    if (currentView !== 'video-detail') {
+      document.title = getPageTitle();
     }
+  }, [currentView]);
+
+  const handleVideoSelect = (video: any) => {
+    console.log(`🚀 Navigating to ${video.tipo || 'video'}:`, {
+      title: video.title,
+      slug: video.slug,
+      id: video.id,
+      tipo: video.tipo
+    });
+    
+    // Navigate to the appropriate URL based on content type
+    let urlPrefix = '/video/';
+    if (video.tipo === 'prompt') {
+      urlPrefix = '/prompt/';
+    } else if (video.tipo === 'live') {
+      urlPrefix = '/live/';
+    }
+    navigate(urlPrefix + video.slug);
   };
 
-  const renderStep = () => {
-    const step = steps[currentStep];
-
-    switch (step) {
-      case 'avatar':
-        return (
-          <div className="text-center space-y-6">
-            <h2 className="text-2xl font-bold text-white mb-2">Vamos personalizar seu perfil!</h2>
-            <p className="text-slate-400 mb-8">Escolha um avatar ou envie sua própria foto</p>
-            
-            {/* Avatar Selection Grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 max-w-2xl mx-auto">
-              {/* Preset Avatars */}
-              {[
-                '/avatar1.png',
-                '/avatar2.png',
-                '/avatar3.png'
-              ].map((avatar, index) => (
-                <button
-                  key={avatar}
-                  type="button"
-                  onClick={() => handlePresetAvatarSelect(avatar)}
-                  className={`relative group transition-all duration-200 w-20 h-20 sm:w-24 sm:h-24 rounded-2xl overflow-hidden border-2 ${
-                    selectedPresetAvatar === avatar
-                      ? 'border-[#ff7551] scale-105'
-                      : 'border-transparent hover:scale-105 hover:border-slate-500/50'
-                  }`}
-                >
-                  <img
-                    src={avatar}
-                    alt={`Avatar ${index + 1}`}
-                    className="w-full h-full rounded-xl object-cover group-hover:opacity-80 transition-opacity"
-                  />
-                </button>
-              ))}
-              
-              {/* Upload Option */}
-              <div className="relative">
-                <button
-                  type="button"
-                  onClick={handleAvatarClick}
-                  disabled={isUploadingAvatar}
-                  className={`w-20 h-20 sm:w-24 sm:h-24 rounded-2xl border-2 border-dashed border-slate-600/50 hover:border-[#ff7551]/50 bg-slate-700/30 hover:bg-slate-600/30 flex flex-col items-center justify-center transition-all duration-200 group ${
-                    avatarPreview && avatarMode === 'upload'
-                      ? 'border-[#ff7551] scale-105'
-                      : 'hover:scale-105'
-                  }`}
-                >
-                  {avatarPreview && avatarMode === 'upload' ? (
-                    <img
-                      src={avatarPreview}
-                      alt="Avatar personalizado"
-                      className="w-full h-full rounded-xl object-cover"
-                    />
-                  ) : isUploadingAvatar ? (
-                    <Loader2 className="w-6 h-6 text-slate-400 animate-spin" />
-                  ) : (
-                    <>
-                      <Upload className="w-4 h-4 sm:w-5 sm:h-5 text-slate-400 group-hover:text-[#ff7551] transition-colors" />
-                      <span className="text-xs text-slate-400 group-hover:text-[#ff7551] transition-colors mt-1 text-center leading-tight">
-                        Fazer Upload
-                      </span>
-                    </>
-                  )}
-                </button>
-                
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  onChange={handleAvatarChange}
-                  className="hidden"
-                />
-              </div>
-            </div>
-
-            {/* Upload Instructions */}
-            <div className="text-center mt-8">
-              <p className="text-slate-400 text-sm">
-                Escolha um dos avatares prontos ou faça upload da sua própria foto
-              </p>
-              <p className="text-slate-500 text-xs mt-2">
-                Formatos aceitos: JPG, PNG, GIF (máx. 5MB)
-              </p>
-            </div>
-          </div>
-        );
-
-      case 'experiencia':
-        return (
-          <div className="space-y-6">
-            <div className="text-center mb-8">
-              <h2 className="text-2xl font-bold text-white mb-2">Qual sua experiência com IA?</h2>
-              <p className="text-slate-400">Isso nos ajuda a personalizar o conteúdo para você</p>
-            </div>
-            
-            <div className="space-y-3">
-              {[
-                { value: 'avancado', label: 'Avançado: já criei e gerencio automações complexas' },
-                { value: 'intermediario', label: 'Intermediário: já uso ferramentas, mas quero melhorar' },
-                { value: 'iniciante', label: 'Iniciante: estou começando agora' },
-                { value: 'zero', label: 'Zero experiência: não faço ideia por onde começar' }
-              ].map((option) => (
-                <button
-                  key={option.value}
-                  onClick={() => setOnboardingData(prev => ({ ...prev, experiencia_ia: option.value }))}
-                  className={`w-full text-left p-4 rounded-lg border transition-colors ${
-                    onboardingData.experiencia_ia === option.value
-                      ? 'bg-[#ff7551] border-[#ff7551] text-white'
-                      : 'bg-slate-700/30 border-slate-600/30 text-slate-300 hover:bg-slate-600/30'
-                  }`}
-                >
-                  {option.label}
-                </button>
-              ))}
-            </div>
-          </div>
-        );
-
-      case 'objetivo':
-        return (
-          <div className="space-y-6">
-            <div className="text-center mb-8">
-              <h2 className="text-2xl font-bold text-white mb-2">O que você espera conquistar?</h2>
-              <p className="text-slate-400">Vamos focar no que mais importa para você</p>
-            </div>
-            
-            <div className="space-y-3">
-              {[
-                { value: 'monetizar', label: 'Monetizar com serviços de automação e IA' },
-                { value: 'melhorar_processos', label: 'Melhorar processos do meu negócio' },
-                { value: 'produtividade', label: 'Aumentar produtividade pessoal ou da equipe' },
-                { value: 'aprender', label: 'Aprender por curiosidade / desenvolvimento pessoal' }
-              ].map((option) => (
-                <button
-                  key={option.value}
-                  onClick={() => setOnboardingData(prev => ({ ...prev, objetivo_principal: option.value }))}
-                  className={`w-full text-left p-4 rounded-lg border transition-colors ${
-                    onboardingData.objetivo_principal === option.value
-                      ? 'bg-[#ff7551] border-[#ff7551] text-white'
-                      : 'bg-slate-700/30 border-slate-600/30 text-slate-300 hover:bg-slate-600/30'
-                  }`}
-                >
-                  {option.label}
-                </button>
-              ))}
-            </div>
-          </div>
-        );
-
-      case 'trabalho':
-        return (
-          <div className="space-y-6">
-            <div className="text-center mb-8">
-              <h2 className="text-2xl font-bold text-white mb-2">Você trabalha em:</h2>
-              <p className="text-slate-400">Queremos entender seu contexto profissional</p>
-            </div>
-            
-            <div className="space-y-3">
-              {[
-                { value: 'empresa_propria', label: 'Empresa própria (empreendedor(a))' },
-                { value: 'agencia', label: 'Agência de marketing / consultoria' },
-                { value: 'colaborador', label: 'Empresa como colaborador(a) (CLT/PJ)' },
-                { value: 'autonomo', label: 'Profissional autônomo/freelancer' },
-                { value: 'estudando', label: 'Ainda estudando / em transição de carreira' }
-              ].map((option) => (
-                <button
-                  key={option.value}
-                  onClick={() => setOnboardingData(prev => ({ ...prev, tipo_trabalho: option.value }))}
-                  className={`w-full text-left p-4 rounded-lg border transition-colors ${
-                    onboardingData.tipo_trabalho === option.value
-                      ? 'bg-[#ff7551] border-[#ff7551] text-white'
-                      : 'bg-slate-700/30 border-slate-600/30 text-slate-300 hover:bg-slate-600/30'
-                  }`}
-                >
-                  {option.label}
-                </button>
-              ))}
-            </div>
-          </div>
-        );
-
-      case 'porte':
-        return (
-          <div className="space-y-6">
-            <div className="text-center mb-8">
-              <h2 className="text-2xl font-bold text-white mb-2">Qual o porte do negócio?</h2>
-              <p className="text-slate-400">Isso nos ajuda a sugerir conteúdo mais relevante</p>
-            </div>
-            
-            <div className="space-y-3">
-              {[
-                { value: 'pequeno', label: 'Pequeno (até 10 pessoas)' },
-                { value: 'medio', label: 'Médio (11 a 50 pessoas)' },
-                { value: 'grande', label: 'Grande (mais de 50 pessoas)' },
-                { value: 'sozinho', label: 'Trabalho sozinho(a)' }
-              ].map((option) => (
-                <button
-                  key={option.value}
-                  onClick={() => setOnboardingData(prev => ({ ...prev, porte_negocio: option.value }))}
-                  className={`w-full text-left p-4 rounded-lg border transition-colors ${
-                    onboardingData.porte_negocio === option.value
-                      ? 'bg-[#ff7551] border-[#ff7551] text-white'
-                      : 'bg-slate-700/30 border-slate-600/30 text-slate-300 hover:bg-slate-600/30'
-                  }`}
-                >
-                  {option.label}
-                </button>
-              ))}
-            </div>
-          </div>
-        );
-
-      case 'social':
-        return (
-          <div className="space-y-6">
-            <div className="text-center mb-8">
-              <h2 className="text-2xl font-bold text-white mb-2">Redes sociais (opcional)</h2>
-              <p className="text-slate-400">Conecte-se com a comunidade</p>
-            </div>
-            
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-slate-300 mb-2">
-                  Instagram (@)
-                </label>
-                <input
-                  type="text"
-                  value={onboardingData.instagram || ''}
-                  onChange={(e) => setOnboardingData(prev => ({ ...prev, instagram: e.target.value }))}
-                  placeholder="seu_usuario"
-                  className="w-full px-4 py-3 bg-slate-700/30 border border-slate-600/30 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#ff7551]/50 focus:border-transparent transition-all"
-                />
-              </div>
-            </div>
-          </div>
-        );
-
-      default:
-        return null;
-    }
+  const handleViewChange = (view: string) => {
+    console.log('🔄 Changing view to:', view);
+    
+    // Map view names to URLs
+    const viewUrls: Record<string, string> = {
+      'discover': '/',
+      'trending': '/trending',
+      'categories': '/categories',
+      'bookmark': '/bookmark',
+      'discounts': '/discounts',
+      'affiliates': '/affiliates',
+      'profile': '/profile',
+      'request-lesson': '/request-lesson',
+      'help': '/help'
+    };
+    
+    const url = viewUrls[view] || '/';
+    navigate(url);
   };
 
-  const canProceed = () => {
-    const step = steps[currentStep];
-    switch (step) {
-      case 'avatar':
-        return true; // Avatar is optional
-      case 'experiencia':
-        return !!onboardingData.experiencia_ia;
-      case 'objetivo':
-        return !!onboardingData.objetivo_principal;
-      case 'trabalho':
-        return !!onboardingData.tipo_trabalho;
-      case 'porte':
-        return !!onboardingData.porte_negocio;
-      case 'social':
-        return true; // Social media is optional
-      default:
-        return false;
-    }
-  };
-
-  return (
-    <div className="min-h-screen bg-gradient-to-b from-[#1f1d2b] via-[#1f1d2b] to-black flex items-center justify-center p-4">
-      <div className="bg-[#1f1d2b] border border-slate-700/30 rounded-xl w-full max-w-2xl">
-        {/* Header */}
-        <div className="p-6 border-b border-slate-700/30 text-center">
-          <img
-            src="/logo1_branco.png"
-            alt="Me dá um Exemplo"
-            className="h-16 w-auto mx-auto mb-4"
+  // For video detail pages, render with header and sidebar
+  if (currentView === 'video-detail') {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-[#1f1d2b] via-[#1f1d2b] to-black flex flex-col">
+        {/* Header - Full Width at Top */}
+        <Header 
+          sidebarCollapsed={sidebarCollapsed}
+          onSidebarToggle={() => setSidebarCollapsed(!sidebarCollapsed)}
+          onViewChange={handleViewChange}
+          onVideoSelect={handleVideoSelect}
+        />
+        
+        {/* Main Content Area */}
+        <div className="flex flex-1 min-h-0">
+          <Sidebar 
+            collapsed={sidebarCollapsed}
+            onToggle={() => setSidebarCollapsed(!sidebarCollapsed)}
+            currentView={currentView}
+            onViewChange={handleViewChange}
           />
-          <div className="flex items-center justify-center space-x-2 mb-4">
-            {steps.map((_, index) => (
-              <div
-                key={index}
-                className={`w-3 h-3 rounded-full transition-colors ${
-                  index <= currentStep ? 'bg-[#ff7551]' : 'bg-slate-600'
-                }`}
-              />
-            ))}
+          
+          <div className="flex-1 flex flex-col min-w-0">            
+            <VideoDetailPage />
+            <Footer />
           </div>
-          <p className="text-slate-400 text-sm">
-            Etapa {currentStep + 1} de {steps.length}
-          </p>
         </div>
+      </div>
+    );
+  }
 
-        {/* Content */}
-        <div className="p-8">
-          {renderStep()}
-        </div>
-
-        {/* Footer */}
-        <div className="p-6 border-t border-slate-700/30">
-          {currentStep === 0 ? (
-            <div className="flex space-x-4 justify-center">
-              <button
-                onClick={handleSkipAvatar}
-                className="px-6 py-3 text-slate-400 hover:text-white transition-colors"
-              >
-                Pular por agora
-              </button>
-              <button
-                onClick={handleNext}
-                disabled={isUploadingAvatar}
-                className="flex items-center space-x-2 px-8 py-3 bg-[#ff7551] hover:bg-[#ff7551]/80 text-white font-medium rounded-lg transition-colors disabled:opacity-50"
-              >
-                <span>Continuar</span>
-                <ArrowRight className="w-4 h-4" />
-              </button>
-            </div>
-          ) : (
-            <div className="flex justify-between">
-              <button
-                onClick={handleBack}
-                className="flex items-center space-x-2 px-6 py-3 text-slate-400 hover:text-white transition-colors"
-              >
-                <ArrowLeft className="w-4 h-4" />
-                <span>Voltar</span>
-              </button>
-              
-              <button
-                onClick={handleNext}
-                disabled={!canProceed() || isLoading}
-                className="flex items-center space-x-2 px-8 py-3 bg-[#ff7551] hover:bg-[#ff7551]/80 disabled:bg-[#ff7551]/50 text-white font-medium rounded-lg transition-colors disabled:cursor-not-allowed"
-              >
-                {isLoading ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    <span>Finalizando...</span>
-                  </>
-                ) : currentStep === steps.length - 1 ? (
-                  <>
-                    <CheckCircle className="w-4 h-4" />
-                    <span>Finalizar</span>
-                  </>
-                ) : (
-                  <>
-                    <span>Continuar</span>
-                    <ArrowRight className="w-4 h-4" />
-                  </>
-                )}
-              </button>
-            </div>
-          )}
+  // For all other pages, use normal layout
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-[#1f1d2b] via-[#1f1d2b] to-black flex flex-col">
+      {/* Header - Full Width at Top */}
+      <Header 
+        sidebarCollapsed={sidebarCollapsed}
+        onSidebarToggle={() => setSidebarCollapsed(!sidebarCollapsed)}
+        onViewChange={handleViewChange}
+        onVideoSelect={handleVideoSelect}
+      />
+      
+      {/* Main Content Area */}
+      <div className="flex flex-1 min-h-0">
+        <Sidebar 
+          collapsed={sidebarCollapsed}
+          onToggle={() => setSidebarCollapsed(!sidebarCollapsed)}
+          currentView={currentView}
+          onViewChange={handleViewChange}
+        />
+        
+        <div className="flex-1 flex flex-col min-w-0">            
+          <div className="px-6 sm:px-8 lg:px-10 pt-6 pb-8 max-w-[1600px] w-full">
+            <MainContent 
+              currentView={currentView}
+              onVideoSelect={handleVideoSelect}
+              onViewChange={handleViewChange}
+            />
+          </div>
+          
+          <Footer />
         </div>
       </div>
     </div>
   );
 };
 
-export default OnboardingFlow;
+function App() {
+  console.log('🎯 App: Rendering main App component');
+  return (
+    <AuthProvider>
+      <AppWithAuth />
+    </AuthProvider>
+  );
+}
+
+// Component that has access to auth context
+const AppWithAuth: React.FC = () => {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return <div>Carregando...</div>;
+  }
+
+  // Normal app routes
+  return (
+    <VideoProvider>
+      <Routes>
+        {/* All routes now use the same layout structure */}
+        <Route path="/" element={<AppLayout />} />
+        <Route path="/trending" element={<AppLayout />} />
+        <Route path="/categories" element={<AppLayout />} />
+        <Route path="/bookmark" element={<AppLayout />} />
+        <Route path="/discounts" element={<AppLayout />} />
+        <Route path="/affiliates" element={<AppLayout />} />
+        <Route path="/profile" element={<AppLayout />} />
+        <Route path="/request-lesson" element={<AppLayout />} />
+        <Route path="/help" element={<AppLayout />} />
+        <Route path="/video/:slug" element={<AppLayout />} />
+        <Route path="/prompt/:slug" element={<AppLayout />} />
+        <Route path="/live/:slug" element={<AppLayout />} />
+        <Route path="/registro" element={<RegistrationPage />} />
+        <Route path="/redefinir-senha" element={<PasswordResetPage />} />
+        <Route path="/privacidade" element={<PrivacyPolicyPage />} />
+        
+        {/* Catch all route - redirect to home */}
+        <Route path="*" element={<AppLayout />} />
+      </Routes>
+    </VideoProvider>
+  );
+};
+export default App;
