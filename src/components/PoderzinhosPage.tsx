@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ExternalLink, Search, Filter, ChevronDown, Star, Users, Zap, Globe, Code, Palette, BarChart3, Loader2, DollarSign } from 'lucide-react';
+import { ExternalLink, Zap, Loader2, DollarSign } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
 interface HallFerramenta {
@@ -18,12 +18,7 @@ interface HallFerramenta {
 
 const PoderzinhosPage: React.FC = () => {
   const [ferramentas, setFerramentas] = useState<HallFerramenta[]>([]);
-  const [filteredFerramentas, setFilteredFerramentas] = useState<HallFerramenta[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<string>('all');
-  const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
-  const [availableCategories, setAvailableCategories] = useState<string[]>([]);
 
   // Load ferramentas from database
   useEffect(() => {
@@ -47,11 +42,6 @@ const PoderzinhosPage: React.FC = () => {
         console.log('📊 Loaded ferramentas:', data?.length || 0);
         console.log('📊 Sample data:', data?.[0]);
         setFerramentas(data || []);
-        
-        // Extract unique categories
-        const uniqueCategories = [...new Set(data?.map(item => item.tipo_ferramenta).filter(Boolean))].sort();
-        setAvailableCategories(uniqueCategories);
-        
       } catch (error) {
         console.error('Exception loading ferramentas:', error);
         setFerramentas([]);
@@ -63,34 +53,11 @@ const PoderzinhosPage: React.FC = () => {
     loadFerramentas();
   }, []);
 
-  // Filter ferramentas based on search and category
-  useEffect(() => {
-    let filtered = [...ferramentas];
-
-    // Apply search filter
-    if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(ferramenta =>
-        ferramenta.nome_ferramenta.toLowerCase().includes(query) ||
-        (ferramenta.descricao_ferramenta && ferramenta.descricao_ferramenta.toLowerCase().includes(query)) ||
-        (ferramenta.tipo_ferramenta && ferramenta.tipo_ferramenta.toLowerCase().includes(query))
-      );
-    }
-
-    // Apply category filter
-    if (selectedCategory !== 'all') {
-      filtered = filtered.filter(ferramenta => ferramenta.tipo_ferramenta === selectedCategory);
-    }
-
-    setFilteredFerramentas(filtered);
-  }, [ferramentas, searchQuery, selectedCategory]);
-
-
   const FerramentaCard: React.FC<{ ferramenta: HallFerramenta }> = ({ ferramenta }) => {
     return (
-      <div className="bg-slate-700/30 border border-slate-600/30 rounded-xl overflow-hidden">
-        {/* Featured Image at Top */}
-        <div className="relative w-full h-48 bg-slate-600/30 overflow-hidden">
+      <div className="relative bg-slate-700/30 border border-slate-600/30 rounded-xl overflow-hidden aspect-[2/3]">
+        {/* Background Image */}
+        <div className="absolute inset-0">
           {ferramenta.img_ferramenta ? (
             <img 
               src={ferramenta.img_ferramenta} 
@@ -109,10 +76,13 @@ const PoderzinhosPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Card Content */}
-        <div className="p-6">
+        {/* Gradient Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
+        
+        {/* Content Overlay */}
+        <div className="absolute inset-0 flex flex-col justify-end p-6">
           {/* Tool Name */}
-          <h3 className="text-white font-semibold text-lg mb-2">
+          <h3 className="text-white font-semibold text-xl mb-2">
             {ferramenta.nome_ferramenta}
           </h3>
 
@@ -120,7 +90,7 @@ const PoderzinhosPage: React.FC = () => {
           {ferramenta.tipo_ferramenta && (
             <div className="flex items-center space-x-2 mb-3">
               <DollarSign className="w-4 h-4 text-[#ff7551]" />
-              <span className="text-xs px-2 py-1 bg-slate-600/30 text-slate-300 rounded">
+              <span className="text-xs px-2 py-1 bg-black/50 text-slate-300 rounded">
                 {ferramenta.tipo_ferramenta}
               </span>
             </div>
@@ -128,17 +98,17 @@ const PoderzinhosPage: React.FC = () => {
 
           {/* Description */}
           {ferramenta.descricao_ferramenta ? (
-            <p className="text-slate-300 text-sm leading-relaxed mb-6 line-clamp-3">
+            <p className="text-slate-200 text-sm leading-relaxed mb-6 line-clamp-3">
               {ferramenta.descricao_ferramenta}
             </p>
           ) : (
-            <p className="text-slate-300 text-sm leading-relaxed mb-6 line-clamp-3">
+            <p className="text-slate-200 text-sm leading-relaxed mb-6 line-clamp-3">
               Acesse esta ferramenta útil através do link fornecido.
             </p>
           )}
 
           {/* Access Button */}
-          <div className="mt-6">
+          <div>
             <a
               href={ferramenta.link_ferramenta}
               target="_blank"
@@ -202,93 +172,10 @@ const PoderzinhosPage: React.FC = () => {
         </p>
       </div>
 
-      {/* Search and Filters */}
-      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
-        {/* Search Bar */}
-        <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
-          <input
-            type="text"
-            placeholder="Pesquisar ferramentas..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-3 bg-slate-700/30 border border-slate-600/30 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#ff7551]/50 focus:border-transparent transition-all"
-          />
-        </div>
-
-        {/* Category Filter Dropdown */}
-        <div className="relative">
-          <button
-            onClick={() => setShowCategoryDropdown(!showCategoryDropdown)}
-            className="flex items-center space-x-2 px-4 py-3 bg-slate-700/30 border border-slate-600/30 rounded-lg text-slate-300 hover:bg-slate-600/30 transition-colors min-w-[180px] justify-between"
-          >
-            <div className="flex items-center space-x-2">
-              <Filter className="w-4 h-4" />
-              <span className="text-sm">Todas as Ferramentas</span>
-            </div>
-            <ChevronDown className={`w-4 h-4 transition-transform ${showCategoryDropdown ? 'rotate-180' : ''}`} />
-          </button>
-
-          {showCategoryDropdown && availableCategories.length > 0 && (
-            <div className="absolute top-full left-0 mt-2 w-full bg-[#1f1d2b] border border-slate-700/30 rounded-lg shadow-xl z-50">
-              <div className="p-2">
-                <button
-                  onClick={() => {
-                    setSelectedCategory('all');
-                    setShowCategoryDropdown(false);
-                  }}
-                  className={`w-full text-left px-3 py-2 text-sm rounded transition-colors ${
-                    selectedCategory === 'all'
-                      ? 'bg-[#ff7551] text-white'
-                      : 'text-slate-300 hover:bg-slate-700/30'
-                  }`}
-                >
-                  Todas as Categorias
-                </button>
-                {availableCategories.map((category) => (
-                  <button
-                    key={category}
-                    onClick={() => {
-                      setSelectedCategory(category);
-                      setShowCategoryDropdown(false);
-                    }}
-                    className={`w-full text-left px-3 py-2 text-sm rounded transition-colors ${
-                      selectedCategory === category
-                        ? 'bg-[#ff7551] text-white'
-                        : 'text-slate-300 hover:bg-slate-700/30'
-                    }`}
-                  >
-                    {category}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Results Count */}
-      <div className="flex items-center justify-between text-sm text-slate-400">
-        <span>
-          {filteredFerramentas.length} ferramenta{filteredFerramentas.length !== 1 ? 's' : ''} encontrada{filteredFerramentas.length !== 1 ? 's' : ''}
-        </span>
-        {(searchQuery || selectedCategory !== 'all') && (
-          <button
-            onClick={() => {
-              setSearchQuery('');
-              setSelectedCategory('all');
-            }}
-            className="text-[#ff7551] hover:text-[#ff7551]/80 transition-colors"
-          >
-            Limpar filtros
-          </button>
-        )}
-      </div>
-
       {/* Ferramentas Grid */}
-      {filteredFerramentas.length > 0 ? (
+      {ferramentas.length > 0 ? (
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredFerramentas.map((ferramenta, index) => (
+          {ferramentas.map((ferramenta, index) => (
             <div
               key={ferramenta.id}
               className="animate-fade-in"
@@ -304,28 +191,14 @@ const PoderzinhosPage: React.FC = () => {
             <Zap className="w-8 h-8 text-slate-500" />
           </div>
           <h3 className="text-xl font-semibold text-white mb-2">
-            {searchQuery || selectedCategory !== 'all' ? 'Nenhuma ferramenta encontrada' : 'Nenhuma ferramenta disponível'}
+            Nenhuma ferramenta disponível
           </h3>
           <p className="text-slate-400 max-w-md mx-auto">
-            {searchQuery || selectedCategory !== 'all' 
-              ? 'Tente ajustar os filtros ou usar termos de busca diferentes.'
-              : 'Não encontramos ferramentas para exibir no momento.'
-            }
+            Não encontramos ferramentas para exibir no momento.
           </p>
           {(searchQuery || selectedCategory !== 'all') && (
             <button
               onClick={() => {
-                setSearchQuery('');
-                setSelectedCategory('all');
-              }}
-              className="mt-4 px-6 py-2 bg-[#ff7551] hover:bg-[#ff7551]/80 text-white rounded-lg transition-colors"
-            >
-              Limpar Filtros
-            </button>
-          )}
-        </div>
-      )}
-    </div>
   );
 };
 
