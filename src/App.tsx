@@ -15,7 +15,6 @@ import PrivacyPolicyPage from './components/PrivacyPolicyPage';
 import Footer from './components/Footer';
 import { AuthProvider } from './contexts/AuthContext';
 import { VideoProvider } from './contexts/VideoContext';
-import { supabase } from './lib/supabase';
 import { videoService } from './lib/database';
 
 // Video Detail Page Component
@@ -131,60 +130,9 @@ const VideoDetailPage: React.FC = () => {
 
 // Main App Layout Component
 const AppLayout: React.FC = () => {
-  const { user, loading } = useAuth();
   const [sidebarCollapsed, setSidebarCollapsed] = React.useState(true);
-  const [checkingOnboarding, setCheckingOnboarding] = React.useState(true);
   const navigate = useNavigate();
   const location = useLocation();
-
-  React.useEffect(() => {
-    const checkUserOnboarding = async () => {
-      // Só verifica se o usuário está logado e não está na página de onboarding
-      if (!user || location.pathname === '/onboarding') {
-        setCheckingOnboarding(false);
-        return;
-      }
-
-      try {
-        const { data, error } = await supabase
-          .from('assinaturas')
-          .select('onboarding_completed')
-          .eq('user_id', user.id)
-          .maybeSingle();
-
-        if (error) {
-          console.error('Error checking onboarding in AppLayout:', error);
-          setCheckingOnboarding(false);
-          return;
-        }
-
-        // Se não encontrou dados OU onboarding não foi completado
-        if (!data || !data.onboarding_completed) {
-          navigate('/onboarding');
-          return;
-        }
-
-        setCheckingOnboarding(false);
-      } catch (error) {
-        console.error('Exception in onboarding check:', error);
-        setCheckingOnboarding(false);
-      }
-    };
-
-    checkUserOnboarding();
-  }, [user, location.pathname, navigate]);
-
-  // Se ainda está verificando onboarding, mostra loading
-  if (checkingOnboarding) {
-    return (
-      <div className="min-h-screen bg-gradient-to-b from-[#1f1d2b] via-[#1f1d2b] to-black flex items-center justify-center">
-        <div className="flex items-center space-x-3">
-          <div className="w-6 h-6 border-2 border-[#ff7551]/30 border-t-[#ff7551] rounded-full animate-spin"></div>
-          <span className="text-slate-400">Verificando perfil...</span>
-        </div>
-      </div>
-    );
-  }
 
   // Get current view from URL
   const getCurrentView = () => {
@@ -363,7 +311,6 @@ const AppWithAuth: React.FC = () => {
         <Route path="/video/:slug" element={<AppLayout />} />
         <Route path="/prompt/:slug" element={<AppLayout />} />
         <Route path="/live/:slug" element={<AppLayout />} />
-        <Route path="/onboarding" element={<OnboardingFlow onComplete={() => window.location.href = '/'} />} />
         <Route path="/registro" element={<RegistrationPage />} />
         <Route path="/redefinir-senha" element={<PasswordResetPage />} />
         <Route path="/privacidade" element={<PrivacyPolicyPage />} />

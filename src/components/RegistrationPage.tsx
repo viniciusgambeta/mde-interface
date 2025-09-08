@@ -18,7 +18,7 @@ import {
 interface AssinaturaData {
   id_assinatura: string;
   'Nome do cliente': string;
-  'email_cliente': string;
+  'Email do cliente': string;
   'Status da assinatura': string;
   'Plano': string;
   'cadastro_mde': boolean;
@@ -73,7 +73,6 @@ const RegistrationPage: React.FC = () => {
       if (!formData.email || formData.email.length < 3 || !formData.email.includes('@')) {
         setEmailValid(null);
         setSubscriptionData(null);
-        setHasExistingAccount(false);
         return;
       }
 
@@ -82,58 +81,46 @@ const RegistrationPage: React.FC = () => {
       try {
         console.log('🔍 Checking subscription for email:', formData.email);
         
-        // First check if user already has an account (cadastro_mde = true)
-        const { data: existingAccount, error: existingError } = await supabase
+        const { data, error } = await supabase
           .from('assinaturas')
           .select(`
             id_assinatura,
             "Nome do cliente", 
-            "email_cliente",
+            "Email do cliente",
             "Status da assinatura",
             "Plano",
             cadastro_mde
           `)
-          .eq('email_cliente', formData.email.toLowerCase().trim())
+          .eq('Email do cliente', formData.email.toLowerCase().trim())
+          .eq('"Status da assinatura"', 'active')
+          .eq('cadastro_mde', false)
           .maybeSingle();
 
-        console.log('📊 Subscription query result:', { data: existingAccount, error: existingError });
+        console.log('📊 Subscription query result:', { data, error });
 
-        if (existingError) {
-          console.error('❌ Error checking subscription:', existingError);
+        if (error) {
+          console.error('❌ Error checking subscription:', error);
           setEmailValid(false);
           setSubscriptionData(null);
-          setHasExistingAccount(false);
-        } else if (!existingAccount) {
+        } else if (!data) {
           console.log('❌ No valid subscription found for email:', formData.email);
           setEmailValid(false);
           setSubscriptionData(null);
-          setHasExistingAccount(false);
-        } else if (existingAccount.cadastro_mde === true) {
-          console.log('⚠️ User already has an account (cadastro_mde = true)');
-          setEmailValid(true);
-          setSubscriptionData(existingAccount);
-          setHasExistingAccount(true);
-        } else if (existingAccount['Status da assinatura'] !== 'active') {
-          console.log('❌ Subscription not active for email:', formData.email);
-          setEmailValid(false);
-          setSubscriptionData(null);
-          setHasExistingAccount(false);
         } else {
-          console.log('✅ Valid subscription found and no account yet:', existingAccount);
+          console.log('✅ Valid subscription found:', data);
           setEmailValid(true);
-          setSubscriptionData(existingAccount);
-          setHasExistingAccount(false);
+          setSubscriptionData(data);
+          setHasExistingAccount(false); // Se chegou aqui, cadastro_mde é false
           
           // Auto-fill name if available
-          if (existingAccount["Nome do cliente"] && !formData.name) {
-            setFormData(prev => ({ ...prev, name: existingAccount["Nome do cliente"] }));
+          if (data["Nome do cliente"] && !formData.name) {
+            setFormData(prev => ({ ...prev, name: data["Nome do cliente"] }));
           }
         }
       } catch (err) {
         console.error('💥 Exception checking subscription:', err);
         setEmailValid(false);
         setSubscriptionData(null);
-        setHasExistingAccount(false);
       } finally {
         setIsCheckingEmail(false);
       }
@@ -403,17 +390,17 @@ const RegistrationPage: React.FC = () => {
                   <div className="flex items-center space-x-2 mb-3">
                     <AlertCircle className="w-4 h-4 text-blue-400" />
                     <p className="text-blue-400 text-sm font-medium">
-                      Este email já possui uma conta criada!
+                      Você já possui uma conta cadastrada!
                     </p>
                   </div>
                   <p className="text-blue-300 text-xs mb-4">
-                    Você já criou uma conta anteriormente com este email. Use o botão abaixo para fazer login.
+                    Este email já tem uma senha cadastrada na plataforma. Faça login para acessar sua conta.
                   </p>
                   <button
                     onClick={handleGoToLogin}
-                    className="w-full bg-[#ff7551] hover:bg-[#ff7551]/80 text-white font-medium py-3 rounded-lg transition-colors"
+                    className="w-full bg-blue-500 hover:bg-blue-600 text-white font-medium py-3 rounded-lg transition-colors"
                   >
-                    Fazer Login
+                    Ir para Login
                   </button>
                 </div>
               )}
