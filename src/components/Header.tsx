@@ -39,47 +39,8 @@ const Header: React.FC<HeaderProps> = ({ sidebarCollapsed, onSidebarToggle, onVi
         setUserData(null);
         return;
       }
-
-      try {
-        const { data, error } = await supabase
-          .from('assinaturas')
-          .select('"Nome do cliente", avatar_usuario')
-          .eq('user_id', user.id)
-          .maybeSingle();
-
-        if (error) {
-          console.error('Error loading user data for header:', error);
-          // Fallback to auth user data
-          setUserData({
-            name: user.email?.split('@')[0] || 'Usuário',
-            avatar: '/avatar1.png'
-          });
-          return;
-        }
-
-        if (data) {
-          setUserData({
-            name: data["Nome do cliente"] || user.email?.split('@')[0] || 'Usuário',
-            avatar: data.avatar_usuario || '/avatar1.png'
-          });
-        } else {
-          // No data found, use fallback
-          setUserData({
-            name: user.email?.split('@')[0] || 'Usuário',
-            avatar: '/avatar1.png'
-          });
-        }
-      } catch (error) {
-        console.error('Exception loading user data for header:', error);
-        setUserData({
-          name: user.email?.split('@')[0] || 'Usuário',
-          avatar: '/avatar1.png'
-        });
-      }
     };
-
-    loadUserData();
-  }, [user?.id]);
+  }, []);
 
   // Check for login parameter in URL
   useEffect(() => {
@@ -419,13 +380,13 @@ const Header: React.FC<HeaderProps> = ({ sidebarCollapsed, onSidebarToggle, onVi
                 >
                   <div className="hidden sm:block text-right pl-3">
                     <div className="text-white font-medium text-base group-hover:text-[#ff7551] transition-colors">
-                      {userData?.name || user?.email?.split('@')[0] || 'Usuário'}
+                      {user?.name || user?.email?.split('@')[0] || 'Usuário'}
                     </div>
                   </div>
                   <div className="relative">
                     <img
-                      src={userData?.avatar || '/avatar1.png'}
-                      alt={userData?.name || 'User'}
+                      src={user?.avatar || '/avatar1.png'}
+                      alt={user?.name || 'User'}
                      className="w-12 h-12 rounded-xl object-cover"
                     />
                   </div>
