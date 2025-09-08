@@ -12,6 +12,7 @@ import LiveViewer from './components/LiveViewer';
 import RegistrationPage from './components/RegistrationPage';
 import PasswordResetPage from './components/PasswordResetPage';
 import PrivacyPolicyPage from './components/PrivacyPolicyPage';
+import OnboardingFlow from './components/OnboardingFlow';
 import Footer from './components/Footer';
 import { AuthProvider } from './contexts/AuthContext';
 import { VideoProvider } from './contexts/VideoContext';
