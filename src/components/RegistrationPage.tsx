@@ -246,7 +246,7 @@ const RegistrationPage: React.FC = () => {
             .insert({
               user_id: authData.user.id,
               "Nome do cliente": formData.name,
-              "Email do cliente": formData.email,
+              email_cliente: formData.email,
               id_assinatura: authData.user.id,
               "Status da assinatura": 'free',
               "Plano": 'Free Plan',

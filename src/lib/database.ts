@@ -145,7 +145,7 @@ export interface Assinatura {
   id_assinatura: string;
   user_id: string;
   "Nome do cliente": string;
-  "Email do cliente": string;
+  email_cliente: string;
   "Telefone do cliente"?: number;
   "Status da assinatura": string;
   avatar_usuario?: string;
