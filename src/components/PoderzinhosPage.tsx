@@ -30,29 +30,27 @@ const PoderzinhosPage: React.FC = () => {
     const loadFerramentas = async () => {
       setLoading(true);
       try {
-        console.log('🔧 Loading ferramentas from hall_ferramentas table...');
+        console.log('🔧 Loading ferramentas from ferramentas_links table...');
         
         const { data, error } = await supabase
-          .from('hall_ferramentas')
+          .from('ferramentas_links')
           .select('*')
           .order('created_at', { ascending: false });
 
         if (error) {
           console.error('Error loading ferramentas:', error);
+          console.error('Error details:', error.message, error.code);
           setFerramentas([]);
           return;
         }
 
         console.log('📊 Loaded ferramentas:', data?.length || 0);
+        console.log('📊 Sample data:', data?.[0]);
         setFerramentas(data || []);
         
         // Extract unique categories
-        const categories = [...new Set(
-          (data || [])
-            .map(f => f.categoria)
-            .filter(Boolean)
-        )].sort();
-        setAvailableCategories(categories);
+        // Since ferramentas_links doesn't have categoria, we'll create default categories
+        setAvailableCategories(['Ferramentas', 'Links', 'Recursos']);
         
       } catch (error) {
         console.error('Exception loading ferramentas:', error);
@@ -73,32 +71,23 @@ const PoderzinhosPage: React.FC = () => {
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter(ferramenta =>
-        ferramenta.nome.toLowerCase().includes(query) ||
-        ferramenta.descricao?.toLowerCase().includes(query) ||
-        ferramenta.categoria?.toLowerCase().includes(query) ||
-        ferramenta.tags?.some(tag => tag.toLowerCase().includes(query))
+        ferramenta.nome.toLowerCase().includes(query)
       );
     }
 
-    // Apply category filter
-    if (selectedCategory !== 'all') {
-      filtered = filtered.filter(ferramenta => ferramenta.categoria === selectedCategory);
-    }
+    // Skip category filter for now since ferramentas_links doesn't have categoria
 
     setFilteredFerramentas(filtered);
   }, [ferramentas, searchQuery, selectedCategory]);
 
   const getCategoryIcon = (categoria: string) => {
     const iconMap: Record<string, React.ReactNode> = {
-      'AI': <Zap className="w-5 h-5" />,
-      'Design': <Palette className="w-5 h-5" />,
-      'Desenvolvimento': <Code className="w-5 h-5" />,
-      'Analytics': <BarChart3 className="w-5 h-5" />,
-      'Produtividade': <Users className="w-5 h-5" />,
-      'Marketing': <Globe className="w-5 h-5" />
+      'Ferramentas': <Zap className="w-5 h-5" />,
+      'Links': <Globe className="w-5 h-5" />,
+      'Recursos': <Code className="w-5 h-5" />
     };
     
-    return iconMap[categoria] || <Zap className="w-5 h-5" />;
+    return iconMap[categoria] || <ExternalLink className="w-5 h-5" />;
   };
 
   const FerramentaCard: React.FC<{ ferramenta: HallFerramenta }> = ({ ferramenta }) => {
@@ -115,32 +104,17 @@ const PoderzinhosPage: React.FC = () => {
         <div className="flex items-start justify-between mb-4">
           <div className="flex items-center space-x-3">
             <div className="w-12 h-12 bg-slate-600/30 rounded-lg flex items-center justify-center overflow-hidden">
-              {ferramenta.icone ? (
-                <img
-                  src={ferramenta.icone}
-                  alt={`${ferramenta.nome} logo`}
-                  className="w-full h-full object-contain"
-                  onError={(e) => {
-                    const target = e.target as HTMLImageElement;
-                    target.style.display = 'none';
-                    const fallback = target.nextElementSibling as HTMLElement;
-                    if (fallback) fallback.style.display = 'flex';
-                  }}
-                />
-              ) : null}
-              <div className={`w-full h-full bg-slate-600/30 rounded-lg ${ferramenta.icone ? 'hidden' : 'flex'} items-center justify-center text-2xl`}>
-                {getCategoryIcon(ferramenta.categoria || 'AI')}
+              <div className="w-full h-full bg-slate-600/30 rounded-lg flex items-center justify-center text-2xl">
+                <ExternalLink className="w-6 h-6 text-slate-400" />
               </div>
             </div>
             <div>
               <h3 className="text-white font-semibold text-lg group-hover:text-[#ff7551] transition-colors">
                 {ferramenta.nome}
               </h3>
-              {ferramenta.categoria && (
-                <span className="text-xs px-2 py-1 bg-slate-600/30 text-slate-300 rounded">
-                  {ferramenta.categoria}
-                </span>
-              )}
+              <span className="text-xs px-2 py-1 bg-slate-600/30 text-slate-300 rounded">
+                Ferramenta
+              </span>
             </div>
           </div>
           
@@ -148,54 +122,19 @@ const PoderzinhosPage: React.FC = () => {
         </div>
 
         {/* Description */}
-        {ferramenta.descricao && (
-          <p className="text-slate-300 text-sm leading-relaxed mb-4 line-clamp-3">
-            {ferramenta.descricao}
-          </p>
-        )}
+        <p className="text-slate-300 text-sm leading-relaxed mb-4 line-clamp-3">
+          Acesse esta ferramenta útil através do link fornecido.
+        </p>
 
         {/* Footer Info */}
         <div className="flex items-center justify-between text-xs text-slate-400">
           <div className="flex items-center space-x-4">
-            {ferramenta.avaliacao && (
-              <div className="flex items-center space-x-1">
-                <Star className="w-3 h-3 text-yellow-400" fill="currentColor" />
-                <span>{ferramenta.avaliacao.toFixed(1)}</span>
-              </div>
-            )}
-            {ferramenta.usuarios && (
-              <div className="flex items-center space-x-1">
-                <Users className="w-3 h-3" />
-                <span>{ferramenta.usuarios.toLocaleString()}</span>
-              </div>
-            )}
+            <div className="flex items-center space-x-1">
+              <ExternalLink className="w-3 h-3" />
+              <span>Link externo</span>
+            </div>
           </div>
-          
-          {ferramenta.preco && (
-            <span className="font-medium text-[#ff7551]">
-              {ferramenta.preco}
-            </span>
-          )}
         </div>
-
-        {/* Tags */}
-        {ferramenta.tags && ferramenta.tags.length > 0 && (
-          <div className="flex flex-wrap gap-2 mt-4">
-            {ferramenta.tags.slice(0, 3).map((tag, index) => (
-              <span
-                key={index}
-                className="text-xs px-2 py-1 bg-slate-800/50 text-slate-400 rounded"
-              >
-                {tag}
-              </span>
-            ))}
-            {ferramenta.tags.length > 3 && (
-              <span className="text-xs px-2 py-1 bg-slate-800/50 text-slate-400 rounded">
-                +{ferramenta.tags.length - 3}
-              </span>
-            )}
-          </div>
-        )}
       </div>
     );
   };
@@ -270,14 +209,12 @@ const PoderzinhosPage: React.FC = () => {
           >
             <div className="flex items-center space-x-2">
               <Filter className="w-4 h-4" />
-              <span className="text-sm">
-                {selectedCategory === 'all' ? 'Todas as Categorias' : selectedCategory}
-              </span>
+              <span className="text-sm">Todas as Ferramentas</span>
             </div>
             <ChevronDown className={`w-4 h-4 transition-transform ${showCategoryDropdown ? 'rotate-180' : ''}`} />
           </button>
 
-          {showCategoryDropdown && (
+          {showCategoryDropdown && availableCategories.length > 0 && (
             <div className="absolute top-full left-0 mt-2 w-full bg-[#1f1d2b] border border-slate-700/30 rounded-lg shadow-xl z-50">
               <div className="p-2">
                 <button
