@@ -228,7 +228,7 @@ const RegistrationPage: React.FC = () => {
             .update({
               user_id: authData.user.id,
               "Nome do cliente": formData.name,
-              "Email do cliente": formData.email,
+              email_cliente: formData.email,
               onboarding_completed: false,
               cadastro_mde: true
             })
