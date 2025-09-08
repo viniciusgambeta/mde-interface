@@ -68,16 +68,13 @@ const PoderzinhosPage: React.FC = () => {
                 target.style.display = 'none';
                 const fallback = target.nextElementSibling as HTMLElement;
                 if (fallback) fallback.style.display = 'flex';
-      <div className="absolute inset-0 flex flex-col justify-end p-4">
+              }}
             />
-        <h3 className="text-white font-bold text-2xl mb-1 leading-tight transition-all duration-300 group-hover:-translate-y-20">
+          ) : null}
           <div className={`w-full h-full bg-slate-600/30 ${ferramenta.img_ferramenta ? 'hidden' : 'flex'} items-center justify-center`}>
             <ExternalLink className="w-12 h-12 text-slate-400" />
           </div>
         </div>
-
-          <div className="flex items-center space-x-2 mb-2 transition-all duration-300 group-hover:-translate-y-20">
-        <div className="opacity-0 group-hover:opacity-100 transition-all duration-500 transform translate-y-6 group-hover:translate-y-0">
         
         {/* Content Overlay */}
         <div className="absolute inset-0 flex flex-col justify-end p-6 pb-4">
@@ -85,7 +82,7 @@ const PoderzinhosPage: React.FC = () => {
           <h3 className="text-white font-bold text-2xl mb-2 leading-tight transition-all duration-300 group-hover:-translate-y-20">
             {ferramenta.nome_ferramenta}
           </h3>
-        <div className="opacity-0 group-hover:opacity-100 transition-all duration-500 transform translate-y-6 group-hover:translate-y-0">
+
           {/* Tool Type - Always visible, moves up on hover */}
           {ferramenta.tipo_ferramenta && (
             <div className="flex items-center space-x-2 mb-4 transition-all duration-300 group-hover:-translate-y-20">
