@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { Camera, Upload, ArrowRight, ArrowLeft, CheckCircle, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '../lib/supabase';
+import { supabase } from './lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 interface OnboardingFlowProps {
   userId?: string;
