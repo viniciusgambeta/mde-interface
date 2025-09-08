@@ -247,7 +247,7 @@ export const videoService = {
         .from('categories')
         .select('id')
         .eq('slug', options.category)
-        .single();
+        .maybeSingle();
       
       if (category) {
         // Get video IDs from video_categories table
