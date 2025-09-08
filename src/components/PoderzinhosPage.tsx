@@ -55,7 +55,7 @@ const PoderzinhosPage: React.FC = () => {
 
   const FerramentaCard: React.FC<{ ferramenta: HallFerramenta }> = ({ ferramenta }) => {
     return (
-      <div className="relative bg-slate-700/30 border border-slate-600/30 rounded-xl overflow-hidden aspect-[2/3]">
+      <div className="relative bg-slate-700/30 border border-slate-600/30 rounded-xl overflow-hidden aspect-[2/3] group cursor-pointer">
         {/* Background Image */}
         <div className="absolute inset-0">
           {ferramenta.img_ferramenta ? (
@@ -77,43 +77,45 @@ const PoderzinhosPage: React.FC = () => {
         </div>
 
         {/* Gradient Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent group-hover:from-black/95 group-hover:via-black/60 transition-all duration-300" />
         
         {/* Content Overlay */}
-        <div className="absolute inset-0 flex flex-col justify-end p-6">
+        <div className="absolute inset-0 flex flex-col justify-end p-4">
           {/* Tool Name */}
-          <h3 className="text-white font-semibold text-xl mb-2">
+          <h3 className="text-white font-bold text-2xl mb-3 leading-tight">
             {ferramenta.nome_ferramenta}
           </h3>
 
           {/* Tool Type */}
           {ferramenta.tipo_ferramenta && (
-            <div className="flex items-center space-x-2 mb-3">
-              <DollarSign className="w-4 h-4 text-[#ff7551]" />
-              <span className="text-xs px-2 py-1 bg-black/50 text-slate-300 rounded">
+            <div className="flex items-center space-x-2 mb-4">
+              <DollarSign className="w-3 h-3 text-[#ff7551]" />
+              <span className="text-xs px-2 py-1 bg-[#ff7551]/20 text-[#ff7551] rounded-full font-medium border border-[#ff7551]/30">
                 {ferramenta.tipo_ferramenta}
               </span>
             </div>
           )}
 
           {/* Description */}
-          {ferramenta.descricao_ferramenta ? (
-            <p className="text-slate-200 text-sm leading-relaxed mb-6 line-clamp-3">
-              {ferramenta.descricao_ferramenta}
-            </p>
-          ) : (
-            <p className="text-slate-200 text-sm leading-relaxed mb-6 line-clamp-3">
-              Acesse esta ferramenta útil através do link fornecido.
-            </p>
-          )}
+          <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+            {ferramenta.descricao_ferramenta ? (
+              <p className="text-slate-200 text-sm leading-relaxed mb-4 line-clamp-3">
+                {ferramenta.descricao_ferramenta}
+              </p>
+            ) : (
+              <p className="text-slate-200 text-sm leading-relaxed mb-4 line-clamp-3">
+                Acesse esta ferramenta útil através do link fornecido.
+              </p>
+            )}
+          </div>
 
           {/* Access Button */}
-          <div>
+          <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
             <a
               href={ferramenta.link_ferramenta}
               target="_blank"
               rel="noopener noreferrer"
-              className="w-full flex items-center justify-center space-x-2 py-3 px-4 bg-[#ff7551] hover:bg-[#ff7551]/80 text-white font-medium rounded-lg transition-colors"
+              className="w-full flex items-center justify-center space-x-2 py-3 px-4 bg-[#ff7551] hover:bg-[#ff7551]/80 text-white font-semibold rounded-lg transition-colors"
             >
               <ExternalLink className="w-4 h-4" />
               <span>Acessar Ferramenta</span>
@@ -174,12 +176,12 @@ const PoderzinhosPage: React.FC = () => {
 
       {/* Ferramentas Grid */}
       {ferramentas.length > 0 ? (
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
           {ferramentas.map((ferramenta, index) => (
             <div
               key={ferramenta.id}
               className="animate-fade-in"
-              style={{ animationDelay: `${index * 100}ms` }}
+              style={{ animationDelay: `${index * 50}ms` }}
             >
               <FerramentaCard ferramenta={ferramenta} />
             </div>
