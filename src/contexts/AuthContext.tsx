@@ -227,13 +227,39 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     return { error: null };
   };
 
+  const updateProfile = async (updates: any): Promise<boolean> => {
+    if (!user) return false;
+
+    try {
+      const { error } = await supabase
+        .from('assinaturas')
+        .upsert({ 
+          user_id: user.id, 
+          ...updates 
+        }, {
+          onConflict: 'user_id'
+        });
+
+      if (error) {
+        console.error('Error updating profile:', error);
+        return false;
+      }
+
+      return true;
+    } catch (error) {
+      console.error('Exception updating profile:', error);
+      return false;
+    }
+  };
+
   const value: AuthContextType = {
     user,
     loading,
     isAuthenticated: !loading && !!user,
     signIn,
     signUp,
-    signOut
+    signOut,
+    updateProfile
   };
 
   return (
