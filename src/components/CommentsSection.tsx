@@ -11,6 +11,7 @@ interface CommentsSectionProps {
 
 const CommentsSection: React.FC<CommentsSectionProps> = ({ videoId, videoTitle }) => {
   const { user } = useAuth();
+  const [userAvatar, setUserAvatar] = useState<string>('/avatar1.png');
   const [comments, setComments] = useState<Comment[]>([]);
   const [loading, setLoading] = useState(true);
   const [newComment, setNewComment] = useState('');
@@ -18,6 +19,37 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ videoId, videoTitle }
   const [expandedComments, setExpandedComments] = useState<Set<string>>(new Set());
   const [sortBy, setSortBy] = useState<'recent' | 'oldest'>('recent');
   const [showSortDropdown, setShowSortDropdown] = useState(false);
+
+  // Load user avatar from assinaturas table
+  useEffect(() => {
+    const loadUserAvatar = async () => {
+      if (!user) {
+        setUserAvatar('/avatar1.png');
+        return;
+      }
+
+      try {
+        const { data, error } = await supabase
+          .from('assinaturas')
+          .select('avatar_usuario')
+          .eq('user_id', user.id)
+          .maybeSingle();
+
+        if (error) {
+          console.error('Error loading user avatar for comments:', error);
+          setUserAvatar('/avatar1.png');
+          return;
+        }
+
+        setUserAvatar(data?.avatar_usuario || '/avatar1.png');
+      } catch (error) {
+        console.error('Exception loading user avatar for comments:', error);
+        setUserAvatar('/avatar1.png');
+      }
+    };
+
+    loadUserAvatar();
+  }, [user?.id]);
 
   // Load comments
   useEffect(() => {
@@ -320,7 +352,7 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ videoId, videoTitle }
                   <div className="relative">
                     <div className="flex space-x-3">
                       <img
-                        src={user.avatar || '/avatar1.png'}
+                        src={userAvatar}
                         alt={user.name}
                         className="w-10 h-10 rounded-lg object-cover flex-shrink-0 mt-1"
                       />
@@ -385,7 +417,7 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ videoId, videoTitle }
           <form onSubmit={handleSubmitComment} className="relative">
             <div className="flex space-x-4">
               <img
-                src={user.avatar || '/avatar1.png'}
+                src={userAvatar}
                 alt={user.name}
                 className="w-12 h-12 rounded-lg object-cover flex-shrink-0 mt-1"
               />
