@@ -85,96 +85,70 @@ const PoderzinhosPage: React.FC = () => {
     setFilteredFerramentas(filtered);
   }, [ferramentas, searchQuery, selectedCategory]);
 
-  const getCategoryIcon = (tipo_ferramenta: string) => {
-    return <DollarSign className="w-4 h-4" />;
-  };
 
   const FerramentaCard: React.FC<{ ferramenta: HallFerramenta }> = ({ ferramenta }) => {
     return (
-      <div className="bg-slate-700/30 border border-slate-600/30 rounded-xl p-6">
-        {/* Header */}
-        <div className="flex items-start justify-between mb-4">
-          <div className="flex items-center space-x-3">
-            <div className="w-16 h-16 bg-slate-600/30 rounded-lg flex items-center justify-center overflow-hidden">
-              {ferramenta.img_ferramenta ? (
-                <img 
-                  src={ferramenta.img_ferramenta} 
-                  alt={ferramenta.nome_ferramenta}
-                  className="w-full h-full object-cover rounded-lg"
-                  onError={(e) => {
-                    const target = e.target as HTMLImageElement;
-                    target.style.display = 'none';
-                    const fallback = target.nextElementSibling as HTMLElement;
-                    if (fallback) fallback.style.display = 'flex';
-                  }}
-                />
-              ) : null}
-              <div className={`w-full h-full bg-slate-600/30 rounded-lg ${ferramenta.img_ferramenta ? 'hidden' : 'flex'} items-center justify-center`}>
-                <ExternalLink className="w-6 h-6 text-slate-400" />
-              </div>
-            </div>
-            <div>
-              <h3 className="text-white font-semibold text-lg">
-                {ferramenta.nome_ferramenta}
-              </h3>
+      <div className="bg-slate-700/30 border border-slate-600/30 rounded-xl overflow-hidden">
+        {/* Featured Image at Top */}
+        <div className="relative w-full h-48 bg-slate-600/30 overflow-hidden">
+          {ferramenta.img_ferramenta ? (
+            <img 
+              src={ferramenta.img_ferramenta} 
+              alt={ferramenta.nome_ferramenta}
+              className="w-full h-full object-cover"
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.style.display = 'none';
+                const fallback = target.nextElementSibling as HTMLElement;
+                if (fallback) fallback.style.display = 'flex';
+              }}
+            />
+          ) : null}
+          <div className={`w-full h-full bg-slate-600/30 ${ferramenta.img_ferramenta ? 'hidden' : 'flex'} items-center justify-center`}>
+            <ExternalLink className="w-12 h-12 text-slate-400" />
+          </div>
+        </div>
+
+        {/* Card Content */}
+        <div className="p-6">
+          {/* Tool Name */}
+          <h3 className="text-white font-semibold text-lg mb-2">
+            {ferramenta.nome_ferramenta}
+          </h3>
+
+          {/* Tool Type */}
+          {ferramenta.tipo_ferramenta && (
+            <div className="flex items-center space-x-2 mb-3">
+              <DollarSign className="w-4 h-4 text-[#ff7551]" />
               <span className="text-xs px-2 py-1 bg-slate-600/30 text-slate-300 rounded">
-                Ferramenta
+                {ferramenta.tipo_ferramenta}
               </span>
             </div>
-          </div>
-        </div>
-
-        {/* Description */}
-        {ferramenta.descricao_ferramenta ? (
-          <p className="text-slate-300 text-sm leading-relaxed mb-4 line-clamp-3">
-            {ferramenta.descricao_ferramenta}
-          </p>
-        ) : (
-          <p className="text-slate-300 text-sm leading-relaxed mb-4 line-clamp-3">
-            Acesse esta ferramenta útil através do link fornecido.
-          </p>
-        )}
-
-        {/* Access Button */}
-        <div className="mt-6">
-          <a
-            href={ferramenta.link_ferramenta}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="w-full flex items-center justify-center space-x-2 py-3 px-4 bg-[#ff7551] hover:bg-[#ff7551]/80 text-white font-medium rounded-lg transition-colors"
-          >
-            <ExternalLink className="w-4 h-4" />
-            <span>Acessar Ferramenta</span>
-          </a>
-        </div>
-
-        {/* Footer Info */}
-        <div className="flex items-center justify-between text-xs text-slate-400 mt-4">
-          <div className="flex items-center space-x-4">
-            {ferramenta.tipo_ferramenta && (
-              <div className="flex items-center space-x-1">
-                {getCategoryIcon(ferramenta.tipo_ferramenta)}
-                <span>{ferramenta.tipo_ferramenta}</span>
-              </div>
-            )}
-            {ferramenta.avaliacao && (
-              <div className="flex items-center space-x-1">
-                <Star className="w-3 h-3 text-yellow-400" />
-                <span>{ferramenta.avaliacao}</span>
-              </div>
-            )}
-            {ferramenta.usuarios && (
-              <div className="flex items-center space-x-1">
-                <Users className="w-3 h-3" />
-                <span>{ferramenta.usuarios}</span>
-              </div>
-            )}
-          </div>
-          {ferramenta.preco && (
-            <div className="text-[#ff7551] font-medium">
-              {ferramenta.preco}
-            </div>
           )}
+
+          {/* Description */}
+          {ferramenta.descricao_ferramenta ? (
+            <p className="text-slate-300 text-sm leading-relaxed mb-6 line-clamp-3">
+              {ferramenta.descricao_ferramenta}
+            </p>
+          ) : (
+            <p className="text-slate-300 text-sm leading-relaxed mb-6 line-clamp-3">
+              Acesse esta ferramenta útil através do link fornecido.
+            </p>
+          )}
+
+          {/* Access Button */}
+          <div className="mt-6">
+            <a
+              href={ferramenta.link_ferramenta}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full flex items-center justify-center space-x-2 py-3 px-4 bg-[#ff7551] hover:bg-[#ff7551]/80 text-white font-medium rounded-lg transition-colors"
+            >
+              <ExternalLink className="w-4 h-4" />
+              <span>Acessar Ferramenta</span>
+            </a>
+          </div>
         </div>
       </div>
     );
