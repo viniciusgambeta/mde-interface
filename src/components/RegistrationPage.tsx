@@ -18,7 +18,7 @@ import {
 interface AssinaturaData {
   id_assinatura: string;
   'Nome do cliente': string;
-  'Email do cliente': string;
+  'email_cliente': string;
   'Status da assinatura': string;
   'Plano': string;
   'cadastro_mde': boolean;
@@ -86,12 +86,12 @@ const RegistrationPage: React.FC = () => {
           .select(`
             id_assinatura,
             "Nome do cliente", 
-            "Email do cliente",
+            "email_cliente",
             "Status da assinatura",
             "Plano",
             cadastro_mde
           `)
-          .eq('Email do cliente', formData.email.toLowerCase().trim())
+          .eq('email_cliente', formData.email.toLowerCase().trim())
           .eq('"Status da assinatura"', 'active')
           .eq('cadastro_mde', false)
           .maybeSingle();
