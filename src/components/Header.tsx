@@ -30,6 +30,17 @@ const Header: React.FC<HeaderProps> = ({ sidebarCollapsed, onSidebarToggle, onVi
   const userMenuRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLDivElement>(null);
   const { user, isAuthenticated, signOut } = useAuth();
+  const [userData, setUserData] = useState<{name: string; avatar: string} | null>(null);
+
+  // Load user data from assinaturas table
+  useEffect(() => {
+    const loadUserData = async () => {
+      if (!user) {
+        setUserData(null);
+        return;
+      }
+    };
+  }, [user]);
 
   // Check for login parameter in URL
   useEffect(() => {
