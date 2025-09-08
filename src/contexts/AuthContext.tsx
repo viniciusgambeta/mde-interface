@@ -86,8 +86,47 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
         console.log('🔐 Auth state change event:', event, 'Session exists:', !!session);
 
+        console.log('🔐 Auth state change event:', event, 'Session exists:', !!session);
+
         if (session?.user) {
           setUser(convertSupabaseUser(session.user));
+          
+          // Check onboarding status only on SIGNED_IN event
+          if (event === 'SIGNED_IN') {
+            console.log('✅ User signed in, checking onboarding status...');
+            
+            // Small delay to ensure user state is updated
+            setTimeout(async () => {
+              try {
+                console.log('🔍 Querying onboarding status for user:', session.user.id);
+                
+                const { data: assinaturaData, error } = await supabase
+                  .from('assinaturas')
+                  .select('onboarding_completed')
+                  .eq('user_id', session.user.id)
+                  .maybeSingle();
+
+                if (error) {
+                  console.error('❌ Error checking onboarding status:', error);
+                  return;
+                }
+
+                console.log('📊 Onboarding data:', assinaturaData);
+                
+                const onboardingCompleted = assinaturaData?.onboarding_completed;
+                console.log('🎯 Onboarding completed:', onboardingCompleted);
+                
+                if (!onboardingCompleted) {
+                  console.log('🚀 Redirecting to onboarding...');
+                  navigate('/onboarding');
+                } else {
+                  console.log('✅ Onboarding already completed, user can continue');
+                }
+              } catch (error) {
+                console.error('💥 Exception checking onboarding status:', error);
+              }
+            }, 100);
+          }
           
           // Check onboarding status only on SIGNED_IN event
           if (event === 'SIGNED_IN') {
