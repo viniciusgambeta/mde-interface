@@ -49,7 +49,6 @@ const ProfilePage: React.FC = () => {
           .from('assinaturas')
           .select(`
             "Nome do cliente",
-            "Telefone do cliente",
             avatar_usuario,
             bio,
             instagram,
@@ -78,7 +77,7 @@ const ProfilePage: React.FC = () => {
           console.log('📋 ProfilePage: Setting form data from database');
           const newFormData = {
             name: data["Nome do cliente"] || user.name || '',
-            phone: data.phone_number || data['Telefone do cliente']?.toString() || '',
+            phone: data.phone_number || '',
             bio: data.bio || '',
             instagram: data.instagram || '',
             experiencia_ia: data.experiencia_ia || '',
@@ -232,7 +231,6 @@ const ProfilePage: React.FC = () => {
       // Prepare update data
       const updateData = {
         "Nome do cliente": formData.name.trim(),
-        "Telefone do cliente": formData.phone ? parseInt(formData.phone.replace(/\D/g, '')) : null,
         phone_number: formData.phone.trim(),
         bio: formData.bio.trim(),
         instagram: formData.instagram.trim(),

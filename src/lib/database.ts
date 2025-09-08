@@ -1419,7 +1419,7 @@ export const commentsService = {
       // Get user's assinatura ID for the comment
       const { data: assinaturaData, error: assinaturaIdError } = await supabase
         .from('assinaturas')
-        .select('"ID da assinatura"')
+        .select('id_assinatura')
         .eq('user_id', userId)
         .single();
 
@@ -1434,7 +1434,7 @@ export const commentsService = {
         .insert({
           video_id: videoId,
           user_id: userId,
-          assinatura_id: assinaturaData["ID da assinatura"],
+          assinatura_id: assinaturaData.id_assinatura,
           content: content.trim(),
           parent_comment_id: parentCommentId || null
         });
