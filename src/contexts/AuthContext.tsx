@@ -10,6 +10,7 @@ export interface User {
   name: string;
   avatar?: string;
   joinedAt: string;
+  isPremium?: boolean;
 }
 
 interface AuthContextType {
@@ -42,6 +43,35 @@ const convertSupabaseUser = (authUser: SupabaseUser): User => {
   };
 };
 
+// Function to load user data from assinaturas table
+const loadUserDataFromAssinaturas = async (userId: string): Promise<Partial<User>> => {
+  try {
+    const { data, error } = await supabase
+      .from('assinaturas')
+      .select('"Nome do cliente", avatar_usuario, is_premium')
+      .eq('user_id', userId)
+      .maybeSingle();
+
+    if (error) {
+      console.error('Error loading user data from assinaturas:', error);
+      return {};
+    }
+
+    if (data) {
+      return {
+        name: data["Nome do cliente"] || undefined,
+        avatar: data.avatar_usuario || undefined,
+        isPremium: data.is_premium || false
+      };
+    }
+
+    return {};
+  } catch (error) {
+    console.error('Exception loading user data from assinaturas:', error);
+    return {};
+  }
+};
+
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const navigate = useNavigate();
   const [user, setUser] = useState<User | null>(null);
@@ -60,7 +90,20 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         } else {
           setUser(null);
         }
-      } catch (error) {
+        const baseUser = convertSupabaseUser(session.user);
+        
+        // Load additional data from assinaturas table
+        const additionalData = await loadUserDataFromAssinaturas(session.user.id);
+        
+        // Merge the data, keeping base user data as fallback
+        const enrichedUser = {
+          ...baseUser,
+          name: additionalData.name || baseUser.name,
+          avatar: additionalData.avatar || baseUser.avatar,
+          isPremium: additionalData.isPremium || false
+        };
+        
+        setUser(enrichedUser);
         console.error('Error checking session:', error);
         setUser(null);
       } finally {
@@ -85,7 +128,20 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         }
 
         if (session?.user) {
-          setUser(convertSupabaseUser(session.user));
+          const baseUser = convertSupabaseUser(session.user);
+          
+          // Load additional data from assinaturas table
+          const additionalData = await loadUserDataFromAssinaturas(session.user.id);
+          
+          // Merge the data, keeping base user data as fallback
+          const enrichedUser = {
+            ...baseUser,
+            name: additionalData.name || baseUser.name,
+            avatar: additionalData.avatar || baseUser.avatar,
+            isPremium: additionalData.isPremium || false
+          };
+          
+          setUser(enrichedUser);
         } else {
           setUser(null);
           
