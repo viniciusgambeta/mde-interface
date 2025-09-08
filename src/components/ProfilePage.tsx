@@ -4,7 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 
 const ProfilePage: React.FC = () => {
-  const { user, updateProfile, refreshUser } = useAuth();
+  const { user, updateProfile } = useAuth();
   const [formData, setFormData] = useState({
     name: '',
     phone: '',
@@ -260,9 +260,6 @@ const ProfilePage: React.FC = () => {
       }
 
       console.log('✅ ProfilePage: Database updated successfully');
-      
-      // Refresh user data in context
-      await refreshUser();
       
       console.log('✅ ProfilePage: Profile updated successfully');
       setSuccess(true);
