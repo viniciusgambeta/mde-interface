@@ -55,14 +55,14 @@ const PoderzinhosPage: React.FC = () => {
 
   const FerramentaCard: React.FC<{ ferramenta: HallFerramenta }> = ({ ferramenta }) => {
     return (
-      <div className="relative bg-slate-700/30 border border-slate-600/30 rounded-xl overflow-hidden aspect-[3/4] group cursor-pointer">
+      <div className="relative bg-slate-700/30 border border-slate-600/30 rounded-xl overflow-hidden aspect-[3/4] group cursor-pointer transform transition-all duration-300 hover:scale-105 hover:shadow-2xl">
         {/* Background Image */}
         <div className="absolute inset-0">
           {ferramenta.img_ferramenta ? (
             <img 
               src={ferramenta.img_ferramenta} 
               alt={ferramenta.nome_ferramenta}
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
               onError={(e) => {
                 const target = e.target as HTMLImageElement;
                 target.style.display = 'none';
@@ -76,11 +76,140 @@ const PoderzinhosPage: React.FC = () => {
           </div>
         </div>
         
-        {/* Dark overlay that appears on hover */}
-        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all duration-500 z-10"></div>
+        {/* Gradient overlay - always present, intensifies on hover */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent group-hover:from-black/90 group-hover:via-black/40 group-hover:to-black/10 transition-all duration-500 z-10"></div>
         
-        {/* Content Overlay */}
-        <div className="absolute inset-0 flex flex-col justify-end p-6 pb-0 z-20">
+        {/* Content Container */}
+        <div className="absolute inset-0 flex flex-col justify-end p-6 z-20">
+          {/* Always Visible Content - Title and Type */}
+          <div className="transform transition-all duration-500 group-hover:-translate-y-20">
+            {/* Tool Name - Always visible */}
+            <h3 className="text-white font-bold text-xl mb-2 leading-tight drop-shadow-lg">
+              {ferramenta.nome_ferramenta}
+            </h3>
+
+            {/* Tool Type - Always visible */}
+            {ferramenta.tipo_ferramenta && (
+              <div className="flex items-center space-x-2 mb-4">
+                <DollarSign className="w-3 h-3 text-[#ff7551]" />
+                <span className="text-xs px-2 py-1 bg-[#ff7551]/20 text-[#ff7551] rounded-full font-medium border border-[#ff7551]/30 backdrop-blur-sm">
+                  {ferramenta.tipo_ferramenta}
+                </span>
+              </div>
+            )}
+          </div>
+
+          {/* Hover Content - Description and Button */}
+          <div className="opacity-0 group-hover:opacity-100 transform translate-y-8 group-hover:translate-y-0 transition-all duration-500 ease-out">
+            {/* Description */}
+            <div className="mb-4">
+              {ferramenta.descricao_ferramenta ? (
+                <p className="text-slate-200 text-sm leading-relaxed line-clamp-3 drop-shadow-md">
+                  {ferramenta.descricao_ferramenta}
+                </p>
+              ) : (
+                <p className="text-slate-200 text-sm leading-relaxed drop-shadow-md">
+                  Acesse esta ferramenta útil através do link fornecido.
+                </p>
+              )}
+            </div>
+
+            {/* Access Button */}
+            <a
+              href={ferramenta.link_ferramenta}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={(e) => e.stopPropagation()}
+              className="w-full flex items-center justify-center space-x-2 py-3 px-4 bg-[#ff7551] hover:bg-[#ff7551]/90 text-white font-semibold rounded-lg transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl backdrop-blur-sm"
+            >
+              <ExternalLink className="w-4 h-4" />
+              <span>Acessar Ferramenta</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // Loading state
+  if (loading) {
+    return (
+      <div className="w-full space-y-8">
+        <div className="text-left">
+          <h1 className="text-3xl font-bold text-white mb-4">Poderzinhos</h1>
+          <p className="text-slate-400 text-lg max-w-3xl">
+            Carregando ferramentas...
+          </p>
+        </div>
+        
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {Array.from({ length: 6 }).map((_, index) => (
+            <div key={index} className="bg-slate-700/30 rounded-xl p-6 animate-pulse">
+              <div className="flex items-start justify-between mb-4">
+                <div className="flex items-center space-x-3">
+                  <div className="w-12 h-12 bg-slate-600/30 rounded-lg"></div>
+                  <div>
+                    <div className="h-5 bg-slate-600/30 rounded w-24 mb-2"></div>
+                    <div className="h-4 bg-slate-600/20 rounded w-16"></div>
+                  </div>
+                </div>
+                <div className="w-5 h-5 bg-slate-600/30 rounded"></div>
+              </div>
+              <div className="h-4 bg-slate-600/20 rounded mb-2"></div>
+              <div className="h-4 bg-slate-600/20 rounded w-3/4 mb-4"></div>
+              <div className="flex justify-between">
+                <div className="h-3 bg-slate-600/20 rounded w-16"></div>
+                <div className="h-3 bg-slate-600/20 rounded w-12"></div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="w-full space-y-8">
+      {/* Header */}
+      <div className="text-left">
+        <h1 className="text-3xl font-bold text-white mb-4">Poderzinhos</h1>
+        <p className="text-slate-400 text-lg max-w-3xl">
+          Descubra ferramentas poderosas para automação, IA e produtividade. 
+          Nossa curadoria especial de ferramentas que vão turbinar seu trabalho e criatividade.
+        </p>
+      </div>
+
+      {/* Ferramentas Grid */}
+      {ferramentas.length > 0 ? (
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {ferramentas.map((ferramenta, index) => (
+            <div
+              key={ferramenta.id}
+              className="animate-fade-in"
+              style={{ animationDelay: `${index * 50}ms` }}
+            >
+              <FerramentaCard ferramenta={ferramenta} />
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="text-center py-20">
+          <div className="w-16 h-16 bg-slate-700/30 rounded-full flex items-center justify-center mx-auto mb-4">
+            <HandMetal className="w-8 h-8 text-slate-500" />
+          </div>
+          <h3 className="text-xl font-semibold text-white mb-2">
+            Nenhuma ferramenta disponível
+          </h3>
+          <p className="text-slate-400 max-w-md mx-auto">
+            Não encontramos ferramentas para exibir no momento.
+          </p>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default PoderzinhosPage;
           
           {/* Tool Name - Always visible, moves up on hover */}
           <h3 className="text-white font-bold text-2xl mb-1 leading-tight transition-all duration-500 group-hover:-translate-y-32">
