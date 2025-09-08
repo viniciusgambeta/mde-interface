@@ -77,7 +77,7 @@ const PoderzinhosPage: React.FC = () => {
         </div>
         
         {/* Gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent group-hover:from-black/90 group-hover:via-black/40 transition-all duration-300"></div>
         
         {/* Content at bottom */}
         <div className="absolute bottom-0 left-0 right-0 p-6">
@@ -90,7 +90,7 @@ const PoderzinhosPage: React.FC = () => {
             </div>
           )}
           
-          <h3 className="text-white font-bold text-2xl mb-3 leading-tight">
+          <h3 className="text-white font-bold text-3xl mb-3 leading-tight">
             {ferramenta.nome_ferramenta}
           </h3>
           
