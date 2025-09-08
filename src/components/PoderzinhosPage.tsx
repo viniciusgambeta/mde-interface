@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ExternalLink, Zap, Loader2, DollarSign } from 'lucide-react';
+import { ExternalLink, HandMetal, Loader2, DollarSign } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
 interface HallFerramenta {
@@ -82,13 +82,13 @@ const PoderzinhosPage: React.FC = () => {
         {/* Content Overlay */}
         <div className="absolute inset-0 flex flex-col justify-end p-6 pb-4">
           {/* Tool Name - Always visible, moves up on hover */}
-          <h3 className="text-white font-bold text-2xl mb-2 leading-tight transition-all duration-300 group-hover:-translate-y-16">
+          <h3 className="text-white font-bold text-2xl mb-2 leading-tight transition-all duration-300 group-hover:-translate-y-20">
             {ferramenta.nome_ferramenta}
           </h3>
 
           {/* Tool Type - Always visible, moves up on hover */}
           {ferramenta.tipo_ferramenta && (
-            <div className="flex items-center space-x-2 mb-4 transition-all duration-300 group-hover:-translate-y-16">
+            <div className="flex items-center space-x-2 mb-4 transition-all duration-300 group-hover:-translate-y-20">
               <DollarSign className="w-3 h-3 text-[#ff7551]" />
               <span className="text-xs px-2 py-1 bg-[#ff7551]/20 text-[#ff7551] rounded-full font-medium border border-[#ff7551]/30">
                 {ferramenta.tipo_ferramenta}
@@ -190,7 +190,7 @@ const PoderzinhosPage: React.FC = () => {
       ) : (
         <div className="text-center py-20">
           <div className="w-16 h-16 bg-slate-700/30 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Zap className="w-8 h-8 text-slate-500" />
+            <HandMetal className="w-8 h-8 text-slate-500" />
           </div>
           <h3 className="text-xl font-semibold text-white mb-2">
             Nenhuma ferramenta disponível
