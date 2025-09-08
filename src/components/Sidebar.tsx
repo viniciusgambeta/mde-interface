@@ -26,6 +26,7 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggle, currentView, onV
     { id: 'discover', label: 'Home', icon: Home },
     { id: 'trending', label: 'Trending', icon: TrendingUp },
     { id: 'categories', label: 'Categorias', icon: Grid3X3 },
+    { id: 'poderzinhos', label: 'Poderzinhos', icon: BarChart3 },
     { id: 'discounts', label: 'Descontos', icon: Gift },
     { id: 'affiliates', label: 'Afiliados', icon: DollarSign },
     { id: 'request-lesson', label: 'Pedir Aula', icon: MessageSquare },
