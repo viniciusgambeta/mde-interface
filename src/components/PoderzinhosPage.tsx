@@ -4,11 +4,11 @@ import { supabase } from '../lib/supabase';
 
 interface HallFerramenta {
   id: string;
-  nome: string;
-  descricao?: string;
-  link: string;
-  icone?: string;
-  categoria?: string;
+  nome_ferramenta: string;
+  descricao_ferramenta?: string;
+  link_ferramenta: string;
+  img_ferramenta?: string;
+  tipo_ferramenta?: string;
   avaliacao?: number;
   usuarios?: number;
   preco?: string;
@@ -34,7 +34,7 @@ const PoderzinhosPage: React.FC = () => {
         
         const { data, error } = await supabase
           .from('hall_ferramentas')
-          .select('*')
+          .select('id, nome_ferramenta, img_ferramenta, link_ferramenta, descricao_ferramenta, tipo_ferramenta, created_at')
           .order('created_at', { ascending: false });
 
         if (error) {
@@ -49,8 +49,7 @@ const PoderzinhosPage: React.FC = () => {
         setFerramentas(data || []);
         
         // Extract unique categories
-        // Extract unique categories from hall_ferramentas
-        const uniqueCategories = [...new Set(data?.map(item => item.categoria).filter(Boolean))].sort();
+        const uniqueCategories = [...new Set(data?.map(item => item.tipo_ferramenta).filter(Boolean))].sort();
         setAvailableCategories(uniqueCategories);
         
       } catch (error) {
@@ -72,21 +71,21 @@ const PoderzinhosPage: React.FC = () => {
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter(ferramenta =>
-        ferramenta.nome.toLowerCase().includes(query) ||
-        (ferramenta.descricao && ferramenta.descricao.toLowerCase().includes(query)) ||
-        (ferramenta.categoria && ferramenta.categoria.toLowerCase().includes(query))
+        ferramenta.nome_ferramenta.toLowerCase().includes(query) ||
+        (ferramenta.descricao_ferramenta && ferramenta.descricao_ferramenta.toLowerCase().includes(query)) ||
+        (ferramenta.tipo_ferramenta && ferramenta.tipo_ferramenta.toLowerCase().includes(query))
       );
     }
 
     // Apply category filter
     if (selectedCategory !== 'all') {
-      filtered = filtered.filter(ferramenta => ferramenta.categoria === selectedCategory);
+      filtered = filtered.filter(ferramenta => ferramenta.tipo_ferramenta === selectedCategory);
     }
 
     setFilteredFerramentas(filtered);
   }, [ferramentas, searchQuery, selectedCategory]);
 
-  const getCategoryIcon = (categoria: string) => {
+  const getCategoryIcon = (tipo_ferramenta: string) => {
     const iconMap: Record<string, React.ReactNode> = {
       'IA': <Zap className="w-5 h-5" />,
       'Automação': <BarChart3 className="w-5 h-5" />,
@@ -96,12 +95,12 @@ const PoderzinhosPage: React.FC = () => {
       'Desenvolvimento': <Code className="w-5 h-5" />
     };
     
-    return iconMap[categoria] || <Zap className="w-5 h-5" />;
+    return iconMap[tipo_ferramenta] || <Zap className="w-5 h-5" />;
   };
 
   const FerramentaCard: React.FC<{ ferramenta: HallFerramenta }> = ({ ferramenta }) => {
     const handleClick = () => {
-      window.open(ferramenta.link, '_blank', 'noopener,noreferrer');
+      window.open(ferramenta.link_ferramenta, '_blank', 'noopener,noreferrer');
     };
 
     return (
@@ -113,13 +112,26 @@ const PoderzinhosPage: React.FC = () => {
         <div className="flex items-start justify-between mb-4">
           <div className="flex items-center space-x-3">
             <div className="w-12 h-12 bg-slate-600/30 rounded-lg flex items-center justify-center overflow-hidden">
-              <div className="w-full h-full bg-slate-600/30 rounded-lg flex items-center justify-center text-2xl">
+              {ferramenta.img_ferramenta ? (
+                <img 
+                  src={ferramenta.img_ferramenta} 
+                  alt={ferramenta.nome_ferramenta}
+                  className="w-full h-full object-contain"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.style.display = 'none';
+                    const fallback = target.nextElementSibling as HTMLElement;
+                    if (fallback) fallback.style.display = 'flex';
+                  }}
+                />
+              ) : null}
+              <div className={`w-full h-full bg-slate-600/30 rounded-lg ${ferramenta.img_ferramenta ? 'hidden' : 'flex'} items-center justify-center text-2xl`}>
                 <ExternalLink className="w-6 h-6 text-slate-400" />
               </div>
             </div>
             <div>
               <h3 className="text-white font-semibold text-lg group-hover:text-[#ff7551] transition-colors">
-                {ferramenta.nome}
+                {ferramenta.nome_ferramenta}
               </h3>
               <span className="text-xs px-2 py-1 bg-slate-600/30 text-slate-300 rounded">
                 Ferramenta
@@ -131,9 +143,9 @@ const PoderzinhosPage: React.FC = () => {
         </div>
 
         {/* Description */}
-        {ferramenta.descricao ? (
+        {ferramenta.descricao_ferramenta ? (
           <p className="text-slate-300 text-sm leading-relaxed mb-4 line-clamp-3">
-            {ferramenta.descricao}
+            {ferramenta.descricao_ferramenta}
           </p>
         ) : (
           <p className="text-slate-300 text-sm leading-relaxed mb-4 line-clamp-3">
@@ -144,10 +156,10 @@ const PoderzinhosPage: React.FC = () => {
         {/* Footer Info */}
         <div className="flex items-center justify-between text-xs text-slate-400">
           <div className="flex items-center space-x-4">
-            {ferramenta.categoria && (
+            {ferramenta.tipo_ferramenta && (
               <div className="flex items-center space-x-1">
-                {getCategoryIcon(ferramenta.categoria)}
-                <span>{ferramenta.categoria}</span>
+                {getCategoryIcon(ferramenta.tipo_ferramenta)}
+                <span>{ferramenta.tipo_ferramenta}</span>
               </div>
             )}
             {ferramenta.avaliacao && (
