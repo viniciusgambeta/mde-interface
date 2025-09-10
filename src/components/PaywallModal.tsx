@@ -73,40 +73,15 @@ const PaywallModal: React.FC<PaywallModalProps> = ({ isOpen, onClose, contentTit
           <h2 className="text-xl text-[#ff7551] font-semibold mb-4">
             "{contentTitle}"
           </h2>
-          <p className="text-slate-400 text-lg max-w-2xl mx-auto">
-            Para acessar este conteúdo exclusivo e toda nossa biblioteca de aulas, 
-            você precisa ser um membro da comunidade Me dá um Exemplo.
-          </p>
         </div>
 
         {/* Content */}
         <div className="p-8">
-          {/* Features Grid */}
-          <div className="mb-12">
-            <h3 className="text-xl font-semibold text-white mb-8 text-center">
-              O que você ganha como membro:
-            </h3>
-            
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {features.map((feature, index) => (
-                <div
-                  key={index}
-                  className="flex items-center space-x-3 p-4 bg-slate-700/20 rounded-lg border border-slate-600/20"
-                >
-                  <div className="w-10 h-10 bg-[#ff7551]/20 rounded-full flex items-center justify-center flex-shrink-0">
-                    <feature.icon className="w-5 h-5 text-[#ff7551]" />
-                  </div>
-                  <span className="text-slate-300 font-medium">{feature.text}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
           {/* Pricing Plans */}
-          <div className="grid md:grid-cols-2 gap-8 mb-12">
+          <div className="grid md:grid-cols-2 gap-6 mb-12">
             {/* Monthly Plan */}
-            <div className="bg-slate-700/30 border border-slate-600/30 rounded-xl p-8 relative">
-              <div className="text-center mb-6">
+            <div className="bg-slate-700/30 border border-slate-600/30 rounded-xl p-6">
+              <div className="text-center mb-4">
                 <h3 className="text-xl font-semibold text-white mb-2">Plano Mensal</h3>
                 <div className="text-4xl font-bold text-white mb-2">
                   R$ <span className="text-[#ff7551]">67</span>
@@ -114,77 +89,27 @@ const PaywallModal: React.FC<PaywallModalProps> = ({ isOpen, onClose, contentTit
                 <p className="text-slate-400">por mês</p>
               </div>
               
-              <div className="space-y-3 mb-8">
-                <div className="flex items-center space-x-2">
-                  <Check className="w-4 h-4 text-green-400" />
-                  <span className="text-slate-300 text-sm">Acesso completo à plataforma</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Check className="w-4 h-4 text-green-400" />
-                  <span className="text-slate-300 text-sm">Todas as aulas e materiais</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Check className="w-4 h-4 text-green-400" />
-                  <span className="text-slate-300 text-sm">Suporte prioritário</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Check className="w-4 h-4 text-green-400" />
-                  <span className="text-slate-300 text-sm">Cancele quando quiser</span>
-                </div>
-              </div>
-              
               <button
                 onClick={() => handleSubscribe('monthly')}
-                className="w-full bg-slate-600/30 hover:bg-slate-500/30 text-white font-semibold py-4 rounded-lg transition-colors"
+                className="w-full bg-[#ff7551] hover:bg-[#ff7551]/80 text-white font-semibold py-3 rounded-lg transition-colors"
               >
                 Escolher Mensal
               </button>
             </div>
 
             {/* Annual Plan */}
-            <div className="bg-slate-700/30 border-2 border-[#ff7551] rounded-xl p-8 relative">
-              {/* Popular Badge */}
-              <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                <div className="bg-[#ff7551] text-white px-6 py-2 rounded-full text-sm font-semibold">
-                  Mais Popular
-                </div>
-              </div>
-              
-              <div className="text-center mb-6">
+            <div className="bg-slate-700/30 border border-slate-600/30 rounded-xl p-6">
+              <div className="text-center mb-4">
                 <h3 className="text-xl font-semibold text-white mb-2">Plano Anual</h3>
                 <div className="text-4xl font-bold text-white mb-2">
                   R$ <span className="text-[#ff7551]">647</span>
                 </div>
                 <p className="text-slate-400">por ano</p>
-                <div className="mt-2">
-                  <span className="bg-green-500/20 text-green-400 px-3 py-1 rounded-full text-sm font-medium">
-                    Economize R$ 157
-                  </span>
-                </div>
-              </div>
-              
-              <div className="space-y-3 mb-8">
-                <div className="flex items-center space-x-2">
-                  <Check className="w-4 h-4 text-green-400" />
-                  <span className="text-slate-300 text-sm">Acesso completo à plataforma</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Check className="w-4 h-4 text-green-400" />
-                  <span className="text-slate-300 text-sm">Todas as aulas e materiais</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Check className="w-4 h-4 text-green-400" />
-                  <span className="text-slate-300 text-sm">Suporte prioritário</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Check className="w-4 h-4 text-green-400" />
-                  <span className="text-slate-300 text-sm">2 meses grátis</span>
-                </div>
               </div>
               
               <button
                 onClick={() => handleSubscribe('annual')}
-                className="w-full bg-[#ff7551] hover:bg-[#ff7551]/80 text-white font-semibold py-4 rounded-lg transition-colors"
+                className="w-full bg-[#ff7551] hover:bg-[#ff7551]/80 text-white font-semibold py-3 rounded-lg transition-colors"
               >
                 Escolher Anual
               </button>
