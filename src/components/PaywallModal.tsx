@@ -14,7 +14,7 @@ const PaywallModal: React.FC<PaywallModalProps> = ({ isOpen, onClose, contentTit
 
   const handleLogin = () => {
     onClose();
-    navigate('/?login=true');
+    navigate('/');
   };
 
   const handleRegister = () => {

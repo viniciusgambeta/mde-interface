@@ -16,6 +16,7 @@ import Footer from './components/Footer';
 import { AuthProvider } from './contexts/AuthContext';
 import { VideoProvider } from './contexts/VideoContext';
 import { videoService } from './lib/database';
+import { useAuth } from './contexts/AuthContext';
 
 // Video Detail Page Component
 const VideoDetailPage: React.FC = () => {
@@ -130,6 +131,7 @@ const VideoDetailPage: React.FC = () => {
 
 // Main App Layout Component
 const AppLayout: React.FC = () => {
+  const { user } = useAuth();
   const [sidebarCollapsed, setSidebarCollapsed] = React.useState(true);
   const navigate = useNavigate();
   const location = useLocation();
@@ -143,6 +145,16 @@ const AppLayout: React.FC = () => {
   };
 
   const currentView = getCurrentView();
+  
+  // Protected pages that require authentication
+  const protectedPages = ['trending', 'categories', 'poderzinhos', 'bookmark', 'discounts', 'affiliates', 'profile', 'request-lesson', 'help'];
+  
+  // Redirect to home if user tries to access protected page directly without being logged in
+  useEffect(() => {
+    if (protectedPages.includes(currentView) && !user) {
+      navigate('/');
+    }
+  }, [currentView, user, navigate]);
 
   // Update page title based on current view
   useEffect(() => {
