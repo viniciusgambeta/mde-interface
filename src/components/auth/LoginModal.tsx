@@ -191,10 +191,23 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onSwitchToRegi
               onClick={onSwitchToRegister}
               className="text-[#ff7551] hover:text-[#ff7551]/80 font-medium transition-colors"
             >
-              Criar conta
+      {/* Registration Link */}
             </button>
-          </p>
-        </div>
+        <p className="text-slate-400 text-xs mb-1">Já é um assinante e este é o seu primeiro acesso?</p>
+        <button
+          onClick={() => {
+            onClose();
+            onClick={() => {
+              onClose();
+              // Trigger paywall modal in parent component
+              const event = new CustomEvent('openPaywall');
+              window.dispatchEvent(event);
+            }}
+          }}
+          className="text-[#ff7551] hover:text-[#ff7551]/80 text-xs font-medium transition-colors"
+            Assine agora
+          Clique aqui e faça o seu cadastro
+        </button>
       </div>
     </div>
   );

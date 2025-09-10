@@ -34,6 +34,16 @@ const Header: React.FC<HeaderProps> = ({ sidebarCollapsed, onSidebarToggle, onVi
   const { user, isAuthenticated, signOut } = useAuth();
   const [userData, setUserData] = useState<{name: string; avatar: string} | null>(null);
 
+  // Listen for paywall open events from login modal
+  useEffect(() => {
+    const handleOpenPaywall = () => {
+      setShowPaywall(true);
+    };
+
+    window.addEventListener('openPaywall', handleOpenPaywall);
+    return () => window.removeEventListener('openPaywall', handleOpenPaywall);
+  }, []);
+
   // Load user data from assinaturas table
   useEffect(() => {
     const loadUserData = async () => {
