@@ -25,8 +25,8 @@ const PaywallModal: React.FC<PaywallModalProps> = ({ isOpen, onClose, contentTit
   const handleSubscribe = (plan: 'monthly' | 'annual') => {
     // Open subscription link in new tab
     const subscriptionUrl = plan === 'monthly' 
-      ? 'https://pay.hub.la/checkout/3KzbFzhm4Lb56jJcDqut/mensal'
-      : 'https://pay.hub.la/checkout/3KzbFzhm4Lb56jJcDqut/anual';
+      ? 'https://pay.hub.la/3KzbFzhm4Lb56jJcDqut'
+      : 'https://pay.hub.la/a5RfC0GNmxTyy5CGekcT';
     
     window.open(subscriptionUrl, '_blank', 'noopener,noreferrer');
   };
@@ -102,7 +102,7 @@ const PaywallModal: React.FC<PaywallModalProps> = ({ isOpen, onClose, contentTit
               <div className="text-center mb-4">
                 <h3 className="text-xl font-semibold text-white mb-2">Plano Anual</h3>
                 <div className="text-4xl font-bold text-white mb-2">
-                  R$ <span className="text-[#ff7551]">647</span>
+                  R$ <span className="text-[#ff7551]">643</span>
                 </div>
                 <p className="text-slate-400">por ano</p>
               </div>
@@ -129,13 +129,6 @@ const PaywallModal: React.FC<PaywallModalProps> = ({ isOpen, onClose, contentTit
                 className="px-8 py-3 bg-slate-600/30 hover:bg-slate-500/30 text-white font-medium rounded-lg transition-colors"
               >
                 Fazer Login
-              </button>
-              
-              <button
-                onClick={handleRegister}
-                className="px-8 py-3 bg-[#ff7551] hover:bg-[#ff7551]/80 text-white font-medium rounded-lg transition-colors"
-              >
-                Criar Conta
               </button>
             </div>
           </div>

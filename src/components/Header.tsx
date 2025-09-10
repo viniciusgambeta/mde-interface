@@ -8,6 +8,7 @@ import { supabase } from '../lib/supabase';
 import LoginModal from './auth/LoginModal';
 import RegisterModal from './auth/RegisterModal';
 import ProfileModal from './auth/ProfileModal';
+import PaywallModal from './PaywallModal';
 
 interface HeaderProps {
   sidebarCollapsed: boolean;
@@ -23,6 +24,7 @@ const Header: React.FC<HeaderProps> = ({ sidebarCollapsed, onSidebarToggle, onVi
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showRegisterModal, setShowRegisterModal] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
+  const [showPaywall, setShowPaywall] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<Video[]>([]);
   const [showSearchResults, setShowSearchResults] = useState(false);
@@ -483,11 +485,11 @@ const Header: React.FC<HeaderProps> = ({ sidebarCollapsed, onSidebarToggle, onVi
                   Entrar
                 </button>
                 <button
-                  onClick={() => navigate('/registro')}
+                  onClick={() => setShowPaywall(true)}
                   className="flex items-center space-x-2 px-4 py-3 bg-[#ff7551] hover:bg-[#ff7551]/80 text-white font-medium rounded-lg transition-colors text-base"
                 >
                   <UserPlus className="w-5 h-5" />
-                  <span className="hidden sm:inline">Criar Conta</span>
+                  <span className="hidden sm:inline">Fazer Parte</span>
                   <span className="sm:hidden">Entrar</span>
                 </button>
               </div>
@@ -518,6 +520,13 @@ const Header: React.FC<HeaderProps> = ({ sidebarCollapsed, onSidebarToggle, onVi
       <ProfileModal
         isOpen={showProfileModal}
         onClose={() => setShowProfileModal(false)}
+      />
+
+      <PaywallModal
+        isOpen={showPaywall}
+        onClose={() => setShowPaywall(false)}
+        contentTitle="Acesso à Plataforma"
+        contentType="video"
       />
     </>
   );
