@@ -16,7 +16,6 @@ import Footer from './components/Footer';
 import { AuthProvider } from './contexts/AuthContext';
 import { VideoProvider } from './contexts/VideoContext';
 import { videoService } from './lib/database';
-import { useAuth } from './contexts/AuthContext';
 
 // Video Detail Page Component
 const VideoDetailPage: React.FC = () => {
