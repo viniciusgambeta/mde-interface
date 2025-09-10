@@ -40,6 +40,7 @@ const ProfilePage: React.FC = () => {
     email: string;
     joinedAt: string;
     isPremium: boolean;
+    subscriptionStatus?: string;
   } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
