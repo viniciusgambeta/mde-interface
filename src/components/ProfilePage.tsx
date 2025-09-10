@@ -436,8 +436,6 @@ const ProfilePage: React.FC = () => {
 
           {/* User Info */}
           <div className="flex-1">
-            <h2 className="text-2xl font-bold text-white mb-2">{user.name}</h2>
-            <p className="text-slate-400 mb-4 text-lg">{user.email}</p>
             <h2 className="text-2xl font-bold text-white mb-2">
               {profileDisplayData?.name || user.name}
             </h2>
@@ -446,14 +444,14 @@ const ProfilePage: React.FC = () => {
             </p>
             
             <div className="flex flex-wrap items-center gap-4">
-              {/* Premium Status */}
+              {/* Subscription Status */}
               <div className={`flex items-center space-x-2 px-4 py-2 rounded-full font-medium ${
-                profileDisplayData?.isPremium || user.isPremium
-                  ? 'bg-[#ff7551]/20 text-[#ff7551] border border-[#ff7551]/30' 
-                  : 'bg-slate-600/30 text-slate-400 border border-slate-600/30'
+                profileDisplayData?.subscriptionStatus === 'active'
+                  ? 'bg-green-500/20 text-green-400 border border-green-500/30' 
+                  : 'bg-red-500/20 text-red-400 border border-red-500/30'
               }`}>
                 <Shield className="w-4 h-4" />
-                <span>{(profileDisplayData?.isPremium || user.isPremium) ? 'Premium' : 'Free'}</span>
+                <span>{profileDisplayData?.subscriptionStatus === 'active' ? 'Ativo' : 'Inativo'}</span>
               </div>
 
               {/* Join Date */}

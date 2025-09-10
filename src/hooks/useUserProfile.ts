@@ -74,6 +74,7 @@ export const useUserProfile = () => {
           id: user.id,
           name: data["Nome do cliente"] || user.name,
           email: user.email,
+          subscriptionStatus: data["Status da assinatura"],
           phone: data.phone_number || data["Telefone do cliente"]?.toString(),
           bio: data.bio,
           avatar: data.avatar_usuario || user.avatar,
