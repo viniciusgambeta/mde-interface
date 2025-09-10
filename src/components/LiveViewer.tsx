@@ -3,6 +3,7 @@ import { ArrowLeft, Heart, Bookmark, ThumbsUp, Users, Calendar, Clock, ExternalL
 import { videoService, type Video } from '../lib/database';
 import { useAuth } from '../contexts/AuthContext';
 import CommentsSection from './CommentsSection';
+import PaywallModal from './PaywallModal';
 
 // Component for suggested lives
 const SuggestedLives: React.FC<{ currentLive: Video }> = ({ currentLive }) => {
@@ -236,6 +237,7 @@ interface LiveViewerProps {
 
 const LiveViewer: React.FC<LiveViewerProps> = ({ live, onBack, onVideoSelect }) => {
   const { user } = useAuth();
+  const [showPaywall, setShowPaywall] = useState(false);
   const [liked, setLiked] = useState(false);
   const [saved, setSaved] = useState(false);
   const [activeTab, setActiveTab] = useState('materials');
@@ -244,6 +246,15 @@ const LiveViewer: React.FC<LiveViewerProps> = ({ live, onBack, onVideoSelect }) 
   const [bookmarkLoading, setBookmarkLoading] = useState(false);
   const [likeLoading, setLikeLoading] = useState(false);
   const [selectedVersion, setSelectedVersion] = useState<Video | null>(null);
+
+  // Check if user should see paywall
+  useEffect(() => {
+    if (!user) {
+      setShowPaywall(true);
+      return;
+    }
+    setShowPaywall(false);
+  }, [user]);
 
   const handleVersionChange = async (version: Video) => {
     setSelectedVersion(version);
@@ -438,6 +449,20 @@ const LiveViewer: React.FC<LiveViewerProps> = ({ live, onBack, onVideoSelect }) 
     currentLive.video_url.includes('youtu.be') ||
     currentLive.video_url.includes('www.youtube.com')
   );
+
+  // Show paywall if user is not authenticated
+  if (showPaywall) {
+    return (
+      <>
+        <PaywallModal
+          isOpen={showPaywall}
+          onClose={onBack}
+          contentTitle={currentLive.title}
+          contentType="live"
+        />
+      </>
+    );
+  }
 
   return (
     <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">

@@ -4,6 +4,7 @@ import { videoService, type Video } from '../lib/database';
 import { useAuth } from '../contexts/AuthContext';
 import CustomVideoPlayer from './CustomVideoPlayer';
 import CommentsSection from './CommentsSection';
+import PaywallModal from './PaywallModal';
 
 // Component for suggested videos
 const SuggestedVideos: React.FC<{ currentVideo: Video }> = ({ currentVideo }) => {
@@ -118,6 +119,7 @@ interface VideoPlayerProps {
 
 const VideoPlayer: React.FC<VideoPlayerProps> = ({ video, onBack, onVideoSelect }) => {
   const { user } = useAuth();
+  const [showPaywall, setShowPaywall] = useState(false);
   const [liked, setLiked] = useState(false);
   const [saved, setSaved] = useState(false);
   const [activeTab, setActiveTab] = useState('materials');
@@ -127,6 +129,15 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video, onBack, onVideoSelect 
   const [likeLoading, setLikeLoading] = useState(false);
   const [selectedVersion, setSelectedVersion] = useState<Video | null>(null);
   const [showVersionDropdown, setShowVersionDropdown] = useState(false);
+
+  // Check if user should see paywall
+  useEffect(() => {
+    if (!user) {
+      setShowPaywall(true);
+      return;
+    }
+    setShowPaywall(false);
+  }, [user]);
 
   const handleVersionChange = async (version: Video) => {
     setSelectedVersion(version);
@@ -312,6 +323,20 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video, onBack, onVideoSelect 
     videoDataId: videoData?.id,
     currentVideoId: currentVideo?.id
   });
+
+  // Show paywall if user is not authenticated
+  if (showPaywall) {
+    return (
+      <>
+        <PaywallModal
+          isOpen={showPaywall}
+          onClose={onBack}
+          contentTitle={currentVideo.title}
+          contentType="video"
+        />
+      </>
+    );
+  }
 
   return (
     <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
