@@ -35,6 +35,12 @@ const ProfilePage: React.FC = () => {
   const [passwordError, setPasswordError] = useState('');
   const [error, setError] = useState('');
   const [initialDataLoaded, setInitialDataLoaded] = useState(false);
+  const [profileDisplayData, setProfileDisplayData] = useState<{
+    name: string;
+    email: string;
+    joinedAt: string;
+    isPremium: boolean;
+  } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Load user data from assinaturas table
@@ -49,6 +55,7 @@ const ProfilePage: React.FC = () => {
           .from('assinaturas')
           .select(`
             "Nome do cliente",
+            email_cliente,
             avatar_usuario,
             bio,
             instagram,
@@ -60,7 +67,8 @@ const ProfilePage: React.FC = () => {
             phone_number,
             is_premium,
             onboarding_completed,
-            onboarding_data
+            onboarding_data,
+            created_at_profile
           `)
           .eq('user_id', user.id)
           .maybeSingle();
@@ -87,6 +95,14 @@ const ProfilePage: React.FC = () => {
           };
           
           setFormData(newFormData);
+          
+          // Set profile display data
+          setProfileDisplayData({
+            name: data["Nome do cliente"] || user.name || '',
+            email: data.email_cliente || user.email || '',
+            joinedAt: data.created_at_profile || user.joinedAt,
+            isPremium: data.is_premium || false
+          });
 
           // Set current avatar
           if (data.avatar_usuario) {
@@ -115,11 +131,27 @@ const ProfilePage: React.FC = () => {
             porte_negocio: ''
           });
           setInitialDataLoaded(true);
+          
+          // Set default profile display data
+          setProfileDisplayData({
+            name: user.name || '',
+            email: user.email || '',
+            joinedAt: user.joinedAt,
+            isPremium: false
+          });
         }
       } catch (error) {
         console.error('Exception loading user data:', error);
         setError('Erro ao carregar dados do perfil');
         setInitialDataLoaded(true);
+        
+        // Set fallback profile display data
+        setProfileDisplayData({
+          name: user.name || '',
+          email: user.email || '',
+          joinedAt: user.joinedAt,
+          isPremium: false
+        });
       }
     };
 
@@ -264,6 +296,11 @@ const ProfilePage: React.FC = () => {
       console.log('✅ ProfilePage: Profile updated successfully');
       setSuccess(true);
       
+      // Refresh the page after successful update
+      setTimeout(() => {
+        window.location.reload();
+      }, 1500); // Small delay to show success message
+      
       // Auto-hide success message after 5 seconds
       setTimeout(() => setSuccess(false), 5000);
       
@@ -401,22 +438,28 @@ const ProfilePage: React.FC = () => {
           <div className="flex-1">
             <h2 className="text-2xl font-bold text-white mb-2">{user.name}</h2>
             <p className="text-slate-400 mb-4 text-lg">{user.email}</p>
+            <h2 className="text-2xl font-bold text-white mb-2">
+              {profileDisplayData?.name || user.name}
+            </h2>
+            <p className="text-slate-400 mb-4 text-lg">
+              {profileDisplayData?.email || user.email}
+            </p>
             
             <div className="flex flex-wrap items-center gap-4">
               {/* Premium Status */}
               <div className={`flex items-center space-x-2 px-4 py-2 rounded-full font-medium ${
-                user.isPremium 
+                profileDisplayData?.isPremium || user.isPremium
                   ? 'bg-[#ff7551]/20 text-[#ff7551] border border-[#ff7551]/30' 
                   : 'bg-slate-600/30 text-slate-400 border border-slate-600/30'
               }`}>
                 <Shield className="w-4 h-4" />
-                <span>{user.isPremium ? 'Premium' : 'Free'}</span>
+                <span>{(profileDisplayData?.isPremium || user.isPremium) ? 'Premium' : 'Free'}</span>
               </div>
 
               {/* Join Date */}
               <div className="flex items-center space-x-2 text-slate-400">
                 <Calendar className="w-4 h-4" />
-                <span>Membro desde {new Date(user.joinedAt).toLocaleDateString('pt-BR')}</span>
+                <span>Membro desde {new Date(profileDisplayData?.joinedAt || user.joinedAt).toLocaleDateString('pt-BR')}</span>
               </div>
             </div>
           </div>
