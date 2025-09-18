@@ -58,24 +58,22 @@ const PoderzinhosPage: React.FC = () => {
       <div className="bg-slate-700/30 border border-slate-600/30 rounded-xl hover:bg-slate-600/20 transition-all duration-300 group relative">
         {/* Icon - Positioned outside the card */}
         <div className="absolute -top-10 left-8 z-10">
-          <div className="w-20 h-20 bg-slate-600/30 rounded-xl flex items-center justify-center overflow-hidden shadow-lg border-2 border-slate-500/30">
-            {ferramenta.img_ferramenta ? (
-              <img
-                src={ferramenta.img_ferramenta}
-                alt={`${ferramenta.nome_ferramenta} logo`}
-                className="w-full h-full object-contain p-1"
-                onError={(e) => {
-                  // Fallback to icon if image fails to load
-                  const target = e.target as HTMLImageElement;
-                  target.style.display = 'none';
-                  const fallback = target.nextElementSibling as HTMLElement;
-                  if (fallback) fallback.style.display = 'flex';
-                }}
-              />
-            ) : null}
-            <div className={`w-full h-full bg-slate-600/30 rounded-xl ${ferramenta.img_ferramenta ? 'hidden' : 'flex'} items-center justify-center text-3xl`}>
-              🛠️
-            </div>
+          {ferramenta.img_ferramenta ? (
+            <img
+              src={ferramenta.img_ferramenta}
+              alt={`${ferramenta.nome_ferramenta} logo`}
+              className="w-20 h-20 object-contain drop-shadow-lg"
+              onError={(e) => {
+                // Fallback to emoji if image fails to load
+                const target = e.target as HTMLImageElement;
+                target.style.display = 'none';
+                const fallback = target.nextElementSibling as HTMLElement;
+                if (fallback) fallback.style.display = 'block';
+              }}
+            />
+          ) : null}
+          <div className={`w-20 h-20 ${ferramenta.img_ferramenta ? 'hidden' : 'flex'} items-center justify-center text-4xl drop-shadow-lg`}>
+            🛠️
           </div>
         </div>
 
@@ -92,12 +90,12 @@ const PoderzinhosPage: React.FC = () => {
             </div>
           </div>
 
-          <p className="text-slate-400 text-sm leading-relaxed mb-6">
+          <p className="text-slate-400 text-sm leading-relaxed mb-8">
             {ferramenta.descricao_ferramenta || 'Ferramenta útil para automação e produtividade.'}
           </p>
 
           {/* Action Button */}
-          <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+          <div className="hidden group-hover:block transition-all duration-300">
             <a
               href={ferramenta.link_ferramenta}
               target="_blank"
