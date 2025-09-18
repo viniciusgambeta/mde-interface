@@ -34,7 +34,8 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
     live: useRef<HTMLDivElement>(null),
     prompt: useRef<HTMLDivElement>(null),
     basic: useRef<HTMLDivElement>(null),
-    configuracoes: useRef<HTMLDivElement>(null)
+    configuracoes: useRef<HTMLDivElement>(null),
+    audiovisual: useRef<HTMLDivElement>(null)
   };
 
   // Category-specific videos - simplified state
@@ -43,6 +44,7 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
     automation: [],
     basic: [],
     configuracoes: [],
+    audiovisual: [],
     live: [],
     prompt: []
   });
@@ -183,17 +185,19 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
         };
         
         // Load specific categories in parallel
-        const [aiVideos, automationVideos, basicVideos, configuracoesVideos] = await Promise.all([
+        const [aiVideos, automationVideos, basicVideos, configuracoesVideos, audiovisualVideos] = await Promise.all([
           videoService.getVideosByCategory('ia', 12, user?.id),
           videoService.getVideosByCategory('automacao', 12, user?.id),
           videoService.getVideosByCategory('basico', 12, user?.id),
-          videoService.getVideosByCategory('configuracoes', 12, user?.id)
+          videoService.getVideosByCategory('configuracoes', 12, user?.id),
+          videoService.getVideosByCategory('audio-visual', 12, user?.id)
         ]);
         
         newCategoryVideos.ai = aiVideos;
         newCategoryVideos.automation = automationVideos;
         newCategoryVideos.basic = basicVideos;
         newCategoryVideos.configuracoes = configuracoesVideos;
+        newCategoryVideos.audiovisual = audiovisualVideos;
         
         setCategoryVideos(newCategoryVideos);
       } catch (error) {
@@ -883,6 +887,11 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
             title="Configurações" 
             videos={categoryVideos.configuracoes} 
             scrollRef={scrollRefs.configuracoes} 
+          />
+          <ScrollableVideoRow 
+            title="Áudio Visual" 
+            videos={categoryVideos.audiovisual} 
+            scrollRef={scrollRefs.audiovisual} 
           />
         </>
       )}
