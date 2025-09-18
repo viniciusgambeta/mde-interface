@@ -27,25 +27,25 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
   const [categories, setCategories] = useState<any[]>([]);
   const [difficulties, setDifficulties] = useState<any[]>([]);
   
-  const latestScrollRef = useRef<HTMLDivElement>(null);
-  const aiScrollRef = useRef<HTMLDivElement>(null);
-  const automationScrollRef = useRef<HTMLDivElement>(null);
-  const liveScrollRef = useRef<HTMLDivElement>(null);
-  const promptScrollRef = useRef<HTMLDivElement>(null);
-  const whatsappScrollRef = useRef<HTMLDivElement>(null);
-  const basicScrollRef = useRef<HTMLDivElement>(null);
-  const boltScrollRef = useRef<HTMLDivElement>(null);
-  const configuracoesScrollRef = useRef<HTMLDivElement>(null);
+  const scrollRefs = {
+    latest: useRef<HTMLDivElement>(null),
+    ai: useRef<HTMLDivElement>(null),
+    automation: useRef<HTMLDivElement>(null),
+    live: useRef<HTMLDivElement>(null),
+    prompt: useRef<HTMLDivElement>(null),
+    basic: useRef<HTMLDivElement>(null),
+    configuracoes: useRef<HTMLDivElement>(null)
+  };
 
-  // Category-specific videos
-  const [aiVideos, setAiVideos] = useState<Video[]>([]);
-  const [automationVideos, setAutomationVideos] = useState<Video[]>([]);
-  const [whatsappVideos, setWhatsappVideos] = useState<Video[]>([]);
-  const [basicVideos, setBasicVideos] = useState<Video[]>([]);
-  const [boltVideos, setBoltVideos] = useState<Video[]>([]);
-  const [configuracoesVideos, setConfiguracoesVideos] = useState<Video[]>([]);
-  const [liveVideos, setLiveVideos] = useState<Video[]>([]);
-  const [promptVideos, setPromptVideos] = useState<Video[]>([]);
+  // Category-specific videos - simplified state
+  const [categoryVideos, setCategoryVideos] = useState<Record<string, Video[]>>({
+    ai: [],
+    automation: [],
+    basic: [],
+    configuracoes: [],
+    live: [],
+    prompt: []
+  });
 
   // Setup realtime subscription for bookmarks
   useEffect(() => {
