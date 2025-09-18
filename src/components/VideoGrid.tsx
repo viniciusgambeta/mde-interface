@@ -789,11 +789,12 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
   if (loading) {
     return (
       <section>
-        <ScrollableVideoRow
-          title="Carregando vídeos..."
-          videos={[]}
-          scrollRef={latestScrollRef}
-        />
+        <div className="flex items-center justify-center py-20">
+          <div className="flex items-center space-x-3">
+            <div className="w-6 h-6 border-2 border-[#ff7551]/30 border-t-[#ff7551] rounded-full animate-spin"></div>
+            <span className="text-slate-400">Carregando...</span>
+          </div>
+        </div>
       </section>
     );
   }
@@ -841,7 +842,6 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
   return (
     <section className="animate-page-transition">
       {currentView !== 'discover' ? (
-        <ScrollableVideoRow title={getViewTitle(currentView)} videos={videos} scrollRef={latestScrollRef} />
         <ScrollableVideoRow title={getViewTitle(currentView)} videos={videos} scrollRef={scrollRefs.latest} />
       ) : (
         <>
