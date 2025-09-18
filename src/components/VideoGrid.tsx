@@ -181,6 +181,10 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
         // Load Automation category videos
         const automationCategoryVideos = await videoService.getVideosByCategory('automacao', 20, user?.id);
         setAutomationVideos(automationCategoryVideos);
+        
+        // Load Basic category videos
+        const basicCategoryVideos = await videoService.getVideosByCategory('basico', 20, user?.id);
+        setBasicVideos(basicCategoryVideos);
       } catch (error) {
         console.error('Error loading category videos:', error);
       }
@@ -859,6 +863,11 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
             scrollRef={promptScrollRef} 
           />
         </>
+          <ScrollableVideoRow 
+            title="Aulas Básicas" 
+            videos={basicVideos} 
+            scrollRef={basicScrollRef} 
+          />
       )}
     </section>
   );
