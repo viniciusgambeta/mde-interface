@@ -731,11 +731,11 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
             {/* Video metadata */}
             <div className="flex items-center justify-between mt-3 text-sm text-slate-300">
               <div className="flex items-center space-x-3">
-                {video.instructor && video.categories && video.categories.length > 0 && (
-                  <>
+                {video.instructor && (
+                  <div className="flex items-center space-x-1">
+                    <User className="w-4 h-4" />
                     <span>{video.instructor.name}</span>
-                    <span>•</span>
-                  </>
+                  </div>
                 )}
                 {video.categories && video.categories.length > 0 && (
                   <span>{video.categories[0].name}</span>
