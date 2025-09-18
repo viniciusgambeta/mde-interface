@@ -55,17 +55,17 @@ const PoderzinhosPage: React.FC = () => {
 
   const FerramentaCard: React.FC<{ ferramenta: HallFerramenta }> = ({ ferramenta }) => {
     return (
-      <div className="bg-slate-700/30 border border-slate-600/30 rounded-xl overflow-hidden hover:bg-slate-600/20 transition-all duration-300 group">
+      <div className="bg-slate-700/30 border border-slate-600/30 rounded-xl overflow-hidden hover:bg-slate-600/20 transition-all duration-300 group relative">
         {/* Header */}
-        <div className="p-6">
-          <div className="flex items-start justify-between mb-4">
-            <div className="flex items-center space-x-3">
-              <div className="w-12 h-12 bg-slate-600/30 rounded-lg flex items-center justify-center overflow-hidden">
+        <div className="p-8 pt-12">
+          <div className="flex items-start justify-between mb-6">
+            <div className="flex items-center space-x-4">
+              <div className="w-20 h-20 bg-slate-600/30 rounded-xl flex items-center justify-center overflow-hidden relative -mt-16 shadow-lg border-2 border-slate-500/30">
                 {ferramenta.img_ferramenta ? (
                   <img
                     src={ferramenta.img_ferramenta}
                     alt={`${ferramenta.nome_ferramenta} logo`}
-                    className="w-full h-full object-contain"
+                    className="w-full h-full object-contain p-1"
                     onError={(e) => {
                       // Fallback to icon if image fails to load
                       const target = e.target as HTMLImageElement;
@@ -75,28 +75,24 @@ const PoderzinhosPage: React.FC = () => {
                     }}
                   />
                 ) : null}
-                <div className={`w-full h-full bg-slate-600/30 rounded-lg ${ferramenta.img_ferramenta ? 'hidden' : 'flex'} items-center justify-center text-2xl`}>
+                <div className={`w-full h-full bg-slate-600/30 rounded-xl ${ferramenta.img_ferramenta ? 'hidden' : 'flex'} items-center justify-center text-3xl`}>
                   🛠️
                 </div>
               </div>
               <div>
-                <h3 className="text-white font-semibold text-lg">{ferramenta.nome_ferramenta}</h3>
+                <h3 className="text-white font-bold text-xl">{ferramenta.nome_ferramenta}</h3>
                 <div className="flex items-center space-x-2 mt-1">
                   {ferramenta.tipo_ferramenta && (
-                    <span className="text-xs px-2 py-1 bg-slate-600/30 text-slate-300 rounded">
+                    <span className="text-xs px-3 py-1 bg-slate-600/30 text-slate-300 rounded-full">
                       {ferramenta.tipo_ferramenta}
                     </span>
                   )}
                 </div>
               </div>
             </div>
-            
-            <div className="text-right">
-              <ExternalLink className="w-5 h-5 text-slate-400 group-hover:text-[#ff7551] transition-colors" />
-            </div>
           </div>
 
-          <p className="text-slate-300 text-base leading-relaxed mb-4">
+          <p className="text-slate-400 text-sm leading-relaxed mb-6">
             {ferramenta.descricao_ferramenta || 'Ferramenta útil para automação e produtividade.'}
           </p>
 
@@ -105,9 +101,8 @@ const PoderzinhosPage: React.FC = () => {
             href={ferramenta.link_ferramenta}
             target="_blank"
             rel="noopener noreferrer"
-            className="w-full flex items-center justify-center space-x-2 py-3 px-4 bg-[#ff7551] hover:bg-[#ff7551]/80 text-white font-medium rounded-lg transition-all duration-200 transform hover:scale-105"
+            className="w-full flex items-center justify-center space-x-2 py-4 px-6 bg-[#ff7551] hover:bg-[#ff7551]/80 text-white font-semibold rounded-lg transition-all duration-200 transform hover:scale-105"
           >
-            <ExternalLink className="w-4 h-4" />
             <span>Acessar Ferramenta</span>
           </a>
         </div>
