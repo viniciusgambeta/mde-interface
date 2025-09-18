@@ -427,22 +427,6 @@ const DiscountsPage: React.FC = () => {
       </div>
 
       {/* Results Count */}
-      <div className="flex items-center justify-between text-sm text-slate-400">
-        <span>
-          {filteredAndSortedCoupons.length} ferramenta{filteredAndSortedCoupons.length !== 1 ? 's' : ''} encontrada{filteredAndSortedCoupons.length !== 1 ? 's' : ''}
-        </span>
-        {(searchQuery || selectedCategory !== 'all') && (
-          <button
-            onClick={() => {
-              setSearchQuery('');
-              setSelectedCategory('all');
-            }}
-            className="text-[#ff7551] hover:text-[#ff7551]/80 transition-colors"
-          >
-            Limpar filtros
-          </button>
-        )}
-      </div>
 
       {/* Discounts Grid */}
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
