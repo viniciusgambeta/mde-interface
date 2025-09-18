@@ -862,12 +862,12 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
             videos={promptVideos} 
             scrollRef={promptScrollRef} 
           />
-        </>
           <ScrollableVideoRow 
             title="Aulas Básicas" 
             videos={basicVideos} 
             scrollRef={basicScrollRef} 
           />
+        </>
       )}
     </section>
   );
