@@ -134,81 +134,28 @@ const AffiliatesPage: React.FC = () => {
         </p>
       </div>
 
-      {/* Commission Structure - Compact */}
-      <div className="space-y-6">
-        <h2 className="text-xl font-bold text-white">Estrutura de Comissões</h2>
+      {/* Commission Structure - Minimal */}
+      <div className="bg-slate-700/30 border border-slate-600/30 rounded-xl p-8">
+        <h2 className="text-2xl font-bold text-white mb-6 text-center">Estrutura de Comissões</h2>
         
-        <div className="grid md:grid-cols-2 gap-4">
+        <div className="grid md:grid-cols-2 gap-8 text-center">
           {/* First Sale Commission */}
-          <div className="bg-slate-700/30 border border-slate-600/30 rounded-lg p-6">
-            <div className="flex items-center space-x-3 mb-3">
-              <div className="w-10 h-10 bg-green-500/20 rounded-full flex items-center justify-center">
-                <Target className="w-5 h-5 text-green-400" />
-              </div>
-              <div>
-                <h3 className="text-white font-semibold">Primeira Venda</h3>
-                <div className="text-2xl font-bold text-green-400">50%</div>
-              </div>
-            </div>
-            <div className="space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span className="text-slate-400">Mensal:</span>
-                <span className="text-white">até R$ 33,50</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-slate-400">Anual:</span>
-                <span className="text-white">até R$ 299,00</span>
-              </div>
+          <div>
+            <div className="text-4xl font-bold text-green-400 mb-2">50%</div>
+            <h3 className="text-white font-semibold mb-3">Primeira Venda</h3>
+            <div className="space-y-1 text-sm text-slate-400">
+              <div>Mensal: até R$ 33,50</div>
+              <div>Anual: até R$ 299,00</div>
             </div>
           </div>
 
           {/* Recurring Commission */}
-          <div className="bg-slate-700/30 border border-slate-600/30 rounded-lg p-6">
-            <div className="flex items-center space-x-3 mb-3">
-              <div className="w-10 h-10 bg-[#ff7551]/20 rounded-full flex items-center justify-center">
-                <TrendingUp className="w-5 h-5 text-[#ff7551]" />
-              </div>
-              <div>
-                <h3 className="text-white font-semibold">Recorrências</h3>
-                <div className="text-2xl font-bold text-[#ff7551]">10%</div>
-              </div>
-            </div>
-            <div className="space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span className="text-slate-400">Mensal:</span>
-                <span className="text-white">até R$ 6,70/mês</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-slate-400">Anual:</span>
-                <span className="text-white">até R$ 59,00/ano</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Requirements - Compact */}
-      <div className="space-y-6">
-        <h2 className="text-xl font-bold text-white">Requisitos</h2>
-        
-        <div className="grid md:grid-cols-2 gap-4">
-          <div className="flex items-center space-x-4 p-4 bg-slate-700/30 border border-slate-600/30 rounded-lg">
-            <div className="w-10 h-10 bg-[#ff7551]/20 rounded-full flex items-center justify-center">
-              <Shield className="w-5 h-5 text-[#ff7551]" />
-            </div>
-            <div>
-              <h3 className="text-white font-semibold">Assinante Ativo</h3>
-              <p className="text-slate-400 text-sm">Membro da comunidade</p>
-            </div>
-          </div>
-
-          <div className="flex items-center space-x-4 p-4 bg-slate-700/30 border border-slate-600/30 rounded-lg">
-            <div className="w-10 h-10 bg-[#ff7551]/20 rounded-full flex items-center justify-center">
-              <Users className="w-5 h-5 text-[#ff7551]" />
-            </div>
-            <div>
-              <h3 className="text-white font-semibold">Conta na Hubla</h3>
-              <p className="text-slate-400 text-sm">Para gerenciar links e comissões</p>
+          <div>
+            <div className="text-4xl font-bold text-[#ff7551] mb-2">10%</div>
+            <h3 className="text-white font-semibold mb-3">Recorrências</h3>
+            <div className="space-y-1 text-sm text-slate-400">
+              <div>Mensal: até R$ 6,70/mês</div>
+              <div>Anual: até R$ 59,00/ano</div>
             </div>
           </div>
         </div>
