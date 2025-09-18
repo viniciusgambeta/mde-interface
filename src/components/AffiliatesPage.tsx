@@ -124,7 +124,6 @@ const AffiliatesPage: React.FC = () => {
       {/* Header */}
       <div className="text-left">
         <h1 className="text-3xl font-bold text-white mb-4">Programa de Afiliados</h1>
-        <p className="text-slate-400 text-lg max-w-4xl leading-relaxed">
         <p className="text-slate-400 text-lg max-w-6xl leading-relaxed">
           Ganhe dinheiro indicando a comunidade Me dá um Exemplo para outras pessoas.
           Nosso programa de afiliados oferece <strong className="text-[#ff7551]">50% de comissão na primeira venda</strong> e <strong className="text-[#ff7551]">10% nas recorrências</strong>.
