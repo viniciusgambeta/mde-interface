@@ -830,22 +830,10 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
         <>
           <ScrollableVideoRow 
             title="Últimos Vídeos" 
-            videos={videos.slice(0, 10)} 
+            videos={videos} 
             scrollRef={latestScrollRef} 
           />
       
-          <ScrollableVideoRow 
-            title="Inteligência Artificial" 
-            videos={aiVideos} 
-            scrollRef={aiScrollRef} 
-          />
-          
-          <ScrollableVideoRow 
-            title="Automações" 
-            videos={automationVideos} 
-            scrollRef={automationScrollRef} 
-          />
-          
           <ScrollableVideoRow 
             title="Eventos ao Vivo" 
             videos={liveVideos} 
@@ -856,24 +844,6 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
             title="Prompts" 
             videos={promptVideos} 
             scrollRef={promptScrollRef} 
-          />
-          
-          <ScrollableVideoRow 
-            title="WhatsApp" 
-            videos={whatsappVideos} 
-            scrollRef={whatsappScrollRef} 
-          />
-          
-          <ScrollableVideoRow 
-            title="Aulas Básicas" 
-            videos={basicVideos} 
-            scrollRef={basicScrollRef} 
-          />
-          
-          <ScrollableVideoRow 
-            title="Vibe Coding" 
-            videos={boltVideos} 
-            scrollRef={boltScrollRef} 
           />
         </>
       )}
