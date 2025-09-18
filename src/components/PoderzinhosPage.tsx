@@ -90,17 +90,13 @@ const PoderzinhosPage: React.FC = () => {
             </div>
           </div>
 
-          <p className="text-slate-400 text-sm leading-relaxed mb-8">
-            {ferramenta.descricao_ferramenta || 'Ferramenta útil para automação e produtividade.'}
-          </p>
-
           {/* Action Button */}
-          <div className="hidden group-hover:block transition-all duration-300">
+          <div className="hidden group-hover:block animate-fade-in">
             <a
               href={ferramenta.link_ferramenta}
               target="_blank"
               rel="noopener noreferrer"
-              className="w-full flex items-center justify-center space-x-2 py-4 px-6 bg-[#ff7551] hover:bg-[#ff7551]/80 text-white font-semibold rounded-lg transition-all duration-200 transform hover:scale-105"
+              className="w-full flex items-center justify-center space-x-2 py-4 px-6 bg-[#ff7551] hover:bg-[#ff7551]/80 text-white font-semibold rounded-lg transition-all duration-200 transform hover:scale-105 animate-fade-in"
             >
               <span>Acessar Ferramenta</span>
             </a>
@@ -160,7 +156,7 @@ const PoderzinhosPage: React.FC = () => {
 
       {/* Ferramentas Grid */}
       {ferramentas.length > 0 ? (
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mt-12">
           {ferramentas.map((ferramenta, index) => (
             <div
               key={ferramenta.id}
