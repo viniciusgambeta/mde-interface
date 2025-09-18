@@ -184,14 +184,26 @@ const RequestLessonPage: React.FC = () => {
     const isPending = suggestion.status === 'pending';
     const isUserSuggestion = suggestion.user_id === user?.id;
    
-   // Extract first name from full name
-   const getFirstName = (fullName: string) => {
-     return fullName.split(' ')[0];
-   };
+    // Extract first name from full name
+    const getFirstName = (fullName: string) => {
+      return fullName.split(' ')[0];
+    };
 
-   // Get the correct user data for display
-   const displayUserName = isUserSuggestion ? 'Você' : getFirstName(suggestion.user_name || 'Usuário Anônimo');
-   const displayUserAvatar = suggestion.user_avatar || '/avatar1.png';
+    // Get the correct user data for display
+    const displayUserName = isUserSuggestion ? 'Você' : getFirstName(suggestion.user_name || 'Usuário Anônimo');
+    const displayUserAvatar = suggestion.user_avatar || '/avatar1.png';
+    
+    // Debug log for each card
+    console.log('🎯 SuggestionCard render:', {
+      suggestionId: suggestion.id,
+      title: suggestion.title,
+      user_id: suggestion.user_id,
+      user_name: suggestion.user_name,
+      user_avatar: suggestion.user_avatar,
+      displayUserName,
+      displayUserAvatar,
+      isUserSuggestion
+    });
     
     return (
       <div className={`relative border rounded-lg p-6 hover:bg-slate-600/20 transition-all duration-200 group ${

@@ -1152,11 +1152,13 @@ export const videoSuggestionsService = {
 
   async getApprovedSuggestions(): Promise<VideoSuggestion[]> {
     try {
+      console.log('🔍 Loading approved suggestions with user data...');
+      
       const { data, error } = await supabase
         .from('video_suggestions')
         .select(`
           *,
-          user_data:assinaturas!video_suggestions_assinatura_id_fkey(
+          user_assinatura:assinaturas!video_suggestions_user_id_fkey(
             "Nome do cliente",
             avatar_usuario
           )
@@ -1169,12 +1171,22 @@ export const videoSuggestionsService = {
         return [];
       }
 
+      console.log('📊 Raw suggestions data:', data);
+
       // Transform data to include user info
       const suggestions = data.map(suggestion => ({
         ...suggestion,
-        user_name: suggestion.user_data?.["Nome do cliente"] || 'Usuário Anônimo',
-        user_avatar: suggestion.user_data?.avatar_usuario || '/avatar1.png'
+        user_name: suggestion.user_assinatura?.["Nome do cliente"] || 'Usuário Anônimo',
+        user_avatar: suggestion.user_assinatura?.avatar_usuario || '/avatar1.png'
       }));
+
+      console.log('📊 Transformed suggestions:', suggestions.map(s => ({
+        id: s.id,
+        title: s.title,
+        user_name: s.user_name,
+        user_avatar: s.user_avatar,
+        user_id: s.user_id
+      })));
 
       return suggestions as VideoSuggestion[];
     } catch (error) {
@@ -1273,11 +1285,13 @@ export const videoSuggestionsService = {
     if (!userId) return [];
 
     try {
+      console.log('🔍 Loading user pending suggestions for user:', userId);
+      
       const { data, error } = await supabase
         .from('video_suggestions')
         .select(`
-          *, 
-          user_data:assinaturas!video_suggestions_assinatura_id_fkey(
+          *,
+          user_assinatura:assinaturas!video_suggestions_user_id_fkey(
             "Nome do cliente",
             avatar_usuario
           )
@@ -1291,11 +1305,13 @@ export const videoSuggestionsService = {
         return [];
       }
 
+      console.log('📊 Raw user pending suggestions:', data);
+
       // Transform data to include user info
       const suggestions = data.map(suggestion => ({
         ...suggestion,
-        user_name: suggestion.user_data?.["Nome do cliente"] || 'Usuário Anônimo',
-        user_avatar: suggestion.user_data?.avatar_usuario || '/avatar1.png'
+        user_name: suggestion.user_assinatura?.["Nome do cliente"] || 'Usuário Anônimo',
+        user_avatar: suggestion.user_assinatura?.avatar_usuario || '/avatar1.png'
       }));
 
       return suggestions as VideoSuggestion[];
