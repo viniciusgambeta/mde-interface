@@ -39,6 +39,7 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
   // Category-specific videos
   const [aiVideos, setAiVideos] = useState<Video[]>([]);
   const [automationVideos, setAutomationVideos] = useState<Video[]>([]);
+  const [automationVideos, setAutomationVideos] = useState<Video[]>([]);
   const [whatsappVideos, setWhatsappVideos] = useState<Video[]>([]);
   const [basicVideos, setBasicVideos] = useState<Video[]>([]);
   const [boltVideos, setBoltVideos] = useState<Video[]>([]);
@@ -177,6 +178,10 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
         // Load AI category videos (category id: f737e29d-e1b1-43b4-bce0-8c84f1a79759)
         const aiCategoryVideos = await videoService.getVideosByCategory('ia', 20, user?.id);
         setAiVideos(aiCategoryVideos);
+        
+        // Load Automation category videos
+        const automationCategoryVideos = await videoService.getVideosByCategory('automacao', 20, user?.id);
+        setAutomationVideos(automationCategoryVideos);
       } catch (error) {
         console.error('Error loading category videos:', error);
       }
@@ -841,6 +846,12 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
             title="Inteligência Artificial" 
             videos={aiVideos} 
             scrollRef={aiScrollRef} 
+          />
+          
+          <ScrollableVideoRow 
+            title="Automações" 
+            videos={automationVideos} 
+            scrollRef={automationScrollRef} 
           />
           
           <ScrollableVideoRow 
