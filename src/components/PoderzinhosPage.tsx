@@ -65,7 +65,7 @@ const PoderzinhosPage: React.FC = () => {
               src={ferramenta.img_ferramenta}
               alt={`${ferramenta.nome_ferramenta} logo`}
               className="w-20 h-20 object-contain drop-shadow-lg"
-              style={{ marginTop: '12px' }}
+              style={{ marginTop: '8px' }}
               onError={(e) => {
                 // Fallback to emoji if image fails to load
                 const target = e.target as HTMLImageElement;
