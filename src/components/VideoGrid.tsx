@@ -79,6 +79,16 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
     prompt: []
   });
 
+  // Function to shuffle array randomly
+  const shuffleArray = <T,>(array: T[]): T[] => {
+    const shuffled = [...array];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
+  };
+
   // Setup realtime subscription for bookmarks
   useEffect(() => {
     if (!user) return;
@@ -223,11 +233,16 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
           videoService.getVideosByCategory('audio-visual', 12, user?.id)
         ]);
         
-        newCategoryVideos.ai = aiVideos;
-        newCategoryVideos.automation = automationVideos;
-        newCategoryVideos.basic = basicVideos;
-        newCategoryVideos.configuracoes = configuracoesVideos;
-        newCategoryVideos.audiovisual = audiovisualVideos;
+        // Apply random shuffling to all category videos except latest
+        newCategoryVideos.ai = shuffleArray(aiVideos);
+        newCategoryVideos.automation = shuffleArray(automationVideos);
+        newCategoryVideos.basic = shuffleArray(basicVideos);
+        newCategoryVideos.configuracoes = shuffleArray(configuracoesVideos);
+        newCategoryVideos.audiovisual = shuffleArray(audiovisualVideos);
+        
+        // Also shuffle live and prompt videos
+        newCategoryVideos.live = shuffleArray(newCategoryVideos.live);
+        newCategoryVideos.prompt = shuffleArray(newCategoryVideos.prompt);
         
         setCategoryVideos(newCategoryVideos);
       } catch (error) {
