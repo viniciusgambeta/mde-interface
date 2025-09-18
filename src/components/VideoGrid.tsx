@@ -245,13 +245,15 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
         video.description?.toLowerCase().includes(searchTerm) ||
         video.summary?.toLowerCase().includes(searchTerm) ||
         video.instructor?.name.toLowerCase().includes(searchTerm) ||
-        video.category?.name.toLowerCase().includes(searchTerm)
+        (video.categories && video.categories.some(cat => cat.name.toLowerCase().includes(searchTerm)))
       );
     }
 
     // Category filter
     if (filters.category) {
-      filtered = filtered.filter(video => video.category?.id === filters.category);
+      filtered = filtered.filter(video => 
+        video.categories && video.categories.some(cat => cat.id === filters.category)
+      );
     }
 
     // Difficulty filter
@@ -717,14 +719,29 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
                 
                 {/* More indicator */}
                 {video.ferramentas.length > 5 && (
-                  <div className="w-6 h-6 rounded-sm bg-slate-600 flex items-center justify-center drop-shadow-lg text-slate-200 filter brightness-90 contrast-110 transition-all duration-200 group-hover:brightness-100 group-hover:contrast-100">
-                    <span className="text-slate-400 text-xs font-medium">
+                  <div className="w-6 h-6 bg-slate-600 rounded-sm flex items-center justify-center">
+                    <span className="text-white text-xs font-bold">
                       +{video.ferramentas.length - 5}
                     </span>
                   </div>
                 )}
               </div>
             )}
+            
+            {/* Video metadata */}
+            <div className="flex items-center justify-between mt-3 text-sm text-slate-300">
+              <div className="flex items-center space-x-3">
+                {video.instructor && video.categories && video.categories.length > 0 && (
+                  <>
+                    <span>{video.instructor.name}</span>
+                    <span>•</span>
+                  </>
+                )}
+                {video.categories && video.categories.length > 0 && (
+                  <span>{video.categories[0].name}</span>
+                )}
+              </div>
+            </div>
           </div>
           </div>
 
