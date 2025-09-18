@@ -83,7 +83,7 @@ const PoderzinhosPage: React.FC = () => {
         {/* Header */}
         <div className="p-8 pt-16 pb-4 group-hover:pb-8 transition-all duration-300">
           <div className="mb-6">
-            <h3 className="text-white font-bold text-2xl">{ferramenta.nome_ferramenta}</h3>
+            <h3 className="text-white font-bold text-2xl mt-4">{ferramenta.nome_ferramenta}</h3>
             <div className="flex items-center space-x-2 mt-2">
               {ferramenta.tipo_ferramenta && (
                 <span className="text-xs px-3 py-1 bg-slate-600/30 text-slate-300 rounded-full">
