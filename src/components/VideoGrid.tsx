@@ -245,15 +245,13 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
         video.description?.toLowerCase().includes(searchTerm) ||
         video.summary?.toLowerCase().includes(searchTerm) ||
         video.instructor?.name.toLowerCase().includes(searchTerm) ||
-        (video.categories && video.categories.some(cat => cat.name.toLowerCase().includes(searchTerm)))
+        video.category?.name.toLowerCase().includes(searchTerm)
       );
     }
 
     // Category filter
     if (filters.category) {
-      filtered = filtered.filter(video => 
-        video.categories && video.categories.some(cat => cat.id === filters.category)
-      );
+      filtered = filtered.filter(video => video.category?.id === filters.category);
     }
 
     // Difficulty filter
@@ -719,11 +717,11 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
                 
                 {/* More indicator */}
                 {video.ferramentas.length > 5 && (
-                {video.instructor && video.categories && video.categories.length > 0 && (
+                  <div className="w-6 h-6 rounded-sm bg-slate-600 flex items-center justify-center drop-shadow-lg text-slate-200 filter brightness-90 contrast-110 transition-all duration-200 group-hover:brightness-100 group-hover:contrast-100">
                     <span className="text-slate-400 text-xs font-medium">
                       +{video.ferramentas.length - 5}
-                {video.categories && video.categories.length > 0 && (
-                  <span>{video.categories[0].name}</span>
+                    </span>
+                  </div>
                 )}
               </div>
             )}

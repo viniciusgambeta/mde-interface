@@ -141,7 +141,7 @@ const Header: React.FC<HeaderProps> = ({ sidebarCollapsed, onSidebarToggle, onVi
           const titleMatch = video.title.toLowerCase().includes(query);
           const descriptionMatch = video.description?.toLowerCase().includes(query) || false;
           const summaryMatch = video.summary?.toLowerCase().includes(query) || false;
-          const categoryMatch = video.categories?.some(cat => cat.name.toLowerCase().includes(query)) || false;
+          const categoryMatch = video.category?.name.toLowerCase().includes(query) || false;
           const instructorMatch = video.instructor?.name.toLowerCase().includes(query) || false;
           
           return titleMatch || descriptionMatch || summaryMatch || categoryMatch || instructorMatch;
@@ -359,14 +359,14 @@ const Header: React.FC<HeaderProps> = ({ sidebarCollapsed, onSidebarToggle, onVi
                                 {video.title}
                               </h4>
                               <div className="flex items-center space-x-2 text-sm text-slate-400">
-                                {video.instructor && video.categories && video.categories.length > 0 && (
+                                {video.instructor && (
                                   <span>{video.instructor.name}</span>
                                 )}
-                                {video.instructor && video.categories && video.categories.length > 0 && (
+                                {video.category && video.instructor && (
                                   <span>•</span>
                                 )}
-                                {video.categories && video.categories.length > 0 && (
-                                  <span>{video.categories[0].name}</span>
+                                {video.category && (
+                                  <span>{video.category.name}</span>
                                 )}
                               </div>
                               <div className="flex items-center space-x-2 text-sm text-slate-500 mt-1">

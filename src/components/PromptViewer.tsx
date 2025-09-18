@@ -22,7 +22,7 @@ const SuggestedPrompts: React.FC<{ currentPrompt: Video }> = ({ currentPrompt })
       try {
         // Get prompts from the same category, excluding the current prompt
         const allVideos = await videoService.getVideosByCategory(
-          currentPrompt.categories?.[0]?.slug || '', 
+          currentPrompt.category.slug, 
           10, 
           user?.id
         );
@@ -82,10 +82,10 @@ const SuggestedPrompts: React.FC<{ currentPrompt: Video }> = ({ currentPrompt })
               {suggestion.title}
             </h5>
             <div className="flex items-center space-x-2 text-xs text-slate-400 mt-1">
-              {suggestion.categories && suggestion.categories.length > 0 && (
-                <span>{suggestion.categories[0].name}</span>
+              {suggestion.category && (
+                <span>{suggestion.category.name}</span>
               )}
-              {suggestion.categories && suggestion.categories.length > 0 && (
+              {suggestion.category && (
                 <span>•</span>
               )}
               <span>Prompt</span>

@@ -31,7 +31,7 @@ const SuggestedVideos: React.FC<{ currentVideo: Video }> = ({ currentVideo }) =>
       try {
         // Get videos from the same category, excluding the current video
         const videos = await videoService.getVideosByCategory(
-          currentVideo.categories?.[0]?.slug || '', 
+          currentVideo.category.slug, 
           6, 
           user?.id
         );
@@ -96,10 +96,10 @@ const SuggestedVideos: React.FC<{ currentVideo: Video }> = ({ currentVideo }) =>
               {suggestion.title}
             </h5>
             <div className="flex items-center space-x-2 text-xs text-slate-400 mt-1">
-              {suggestion.categories && suggestion.categories.length > 0 && (
-                <span>{suggestion.categories[0].name}</span>
+              {suggestion.category && (
+                <span>{suggestion.category.name}</span>
               )}
-              {suggestion.categories && suggestion.categories.length > 0 && (
+              {suggestion.category && (
                 <span>•</span>
               )}
               <span>{formatDuration(suggestion.duration_minutes)}</span>

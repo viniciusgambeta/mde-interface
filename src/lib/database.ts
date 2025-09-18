@@ -176,7 +176,7 @@ export interface Video {
   video_url?: string;
   duration_minutes: number;
   instructor_id?: string;
-  category_id?: string[];
+  category_id?: string;
   difficulty_level_id?: string;
   is_featured: boolean;
   is_premium: boolean;
@@ -192,7 +192,7 @@ export interface Video {
   
   // Joined data
   instructor?: Instructor;
-  categories?: Category[];
+  category?: Category;
   difficulty_level?: DifficultyLevel;
   materials?: VideoMaterial[];
   ferramentas?: FerramentaLink[];
@@ -230,7 +230,8 @@ export const videoService = {
       .select(`
         *,
         instructor:instructors(*),
-        difficulty_level:difficulty_levels(*)
+        category:categories(*),
+        difficulty_level:difficulty_levels(*),
         materials:video_materials(*),
         ferramentas:video_ferramentas(
           ferramenta:ferramentas_links(*)
@@ -240,7 +241,8 @@ export const videoService = {
       .order('published_at', { ascending: false })
 
     if (options.category) {
-      // Get category ID from slug
+      // For the main getVideos function, we'll keep the direct category filter
+      // since it's used for general filtering, not specific category pages
       const { data: category } = await supabase
         .from('categories')
         .select('id')
@@ -248,8 +250,19 @@ export const videoService = {
         .maybeSingle();
       
       if (category) {
-        // Filter videos that contain this category ID in their category_id array
-        query = query.contains('category_id', [category.id]);
+        // Get video IDs from video_categories table
+        const { data: videoCategories } = await supabase
+          .from('video_categories')
+          .select('video_id')
+          .eq('category_id', category.id);
+        
+        if (videoCategories && videoCategories.length > 0) {
+          const videoIds = videoCategories.map(vc => vc.video_id);
+          query = query.in('id', videoIds);
+        } else {
+          // No videos in this category, return empty
+          return [];
+        }
       } else {
         // Category not found, return empty
         return [];
@@ -286,9 +299,6 @@ export const videoService = {
       }
 
       const videos = data as Video[];
-
-      // Manually join categories
-      await this.joinCategoriesManually(videos);
 
       // Transform ferramentas data structure
       videos.forEach(video => {
@@ -355,6 +365,7 @@ export const videoService = {
       .select(`
         *,
         instructor:instructors(*),
+        category:categories(*),
         difficulty_level:difficulty_levels(*),
         materials:video_materials(*),
         ferramentas:video_ferramentas(
@@ -375,9 +386,6 @@ export const videoService = {
     if (!video) {
       return null;
     }
-
-    // Manually join categories
-    await this.joinCategoriesManually([video]);
 
     // Transform ferramentas data structure
     if (video.ferramentas) {
@@ -409,93 +417,7 @@ export const videoService = {
 
   // Get videos by category
   async getVideosByCategory(categorySlug: string, limit = 12, userId?: string) {
-    console.log('🎬 getVideosByCategory called with slug:', categorySlug);
-    
-    try {
-      // First, get the category ID from the slug
-      const { data: category, error: categoryError } = await supabase
-        .from('categories')
-        .select('id')
-        .eq('slug', categorySlug)
-        .maybeSingle();
-      
-      if (categoryError) {
-        console.error('Error fetching category:', categoryError);
-        return [];
-      }
-      
-      if (!category) {
-        console.log('Category not found for slug:', categorySlug);
-        return [];
-      }
-      
-      console.log('Found category ID:', category.id, 'for slug:', categorySlug);
-      
-      // Query videos that have this category ID in their category_id array
-      let query = supabase
-        .from('videos')
-        .select(`
-          *,
-          instructor:instructors(*),
-          difficulty_level:difficulty_levels(*),
-          materials:video_materials(*),
-          ferramentas:video_ferramentas(
-            ferramenta:ferramentas_links(*)
-          )
-        `)
-        .eq('status', 'published')
-        .contains('category_id', [category.id])
-        .order('published_at', { ascending: false });
-      
-      if (limit) {
-        query = query.limit(limit);
-      }
-      
-      const { data, error } = await query;
-      
-      console.log('📊 getVideosByCategory result:', { 
-        dataCount: data?.length || 0, 
-        error: error?.message || 'none' 
-      });
-      
-      if (error) {
-        console.error('Error fetching videos by category:', error);
-        return [];
-      }
-      
-      const videos = data as Video[];
-      
-      // Manually join categories
-      await this.joinCategoriesManually(videos);
-
-      // Transform ferramentas data structure
-      videos.forEach(video => {
-        if (video.ferramentas) {
-          video.ferramentas = (video.ferramentas as any[]).map((item: any) => item.ferramenta).filter(Boolean);
-        }
-      });
-      
-      // If user is provided, check bookmark status for each video
-      if (userId && videos.length > 0) {
-        try {
-          const bookmarkStatuses = await this.getBookmarkStatuses(
-            videos.map(v => v.id), 
-            userId
-          );
-          
-          videos.forEach(video => {
-            video.is_bookmarked = bookmarkStatuses[video.id] || false;
-          });
-        } catch (bookmarkError) {
-          console.warn('Error loading bookmark statuses, continuing without them:', bookmarkError);
-        }
-      }
-      
-      return videos;
-    } catch (error) {
-      console.error('Error in getVideosByCategory:', error);
-      return [];
-    }
+    return this.getVideos({ category: categorySlug, limit, userId });
   },
 
   // Get all versions of a video
@@ -575,6 +497,7 @@ export const videoService = {
         .select(`
           *,
           instructor:instructors(*),
+          category:categories(*),
           difficulty_level:difficulty_levels(*),
           materials:video_materials(*),
           ferramentas:video_ferramentas(
@@ -591,9 +514,6 @@ export const videoService = {
       }
 
       const videoVersions = fullVersions as Video[];
-
-      // Manually join categories for versions
-      await this.joinCategoriesManually(videoVersions);
 
       // Add version metadata to each video using the complete relations
       const allRelations = completeRelations || relatedVersions;
@@ -706,6 +626,7 @@ export const videoService = {
         video:videos(
           *,
           instructor:instructors(*),
+          category:categories(*),
           difficulty_level:difficulty_levels(*),
           materials:video_materials(*),
           ferramentas:video_ferramentas(
@@ -725,9 +646,6 @@ export const videoService = {
     const videos = (data || [])
       .map(item => item.video)
       .filter(Boolean) as Video[];
-
-    // Manually join categories
-    await this.joinCategoriesManually(videos);
 
     // Transform ferramentas data structure and mark all as bookmarked
     videos.forEach(video => {
@@ -832,71 +750,6 @@ export const videoService = {
     } catch (error) {
       console.error('Error toggling bookmark:', error);
       return { success: false, isBookmarked: false };
-    }
-  },
-
-  // Helper function to manually join categories to videos
-  async joinCategoriesManually(videos: Video[]): Promise<void> {
-    if (!videos || videos.length === 0) return;
-
-    try {
-      // Collect all unique category IDs from all videos
-      const allCategoryIds = new Set<string>();
-      videos.forEach(video => {
-        if (video.category_id && Array.isArray(video.category_id)) {
-          video.category_id.forEach(id => allCategoryIds.add(id));
-        }
-      });
-
-      if (allCategoryIds.size === 0) {
-        // No categories to fetch, set empty arrays
-        videos.forEach(video => {
-          video.categories = [];
-        });
-        return;
-      }
-
-      // Fetch all categories in one query
-      const { data: categories, error: categoriesError } = await supabase
-        .from('categories')
-        .select('*')
-        .in('id', Array.from(allCategoryIds));
-
-      if (categoriesError) {
-        console.error('Error fetching categories for manual join:', categoriesError);
-        // Set empty arrays on error
-        videos.forEach(video => {
-          video.categories = [];
-        });
-        return;
-      }
-
-      // Create a map for quick category lookup
-      const categoryMap = new Map<string, Category>();
-      (categories || []).forEach(category => {
-        categoryMap.set(category.id, category);
-      });
-
-      // Assign categories to each video
-      videos.forEach(video => {
-        video.categories = [];
-        if (video.category_id && Array.isArray(video.category_id)) {
-          video.category_id.forEach(categoryId => {
-            const category = categoryMap.get(categoryId);
-            if (category) {
-              video.categories!.push(category);
-            }
-          });
-        }
-      });
-
-      console.log('✅ Categories manually joined to videos');
-    } catch (error) {
-      console.error('Error in manual category join:', error);
-      // Set empty arrays on error
-      videos.forEach(video => {
-        video.categories = [];
-      });
     }
   },
 
@@ -1301,62 +1154,33 @@ export const videoSuggestionsService = {
     try {
       console.log('🔍 Loading approved suggestions with user data...');
       
-      // First, get the suggestions
-      const { data: suggestions, error: suggestionsError } = await supabase
+      const { data, error } = await supabase
         .from('video_suggestions')
-        .select('*')
+        .select(`
+          *,
+          user_assinatura:assinaturas!video_suggestions_user_id_fkey(
+            "Nome do cliente",
+            avatar_usuario
+          )
+        `)
         .eq('status', 'approved')
         .order('created_at', { ascending: false });
 
-      if (suggestionsError) {
-        console.error('Error fetching approved suggestions:', suggestionsError);
+      if (error) {
+        console.error('Error fetching approved suggestions:', error);
         return [];
       }
 
-      if (!suggestions || suggestions.length === 0) {
-        return [];
-      }
+      console.log('📊 Raw suggestions data:', data);
 
-      console.log('📊 Raw suggestions data:', suggestions);
+      // Transform data to include user info
+      const suggestions = data.map(suggestion => ({
+        ...suggestion,
+        user_name: suggestion.user_assinatura?.["Nome do cliente"] || 'Usuário Anônimo',
+        user_avatar: suggestion.user_assinatura?.avatar_usuario || '/avatar1.png'
+      }));
 
-      // Get unique user IDs
-      const userIds = [...new Set(suggestions.map(s => s.user_id).filter(Boolean))];
-      
-      // Fetch user data for all unique user IDs
-      let userData: any[] = [];
-      if (userIds.length > 0) {
-        const { data: users, error: usersError } = await supabase
-          .from('assinaturas')
-          .select('"Nome do cliente", avatar_usuario, user_id')
-          .in('user_id', userIds);
-
-        if (usersError) {
-          console.error('Error fetching user data:', usersError);
-        } else {
-          userData = users || [];
-        }
-      }
-
-      // Create a map for quick user data lookup
-      const userMap = new Map();
-      userData.forEach(user => {
-        userMap.set(user.user_id, {
-          name: user["Nome do cliente"],
-          avatar: user.avatar_usuario
-        });
-      });
-
-      // Transform suggestions to include user info
-      const transformedSuggestions = suggestions.map(suggestion => {
-        const userInfo = userMap.get(suggestion.user_id);
-        return {
-          ...suggestion,
-          user_name: userInfo?.name || 'Usuário Anônimo',
-          user_avatar: userInfo?.avatar || '/avatar1.png'
-        };
-      });
-
-      console.log('📊 Transformed suggestions:', transformedSuggestions.map(s => ({
+      console.log('📊 Transformed suggestions:', suggestions.map(s => ({
         id: s.id,
         title: s.title,
         user_name: s.user_name,
@@ -1364,7 +1188,7 @@ export const videoSuggestionsService = {
         user_id: s.user_id
       })));
 
-      return transformedSuggestions as VideoSuggestion[];
+      return suggestions as VideoSuggestion[];
     } catch (error) {
       console.error('Error fetching approved suggestions:', error);
       return [];
@@ -1463,44 +1287,34 @@ export const videoSuggestionsService = {
     try {
       console.log('🔍 Loading user pending suggestions for user:', userId);
       
-      // First, get the user's pending suggestions
-      const { data: suggestions, error: suggestionsError } = await supabase
+      const { data, error } = await supabase
         .from('video_suggestions')
-        .select('*')
+        .select(`
+          *,
+          user_assinatura:assinaturas!video_suggestions_user_id_fkey(
+            "Nome do cliente",
+            avatar_usuario
+          )
+        `)
         .eq('user_id', userId)
         .eq('status', 'pending')
         .order('created_at', { ascending: false });
 
-      if (suggestionsError) {
-        console.error('Error fetching user pending suggestions:', suggestionsError);
+      if (error) {
+        console.error('Error fetching user pending suggestions:', error);
         return [];
       }
 
-      if (!suggestions || suggestions.length === 0) {
-        return [];
-      }
+      console.log('📊 Raw user pending suggestions:', data);
 
-      console.log('📊 Raw user pending suggestions:', suggestions);
-
-      // Get user data for this specific user
-      const { data: userData, error: userError } = await supabase
-        .from('assinaturas')
-        .select('"Nome do cliente", avatar_usuario')
-        .eq('user_id', userId)
-        .maybeSingle();
-
-      if (userError) {
-        console.error('Error fetching user data:', userError);
-      }
-
-      // Transform suggestions to include user info
-      const transformedSuggestions = suggestions.map(suggestion => ({
+      // Transform data to include user info
+      const suggestions = data.map(suggestion => ({
         ...suggestion,
-        user_name: userData?.["Nome do cliente"] || 'Usuário Anônimo',
-        user_avatar: userData?.avatar_usuario || '/avatar1.png'
+        user_name: suggestion.user_assinatura?.["Nome do cliente"] || 'Usuário Anônimo',
+        user_avatar: suggestion.user_assinatura?.avatar_usuario || '/avatar1.png'
       }));
 
-      return transformedSuggestions as VideoSuggestion[];
+      return suggestions as VideoSuggestion[];
     } catch (error) {
       console.error('Error fetching user pending suggestions:', error);
       return [];
@@ -1517,66 +1331,43 @@ export const commentsService = {
     try {
       console.log('Loading comments for video:', videoId);
       
-      // First, get the comments
-      const { data: comments, error: commentsError } = await supabase
+      const { data, error } = await supabase
         .from('comments')
-        .select('*')
+        .select(`
+          *,
+          user_profile:assinaturas!comments_assinatura_user_id_fkey(
+            "Nome do cliente",
+            avatar_usuario,
+            instagram,
+            linkedin,
+            nivel
+          )
+        `)
         .eq('video_id', videoId)
         .order('created_at', { ascending: false });
       
-      if (commentsError) {
-        console.error('Error fetching comments:', commentsError);
+      if (error) {
+        console.error('Error fetching comments:', error);
         return [];
       }
 
-      if (!comments || comments.length === 0) return [];
+      if (!data) return [];
 
-      console.log('Raw comments data:', comments);
-
-      // Get unique user IDs
-      const userIds = [...new Set(comments.map(c => c.user_id).filter(Boolean))];
-      
-      // Fetch user data for all unique user IDs
-      let userData: any[] = [];
-      if (userIds.length > 0) {
-        const { data: users, error: usersError } = await supabase
-          .from('assinaturas')
-          .select('"Nome do cliente", avatar_usuario, instagram, linkedin, nivel, user_id')
-          .in('user_id', userIds);
-
-        if (usersError) {
-          console.error('Error fetching user data for comments:', usersError);
-        } else {
-          userData = users || [];
-        }
-      }
-
-      // Create a map for quick user data lookup
-      const userMap = new Map();
-      userData.forEach(user => {
-        userMap.set(user.user_id, {
-          name: user["Nome do cliente"],
-          avatar: user.avatar_usuario,
-          instagram: user.instagram,
-          linkedin: user.linkedin,
-          nivel: user.nivel
-        });
-      });
+      console.log('Raw comments data:', data);
 
       // Transform and organize comments
       const commentsMap = new Map<string, Comment>();
       const rootComments: Comment[] = [];
 
       // First pass: create all comment objects
-      comments.forEach(comment => {
-        const userInfo = userMap.get(comment.user_id);
+      data.forEach(comment => {
         const transformedComment: Comment = {
           ...comment,
-          user_name: userInfo?.name || 'Usuário',
-          user_avatar: userInfo?.avatar || '/avatar1.png',
-          user_instagram: userInfo?.instagram || null,
-          user_linkedin: userInfo?.linkedin || null,
-          user_nivel: userInfo?.nivel || null,
+          user_name: comment.user_profile?.["Nome do cliente"] || 'Usuário',
+          user_avatar: comment.user_profile?.avatar_usuario || '/avatar1.png',
+          user_instagram: comment.user_profile?.instagram || null,
+          user_linkedin: comment.user_profile?.linkedin || null,
+          user_nivel: comment.user_profile?.nivel || null,
           replies: []
         };
         console.log('Transformed comment:', transformedComment);
