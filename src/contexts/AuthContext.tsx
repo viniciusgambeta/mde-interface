@@ -108,16 +108,24 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   }, [navigate]);
 
   const signIn = async (email: string, password: string): Promise<{ user: User | null; error: string | null }> => {
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
 
-    if (error) {
-      return { user: null, error: error.message };
+      if (error) {
+        return { user: null, error: error.message };
+      }
+
+      return { user: null, error: null };
+    } catch (error: any) {
+      if (error.name === 'QuotaExceededError') {
+        localStorage.clear();
+        return { user: null, error: 'Armazenamento local cheio. Dados limpos. Tente fazer login novamente.' };
+      }
+      return { user: null, error: error.message || 'Erro desconhecido durante o login' };
     }
-
-    return { user: null, error: null };
   };
 
   const signUp = async (email: string, password: string, name: string): Promise<{ user: User | null; error: string | null }> => {
