@@ -158,13 +158,23 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ userId, userEmail, onCo
         onboarding_completed: true
       };
 
-      const success = await updateProfile(updatePayload);
+      // Direct database update to ensure onboarding_completed is set to true
+      const { error } = await supabase
+        .from('assinaturas')
+        .upsert({ 
+          user_id: userId,
+          "Nome do cliente": userEmail.split('@')[0], // Fallback name from email
+          email_cliente: userEmail,
+          ...updatePayload
+        }, {
+          onConflict: 'user_id'
+        });
 
-      if (success) {
+      if (!error) {
         console.log('Onboarding completed successfully');
         onComplete();
       } else {
-        console.error('Failed to complete onboarding via updateProfile');
+        console.error('Failed to complete onboarding:', error);
         onComplete();
       }
     } catch (error) {
