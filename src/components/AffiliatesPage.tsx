@@ -135,7 +135,7 @@ const AffiliatesPage: React.FC = () => {
       </div>
 
       {/* Commission Structure - Minimal */}
-      <div className="bg-slate-700/30 border border-slate-600/30 rounded-xl p-8">
+      <div className="bg-slate-700/30 border border-slate-600/30 rounded-xl p-8 max-w-4xl">
         <h2 className="text-2xl font-bold text-white mb-6 text-center">Estrutura de Comissões</h2>
         
         <div className="grid md:grid-cols-2 gap-8 text-center">
