@@ -241,8 +241,7 @@ export const videoService = {
       .order('published_at', { ascending: false })
 
     if (options.category) {
-      // For the main getVideos function, we'll keep the direct category filter
-      // since it's used for general filtering, not specific category pages
+      // Get category ID from slug
       const { data: category } = await supabase
         .from('categories')
         .select('id')
@@ -250,19 +249,8 @@ export const videoService = {
         .maybeSingle();
       
       if (category) {
-        // Get video IDs from video_categories table
-        const { data: videoCategories } = await supabase
-          .from('video_categories')
-          .select('video_id')
-          .eq('category_id', category.id);
-        
-        if (videoCategories && videoCategories.length > 0) {
-          const videoIds = videoCategories.map(vc => vc.video_id);
-          query = query.in('id', videoIds);
-        } else {
-          // No videos in this category, return empty
-          return [];
-        }
+        // Filter videos that contain this category ID in their category_id array
+        query = query.contains('category_id', [category.id]);
       } else {
         // Category not found, return empty
         return [];
@@ -417,7 +405,91 @@ export const videoService = {
 
   // Get videos by category
   async getVideosByCategory(categorySlug: string, limit = 12, userId?: string) {
-    return this.getVideos({ category: categorySlug, limit, userId });
+    console.log('🎬 getVideosByCategory called with slug:', categorySlug);
+    
+    try {
+      // First, get the category ID from the slug
+      const { data: category, error: categoryError } = await supabase
+        .from('categories')
+        .select('id')
+        .eq('slug', categorySlug)
+        .maybeSingle();
+      
+      if (categoryError) {
+        console.error('Error fetching category:', categoryError);
+        return [];
+      }
+      
+      if (!category) {
+        console.log('Category not found for slug:', categorySlug);
+        return [];
+      }
+      
+      console.log('Found category ID:', category.id, 'for slug:', categorySlug);
+      
+      // Query videos that have this category ID in their category_id array
+      let query = supabase
+        .from('videos')
+        .select(`
+          *,
+          instructor:instructors(*),
+          category:categories(*),
+          difficulty_level:difficulty_levels(*),
+          materials:video_materials(*),
+          ferramentas:video_ferramentas(
+            ferramenta:ferramentas_links(*)
+          )
+        `)
+        .eq('status', 'published')
+        .contains('category_id', [category.id])
+        .order('published_at', { ascending: false });
+      
+      if (limit) {
+        query = query.limit(limit);
+      }
+      
+      const { data, error } = await query;
+      
+      console.log('📊 getVideosByCategory result:', { 
+        dataCount: data?.length || 0, 
+        error: error?.message || 'none' 
+      });
+      
+      if (error) {
+        console.error('Error fetching videos by category:', error);
+        return [];
+      }
+      
+      const videos = data as Video[];
+      
+      // Transform ferramentas data structure
+      videos.forEach(video => {
+        if (video.ferramentas) {
+          video.ferramentas = (video.ferramentas as any[]).map((item: any) => item.ferramenta).filter(Boolean);
+        }
+      });
+      
+      // If user is provided, check bookmark status for each video
+      if (userId && videos.length > 0) {
+        try {
+          const bookmarkStatuses = await this.getBookmarkStatuses(
+            videos.map(v => v.id), 
+            userId
+          );
+          
+          videos.forEach(video => {
+            video.is_bookmarked = bookmarkStatuses[video.id] || false;
+          });
+        } catch (bookmarkError) {
+          console.warn('Error loading bookmark statuses, continuing without them:', bookmarkError);
+        }
+      }
+      
+      return videos;
+    } catch (error) {
+      console.error('Error in getVideosByCategory:', error);
+      return [];
+    }
   },
 
   // Get all versions of a video
