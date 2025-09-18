@@ -175,7 +175,7 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
         setPromptVideos(allVideosData.filter(v => v.tipo === 'prompt'));
         
         // Load AI category videos (category id: f737e29d-e1b1-43b4-bce0-8c84f1a79759)
-        const aiCategoryVideos = await loadVideosByCategory('f737e29d-e1b1-43b4-bce0-8c84f1a79759');
+        const aiCategoryVideos = await videoService.getVideosByCategory('f737e29d-e1b1-43b4-bce0-8c84f1a79759', 20, user?.id);
         setAiVideos(aiCategoryVideos);
       } catch (error) {
         console.error('Error loading category videos:', error);
