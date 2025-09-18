@@ -2,6 +2,7 @@ import React from 'react';
 import { Routes, Route, useNavigate, useParams, useLocation } from 'react-router-dom';
 import { useEffect } from 'react';
 import { useAuth } from './contexts/AuthContext';
+import { supabase } from './lib/supabase';
 import OnboardingFlow from './components/OnboardingFlow';
 import Header from './components/Header';
 import Sidebar from './components/Sidebar';
@@ -291,8 +292,94 @@ function App() {
 // Component that has access to auth context
 const AppWithAuth: React.FC = () => {
   const { user, loading } = useAuth();
+  const [needsOnboarding, setNeedsOnboarding] = React.useState<boolean | null>(null);
+  const [checkingOnboarding, setCheckingOnboarding] = React.useState(false);
+
+  // Check if user needs onboarding
+  React.useEffect(() => {
+    const checkOnboardingStatus = async () => {
+      if (!user) {
+        setNeedsOnboarding(null);
+        return;
+      }
+
+      setCheckingOnboarding(true);
+      
+      try {
+        console.log('🔍 Checking onboarding status for user:', user.id);
+        
+        const { data, error } = await supabase
+          .from('assinaturas')
+          .select('onboarding_completed')
+          .eq('user_id', user.id)
+          .maybeSingle();
+
+        if (error) {
+          console.error('Error checking onboarding status:', error);
+          // If we can't check, assume onboarding is needed
+          setNeedsOnboarding(true);
+          return;
+        }
+
+        if (!data) {
+          console.log('📝 No assinatura record found, onboarding needed');
+          setNeedsOnboarding(true);
+        } else {
+          const completed = data.onboarding_completed || false;
+          console.log('📊 Onboarding status:', completed ? 'completed' : 'needed');
+          setNeedsOnboarding(!completed);
+        }
+      } catch (error) {
+        console.error('Exception checking onboarding status:', error);
+        setNeedsOnboarding(true);
+      } finally {
+        setCheckingOnboarding(false);
+      }
+    };
+
+    checkOnboardingStatus();
+  }, [user?.id]);
+
+  const handleOnboardingComplete = () => {
+    console.log('✅ Onboarding completed, updating state');
+    setNeedsOnboarding(false);
+  };
 
   if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-[#1f1d2b] via-[#1f1d2b] to-black flex items-center justify-center">
+        <div className="flex items-center space-x-3">
+          <div className="w-6 h-6 border-2 border-[#ff7551]/30 border-t-[#ff7551] rounded-full animate-spin"></div>
+          <span className="text-slate-400">Carregando...</span>
+        </div>
+      </div>
+    );
+  }
+
+  // Show loading while checking onboarding status
+  if (user && checkingOnboarding) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-[#1f1d2b] via-[#1f1d2b] to-black flex items-center justify-center">
+        <div className="flex items-center space-x-3">
+          <div className="w-6 h-6 border-2 border-[#ff7551]/30 border-t-[#ff7551] rounded-full animate-spin"></div>
+          <span className="text-slate-400">Verificando perfil...</span>
+        </div>
+      </div>
+    );
+  }
+
+  // Show onboarding if user is authenticated but hasn't completed onboarding
+  if (user && needsOnboarding === true) {
+    return (
+      <OnboardingFlow
+        userId={user.id}
+        userEmail={user.email}
+        onComplete={handleOnboardingComplete}
+      />
+    );
+  }
+
+  if (loading || checkingOnboarding) {
     return <div>Carregando...</div>;
   }
 
