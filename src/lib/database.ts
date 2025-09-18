@@ -364,7 +364,6 @@ export const videoService = {
       .select(`
         *,
         instructor:instructors(*),
-        category:categories(*),
         difficulty_level:difficulty_levels(*),
         materials:video_materials(*),
         ferramentas:video_ferramentas(
@@ -384,6 +383,19 @@ export const videoService = {
 
     if (!video) {
       return null;
+    }
+
+    // Fetch category separately if video has category_id
+    if (video.category_id) {
+      const { data: category, error: categoryError } = await supabase
+        .from('categories')
+        .select('*')
+        .eq('id', video.category_id)
+        .maybeSingle();
+
+      if (!categoryError && category) {
+        video.category = category;
+      }
     }
 
     // Transform ferramentas data structure
