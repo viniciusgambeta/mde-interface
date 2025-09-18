@@ -90,6 +90,13 @@ const PoderzinhosPage: React.FC = () => {
             </div>
           </div>
 
+          {/* Description */}
+          {ferramenta.descricao_ferramenta && (
+            <p className="text-slate-400 text-sm leading-relaxed mb-6">
+              {ferramenta.descricao_ferramenta}
+            </p>
+          )}
+
           {/* Action Button */}
           <div className="hidden group-hover:block animate-fade-in">
             <a
