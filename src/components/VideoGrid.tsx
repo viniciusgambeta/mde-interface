@@ -166,7 +166,7 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
       try {
         console.log('Loading category-specific videos...');
         
-        // Load videos for each category using known slugs
+        // Load videos for each category using video_categories table
         const [
           aiData,
           automationData,
@@ -175,15 +175,15 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
           boltData,
           allVideosData
         ] = await Promise.all([
-          videoService.getVideosByCategory('inteligencia-artificial', 10, user?.id),
-          videoService.getVideosByCategory('automacao', 10, user?.id),
-          videoService.getVideosByCategory('whatsapp', 10, user?.id),
-          videoService.getVideosByCategory('basico', 10, user?.id),
-          videoService.getVideosByCategory('bolt', 10, user?.id),
+          loadVideosByCategorySlug('inteligencia-artificial', 10),
+          loadVideosByCategorySlug('automacao', 10),
+          loadVideosByCategorySlug('whatsapp', 10),
+          loadVideosByCategorySlug('basico', 10),
+          loadVideosByCategorySlug('bolt', 10),
           videoService.getVideos({ limit: 50, userId: user?.id })
         ]);
         
-        console.log('Category videos loaded with slugs:', {
+        console.log('Category videos loaded via video_categories:', {
           'inteligencia-artificial': aiData.length,
           'automacao': automationData.length,
           'whatsapp': whatsappData.length,
@@ -209,6 +209,99 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
     loadCategoryVideos();
   }, [currentView, user?.id]);
 
+  // Helper function to load videos by category slug using video_categories table
+  const loadVideosByCategorySlug = async (categorySlug: string, limit: number): Promise<Video[]> => {
+    try {
+      console.log(`🔍 Loading videos for category slug: ${categorySlug}`);
+      
+      // First, get the category ID from the slug
+      const { data: category, error: categoryError } = await supabase
+        .from('categories')
+        .select('id')
+        .eq('slug', categorySlug)
+        .maybeSingle();
+      
+      if (categoryError || !category) {
+        console.log(`❌ Category not found for slug: ${categorySlug}`);
+        return [];
+      }
+      
+      console.log(`✅ Found category ID: ${category.id} for slug: ${categorySlug}`);
+      
+      // Get video IDs from video_categories table
+      const { data: videoCategories, error: videoCategoriesError } = await supabase
+        .from('video_categories')
+        .select('video_id')
+        .eq('category_id', category.id)
+        .limit(limit);
+      
+      if (videoCategoriesError) {
+        console.error(`❌ Error fetching video_categories for ${categorySlug}:`, videoCategoriesError);
+        return [];
+      }
+      
+      if (!videoCategories || videoCategories.length === 0) {
+        console.log(`📭 No videos found in video_categories for category: ${categorySlug}`);
+        return [];
+      }
+      
+      const videoIds = videoCategories.map(vc => vc.video_id);
+      console.log(`📊 Found ${videoIds.length} video IDs for category ${categorySlug}`);
+      
+      // Get the actual videos with all their data
+      const { data: videos, error: videosError } = await supabase
+        .from('videos')
+        .select(`
+          *,
+          instructor:instructors(*),
+          difficulty_level:difficulty_levels(*),
+          materials:video_materials(*),
+          ferramentas:video_ferramentas(
+            ferramenta:ferramentas_links(*)
+          )
+        `)
+        .in('id', videoIds)
+        .eq('status', 'published')
+        .order('published_at', { ascending: false });
+      
+      if (videosError) {
+        console.error(`❌ Error fetching videos for ${categorySlug}:`, videosError);
+        return [];
+      }
+      
+      const videosData = videos as Video[];
+      
+      // Transform ferramentas data structure
+      videosData.forEach(video => {
+        if (video.ferramentas) {
+          video.ferramentas = (video.ferramentas as any[]).map((item: any) => item.ferramenta).filter(Boolean);
+        }
+      });
+      
+      // Add bookmark status if user is logged in
+      if (user && videosData.length > 0) {
+        try {
+          const bookmarkStatuses = await videoService.getBookmarkStatuses(
+            videosData.map(v => v.id), 
+            user.id
+          );
+          
+          videosData.forEach(video => {
+            video.is_bookmarked = bookmarkStatuses[video.id] || false;
+          });
+        } catch (bookmarkError) {
+          console.warn('Error loading bookmark statuses for category videos:', bookmarkError);
+        }
+      }
+      
+      console.log(`✅ Successfully loaded ${videosData.length} videos for category ${categorySlug}`);
+      return videosData;
+      
+    } catch (error) {
+      console.error(`💥 Exception loading videos for category ${categorySlug}:`, error);
+      return [];
+    }
+  };
   // Load filter options for trending and bookmark pages
   useEffect(() => {
     const loadFilterOptions = async () => {
