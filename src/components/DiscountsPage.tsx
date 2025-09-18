@@ -312,7 +312,7 @@ const DiscountsPage: React.FC = () => {
       {/* Header */}
       <div className="text-left">
         <h1 className="text-3xl font-bold text-white mb-4">Descontos Exclusivos</h1>
-        <p className="text-slate-400 text-lg max-w-3xl">
+        <p className="text-slate-400 text-lg max-w-5xl">
           Aproveite cupons de desconto exclusivos nas melhores ferramentas para desenvolvedores, 
           designers e criadores de conteúdo. Economize em suas ferramentas favoritas!
         </p>
