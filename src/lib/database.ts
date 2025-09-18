@@ -176,7 +176,6 @@ export interface Video {
   video_url?: string;
   duration_minutes: number;
   instructor_id?: string;
-  category_id?: string;
   difficulty_level_id?: string;
   is_featured: boolean;
   is_premium: boolean;
@@ -192,7 +191,7 @@ export interface Video {
   
   // Joined data
   instructor?: Instructor;
-  category?: Category;
+  categories?: Category[];
   difficulty_level?: DifficultyLevel;
   materials?: VideoMaterial[];
   ferramentas?: FerramentaLink[];
@@ -230,7 +229,7 @@ export const videoService = {
       .select(`
         *,
         instructor:instructors(*),
-        category:categories(*),
+        video_categories(category:categories(*)),
         difficulty_level:difficulty_levels(*),
         materials:video_materials(*),
         ferramentas:video_ferramentas(
@@ -300,6 +299,14 @@ export const videoService = {
 
       const videos = data as Video[];
 
+      // Transform video_categories data structure
+      videos.forEach(video => {
+        if (video.video_categories) {
+          video.categories = (video.video_categories as any[]).map((item: any) => item.category).filter(Boolean);
+          delete (video as any).video_categories;
+        }
+      });
+
       // Transform ferramentas data structure
       videos.forEach(video => {
         if (video.ferramentas) {
@@ -365,7 +372,7 @@ export const videoService = {
       .select(`
         *,
         instructor:instructors(*),
-        category:categories(*),
+        video_categories(category:categories(*)),
         difficulty_level:difficulty_levels(*),
         materials:video_materials(*),
         ferramentas:video_ferramentas(
@@ -385,6 +392,12 @@ export const videoService = {
 
     if (!video) {
       return null;
+    }
+
+    // Transform video_categories data structure
+    if (video.video_categories) {
+      video.categories = (video.video_categories as any[]).map((item: any) => item.category).filter(Boolean);
+      delete (video as any).video_categories;
     }
 
     // Transform ferramentas data structure
@@ -497,7 +510,7 @@ export const videoService = {
         .select(`
           *,
           instructor:instructors(*),
-          category:categories(*),
+          video_categories(category:categories(*)),
           difficulty_level:difficulty_levels(*),
           materials:video_materials(*),
           ferramentas:video_ferramentas(
@@ -514,6 +527,14 @@ export const videoService = {
       }
 
       const videoVersions = fullVersions as Video[];
+
+      // Transform video_categories data structure for versions
+      videoVersions.forEach(video => {
+        if (video.video_categories) {
+          video.categories = (video.video_categories as any[]).map((item: any) => item.category).filter(Boolean);
+          delete (video as any).video_categories;
+        }
+      });
 
       // Add version metadata to each video using the complete relations
       const allRelations = completeRelations || relatedVersions;
@@ -626,7 +647,7 @@ export const videoService = {
         video:videos(
           *,
           instructor:instructors(*),
-          category:categories(*),
+          video_categories(category:categories(*)),
           difficulty_level:difficulty_levels(*),
           materials:video_materials(*),
           ferramentas:video_ferramentas(
@@ -649,6 +670,12 @@ export const videoService = {
 
     // Transform ferramentas data structure and mark all as bookmarked
     videos.forEach(video => {
+      // Transform video_categories data structure
+      if (video.video_categories) {
+        video.categories = (video.video_categories as any[]).map((item: any) => item.category).filter(Boolean);
+        delete (video as any).video_categories;
+      }
+      
       if (video.ferramentas) {
         video.ferramentas = (video.ferramentas as any[]).map((item: any) => item.ferramenta).filter(Boolean);
       }
@@ -813,6 +840,12 @@ export const videoService = {
         completed: watchDuration > 0
       };
 
+      // Transform video_categories data structure
+      if (data.video_categories) {
+        data.categories = (data.video_categories as any[]).map((item: any) => item.category).filter(Boolean);
+        delete (data as any).video_categories;
+      }
+
       // Only add user_id if user is authenticated
       if (userId) {
         insertData.user_id = userId;
@@ -914,7 +947,7 @@ export const videoService = {
           related_video:videos(
             *,
             instructor:instructors(*),
-            category:categories(*),
+            video_categories(category:categories(*)),
             difficulty_level:difficulty_levels(*),
             materials:video_materials(*),
             ferramentas:video_ferramentas(
@@ -937,6 +970,12 @@ export const videoService = {
 
       // Transform ferramentas data structure
       relatedVideos.forEach(video => {
+        // Transform video_categories data structure
+        if (video.video_categories) {
+          video.categories = (video.video_categories as any[]).map((item: any) => item.category).filter(Boolean);
+          delete (video as any).video_categories;
+        }
+        
         if (video.ferramentas) {
           video.ferramentas = (video.ferramentas as any[]).map((item: any) => item.ferramenta).filter(Boolean);
         }
