@@ -56,31 +56,35 @@ const PoderzinhosPage: React.FC = () => {
   const FerramentaCard: React.FC<{ ferramenta: HallFerramenta }> = ({ ferramenta }) => {
     return (
       <div className="bg-slate-700/30 border border-slate-600/30 rounded-xl overflow-hidden hover:bg-slate-600/20 transition-all duration-300 group relative">
+        {/* Icon - Positioned outside the card */}
+        <div className="absolute -top-10 left-8 z-10">
+          <div className="w-20 h-20 bg-slate-600/30 rounded-xl flex items-center justify-center overflow-hidden shadow-lg border-2 border-slate-500/30">
+            {ferramenta.img_ferramenta ? (
+              <img
+                src={ferramenta.img_ferramenta}
+                alt={`${ferramenta.nome_ferramenta} logo`}
+                className="w-full h-full object-contain p-1"
+                onError={(e) => {
+                  // Fallback to icon if image fails to load
+                  const target = e.target as HTMLImageElement;
+                  target.style.display = 'none';
+                  const fallback = target.nextElementSibling as HTMLElement;
+                  if (fallback) fallback.style.display = 'flex';
+                }}
+              />
+            ) : null}
+            <div className={`w-full h-full bg-slate-600/30 rounded-xl ${ferramenta.img_ferramenta ? 'hidden' : 'flex'} items-center justify-center text-3xl`}>
+              🛠️
+            </div>
+          </div>
+        </div>
+
         {/* Header */}
-        <div className="p-8 pt-12">
+        <div className="p-8 pt-16">
           <div className="flex items-start justify-between mb-6">
-            <div className="flex items-center space-x-4">
-              <div className="w-20 h-20 bg-slate-600/30 rounded-xl flex items-center justify-center overflow-hidden relative -mt-16 shadow-lg border-2 border-slate-500/30">
-                {ferramenta.img_ferramenta ? (
-                  <img
-                    src={ferramenta.img_ferramenta}
-                    alt={`${ferramenta.nome_ferramenta} logo`}
-                    className="w-full h-full object-contain p-1"
-                    onError={(e) => {
-                      // Fallback to icon if image fails to load
-                      const target = e.target as HTMLImageElement;
-                      target.style.display = 'none';
-                      const fallback = target.nextElementSibling as HTMLElement;
-                      if (fallback) fallback.style.display = 'flex';
-                    }}
-                  />
-                ) : null}
-                <div className={`w-full h-full bg-slate-600/30 rounded-xl ${ferramenta.img_ferramenta ? 'hidden' : 'flex'} items-center justify-center text-3xl`}>
-                  🛠️
-                </div>
-              </div>
+            <div className="flex items-center space-x-4 ml-4">
               <div>
-                <h3 className="text-white font-bold text-xl">{ferramenta.nome_ferramenta}</h3>
+                <h3 className="text-white font-bold text-2xl">{ferramenta.nome_ferramenta}</h3>
                 <div className="flex items-center space-x-2 mt-1">
                   {ferramenta.tipo_ferramenta && (
                     <span className="text-xs px-3 py-1 bg-slate-600/30 text-slate-300 rounded-full">
