@@ -44,6 +44,7 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
   const [boltVideos, setBoltVideos] = useState<Video[]>([]);
   const [liveVideos, setLiveVideos] = useState<Video[]>([]);
   const [promptVideos, setPromptVideos] = useState<Video[]>([]);
+  const [aiVideos, setAiVideos] = useState<Video[]>([]);
 
   // Setup realtime subscription for bookmarks
   useEffect(() => {
@@ -167,19 +168,16 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
       try {
         console.log('Loading category-specific videos...');
         
-        // For now, just load all videos and filter by type
+        // Load all videos and filter by type
         const allVideosData = await videoService.getVideos({ limit: 100, userId: user?.id });
         
         // Set videos by type instead of category
         setLiveVideos(allVideosData.filter(v => v.tipo === 'live'));
         setPromptVideos(allVideosData.filter(v => v.tipo === 'prompt'));
         
-        // Set empty arrays for category-specific videos for now
-        setAiVideos([]);
-        setAutomationVideos([]);
-        setWhatsappVideos([]);
-        setBasicVideos([]);
-        setBoltVideos([]);
+        // Load AI category videos (category id: f737e29d-e1b1-43b4-bce0-8c84f1a79759)
+        const aiCategoryVideos = await loadVideosByCategory('f737e29d-e1b1-43b4-bce0-8c84f1a79759');
+        setAiVideos(aiCategoryVideos);
       } catch (error) {
         console.error('Error loading category videos:', error);
       }
