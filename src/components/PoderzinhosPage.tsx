@@ -31,7 +31,7 @@ const PoderzinhosPage: React.FC = () => {
         
         const { data, error } = await supabase
           .from('hall_ferramentas')
-          .select('id, nome_ferramenta, img_ferramenta, link_ferramenta, descricao_ferramenta, tipo_ferramenta, created_at')
+          .select('id, nome_ferramenta, img_ferramenta, link_ferramenta, descricao_ferramenta, tipo_ferramenta, nome_botao, created_at')
           .order('created_at', { ascending: false });
 
         if (error) {
