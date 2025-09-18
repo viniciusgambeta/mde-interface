@@ -176,7 +176,7 @@ export interface Video {
   video_url?: string;
   duration_minutes: number;
   instructor_id?: string;
-  category_id?: string;
+  category_id?: string[];
   difficulty_level_id?: string;
   is_featured: boolean;
   is_premium: boolean;
@@ -192,7 +192,7 @@ export interface Video {
   
   // Joined data
   instructor?: Instructor;
-  category?: Category;
+  categories?: Category[];
   difficulty_level?: DifficultyLevel;
   materials?: VideoMaterial[];
   ferramentas?: FerramentaLink[];
@@ -230,8 +230,7 @@ export const videoService = {
       .select(`
         *,
         instructor:instructors(*),
-        category:categories(*),
-        difficulty_level:difficulty_levels(*),
+        difficulty_level:difficulty_levels(*)
         materials:video_materials(*),
         ferramentas:video_ferramentas(
           ferramenta:ferramentas_links(*)
@@ -287,6 +286,9 @@ export const videoService = {
       }
 
       const videos = data as Video[];
+
+      // Manually join categories
+      await this.joinCategoriesManually(videos);
 
       // Transform ferramentas data structure
       videos.forEach(video => {
@@ -353,7 +355,6 @@ export const videoService = {
       .select(`
         *,
         instructor:instructors(*),
-        category:categories(*),
         difficulty_level:difficulty_levels(*),
         materials:video_materials(*),
         ferramentas:video_ferramentas(
@@ -374,6 +375,9 @@ export const videoService = {
     if (!video) {
       return null;
     }
+
+    // Manually join categories
+    await this.joinCategoriesManually([video]);
 
     // Transform ferramentas data structure
     if (video.ferramentas) {
@@ -461,6 +465,9 @@ export const videoService = {
       
       const videos = data as Video[];
       
+      // Manually join categories
+      await this.joinCategoriesManually(videos);
+
       // Transform ferramentas data structure
       videos.forEach(video => {
         if (video.ferramentas) {
@@ -568,7 +575,6 @@ export const videoService = {
         .select(`
           *,
           instructor:instructors(*),
-          category:categories(*),
           difficulty_level:difficulty_levels(*),
           materials:video_materials(*),
           ferramentas:video_ferramentas(
@@ -585,6 +591,9 @@ export const videoService = {
       }
 
       const videoVersions = fullVersions as Video[];
+
+      // Manually join categories for versions
+      await this.joinCategoriesManually(videoVersions);
 
       // Add version metadata to each video using the complete relations
       const allRelations = completeRelations || relatedVersions;
@@ -697,7 +706,6 @@ export const videoService = {
         video:videos(
           *,
           instructor:instructors(*),
-          category:categories(*),
           difficulty_level:difficulty_levels(*),
           materials:video_materials(*),
           ferramentas:video_ferramentas(
@@ -717,6 +725,9 @@ export const videoService = {
     const videos = (data || [])
       .map(item => item.video)
       .filter(Boolean) as Video[];
+
+    // Manually join categories
+    await this.joinCategoriesManually(videos);
 
     // Transform ferramentas data structure and mark all as bookmarked
     videos.forEach(video => {
@@ -821,6 +832,71 @@ export const videoService = {
     } catch (error) {
       console.error('Error toggling bookmark:', error);
       return { success: false, isBookmarked: false };
+    }
+  },
+
+  // Helper function to manually join categories to videos
+  async joinCategoriesManually(videos: Video[]): Promise<void> {
+    if (!videos || videos.length === 0) return;
+
+    try {
+      // Collect all unique category IDs from all videos
+      const allCategoryIds = new Set<string>();
+      videos.forEach(video => {
+        if (video.category_id && Array.isArray(video.category_id)) {
+          video.category_id.forEach(id => allCategoryIds.add(id));
+        }
+      });
+
+      if (allCategoryIds.size === 0) {
+        // No categories to fetch, set empty arrays
+        videos.forEach(video => {
+          video.categories = [];
+        });
+        return;
+      }
+
+      // Fetch all categories in one query
+      const { data: categories, error: categoriesError } = await supabase
+        .from('categories')
+        .select('*')
+        .in('id', Array.from(allCategoryIds));
+
+      if (categoriesError) {
+        console.error('Error fetching categories for manual join:', categoriesError);
+        // Set empty arrays on error
+        videos.forEach(video => {
+          video.categories = [];
+        });
+        return;
+      }
+
+      // Create a map for quick category lookup
+      const categoryMap = new Map<string, Category>();
+      (categories || []).forEach(category => {
+        categoryMap.set(category.id, category);
+      });
+
+      // Assign categories to each video
+      videos.forEach(video => {
+        video.categories = [];
+        if (video.category_id && Array.isArray(video.category_id)) {
+          video.category_id.forEach(categoryId => {
+            const category = categoryMap.get(categoryId);
+            if (category) {
+              video.categories!.push(category);
+            }
+          });
+        }
+      });
+
+      console.log('✅ Categories manually joined to videos');
+    } catch (error) {
+      console.error('Error in manual category join:', error);
+      // Set empty arrays on error
+      videos.forEach(video => {
+        video.categories = [];
+      });
     }
   },
 
