@@ -5,6 +5,36 @@ import { videoService, categoryService, difficultyService, type Video } from '..
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 
+// Helper function to generate Supabase image URLs with transformations
+const generateSupabaseImageUrl = (originalUrl: string | undefined, width: number, height: number, quality: number = 80) => {
+  if (!originalUrl) {
+    // Fallback para uma imagem padrão se a URL original for nula ou indefinida
+    return `https://images.pexels.com/photos/11035380/pexels-photo-11035380.jpeg?auto=compress&cs=tinysrgb&w=${width}&h=${height}&fit=crop`;
+  }
+  
+  try {
+    const url = new URL(originalUrl);
+    // Remove parâmetros de transformação existentes para evitar duplicação
+    url.searchParams.delete('width');
+    url.searchParams.delete('height');
+    url.searchParams.delete('quality');
+    url.searchParams.delete('resize');
+    url.searchParams.delete('format');
+    
+    // Adiciona os novos parâmetros de transformação
+    url.searchParams.set('width', width.toString());
+    url.searchParams.set('height', height.toString());
+    url.searchParams.set('quality', quality.toString());
+    url.searchParams.set('format', 'webp'); // Usar WebP para melhor compressão
+    
+    return url.toString();
+  } catch (e) {
+    console.error("URL do Supabase inválida, usando fallback:", originalUrl, e);
+    // Fallback para uma URL de Pexels se a URL do Supabase for inválida
+    return `https://images.pexels.com/photos/11035380/pexels-photo-11035380.jpeg?auto=compress&cs=tinysrgb&w=${width}&h=${height}&fit=crop`;
+  }
+};
+
 interface VideoGridProps {
   currentView: string;
   onVideoSelect: (video: any) => void;
@@ -610,10 +640,93 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
   }
 
   const VideoCard = ({ video, delay, showToolIcons = true }: { video: Video; delay: number; showToolIcons?: boolean }) => {
-    // Use local bookmark state if available, fallback to video data
-    const bookmarkState = bookmarkStates[video.id];
-    const isBookmarked = bookmarkState?.isBookmarked ?? video.is_bookmarked ?? false;
-    const isBookmarkLoading = bookmarkState?.isLoading ?? false;
+    const { user } = useAuth();
+    const [isBookmarked, setIsBookmarked] = useState(video.is_bookmarked || false);
+    const [bookmarkLoading, setBookmarkLoading] = useState(false);
+    const [imageSrc, setImageSrc] = useState('');
+    const [isHighResLoaded, setIsHighResLoaded] = useState(false);
+
+    useEffect(() => {
+      // Carrega a versão de baixa resolução (20x30 pixels, qualidade 10)
+      const lowResUrl = generateSupabaseImageUrl(video.thumbnail_url, 20, 30, 10);
+      setImageSrc(lowResUrl);
+
+      // Pré-carrega a versão de alta resolução (320x480 pixels, qualidade 80)
+      const highResImage = new Image();
+      highResImage.src = generateSupabaseImageUrl(video.thumbnail_url, 320, 480, 80);
+      highResImage.onload = () => {
+        setIsHighResLoaded(true);
+        setImageSrc(highResImage.src); // Troca para alta resolução
+      };
+      highResImage.onerror = () => {
+        console.warn('Falha ao carregar imagem de alta resolução do Supabase, usando fallback.');
+        setIsHighResLoaded(true); // Ainda marca como carregado para remover o blur
+      };
+
+      return () => {
+        highResImage.onload = null;
+        highResImage.onerror = null;
+      };
+    }, [video.thumbnail_url]);
+
+    const handleVideoClick = (event: React.MouseEvent) => {
+      event.preventDefault();
+      event.stopPropagation();
+      
+      console.log(`🎬 ${video.tipo === 'prompt' ? 'Prompt' : 'Video'} card clicked:`, {
+        title: video.title,
+        slug: video.slug,
+        id: video.id,
+        tipo: video.tipo,
+        timestamp: Date.now()
+      });
+      
+      // Call the parent handler
+      onVideoSelect(video);
+    };
+
+    const handleBookmarkClick = async (event: React.MouseEvent) => {
+      event.preventDefault();
+      event.stopPropagation();
+      
+      if (!user) {
+        console.log('User not logged in, cannot bookmark');
+        return;
+      }
+
+      if (bookmarkLoading) {
+        return;
+      }
+
+      const newBookmarkState = !isBookmarked;
+      
+      setIsBookmarked(newBookmarkState);
+      setBookmarkLoading(true);
+
+      try {
+        console.log('Toggling bookmark for video:', video.id, 'New state:', newBookmarkState);
+        
+        const result = await videoService.toggleBookmarkOptimized(video.id, user.id);
+        
+        if (result.success) {
+          setIsBookmarked(result.isBookmarked);
+          
+          if (currentView === 'bookmark' && !result.isBookmarked) {
+            setTimeout(() => {
+              setVideos(prev => prev.filter(v => v.id !== video.id));
+            }, 300);
+          }
+        } else {
+          setIsBookmarked(!newBookmarkState); // Reverte se falhar
+          console.error('Failed to toggle bookmark');
+        }
+      } catch (error) {
+        setIsBookmarked(!newBookmarkState); // Reverte se houver erro
+        console.error('Error toggling bookmark:', error);
+      } finally {
+        setBookmarkLoading(false);
+      }
+    };
     
     return (
       <div
@@ -622,17 +735,17 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
         {/* Bookmark Button - Positioned absolutely outside clickable area */}
         {user && (
           <button
-            onClick={(e) => handleBookmarkClick(video, e)}
-            disabled={isBookmarkLoading}
+            onClick={handleBookmarkClick}
+            disabled={bookmarkLoading}
             className={`absolute top-3 left-3 z-20 p-2 rounded-full backdrop-blur-sm transition-all duration-200 group-hover:opacity-100 ${
               isBookmarked 
                 ? 'bg-[#ff7551] text-white shadow-lg' 
                 : 'bg-black/60 text-white hover:bg-[#ff7551]/80'
-            } ${isBookmarkLoading ? 'animate-pulse scale-110' : ''} disabled:cursor-not-allowed`}
+            } ${bookmarkLoading ? 'animate-pulse scale-110' : ''} disabled:cursor-not-allowed`}
           >
             <Bookmark 
-              className={`w-5 h-5 transition-all duration-200 ${isBookmarkLoading ? 'animate-pulse' : ''}`}
-              fill={isBookmarked ? 'none' : 'none'}
+              className={`w-5 h-5 transition-all duration-200 ${bookmarkLoading ? 'animate-pulse' : ''}`}
+              fill="none"
               stroke="currentColor"
             />
           </button>
@@ -640,7 +753,7 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
 
         {/* Clickable Card Container */}
         <div 
-          onClick={(e) => handleVideoClick(video, e)}
+          onClick={handleVideoClick}
           className="block w-full cursor-pointer"
         >
           {/* Thumbnail Container */}
@@ -666,9 +779,9 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
           )}
           
             <img
-              src={video.thumbnail_url || 'https://images.pexels.com/photos/11035380/pexels-photo-11035380.jpeg?auto=compress&cs=tinysrgb&w=320&h=480&fit=crop'}
+              src={imageSrc}
               alt={video.title}
-              className="w-full h-full object-cover transition-all duration-300 group-hover:brightness-75 group-hover:scale-105"
+              className={`w-full h-full object-cover transition-all duration-300 group-hover:brightness-75 group-hover:scale-105 ${!isHighResLoaded ? 'blur-sm' : 'blur-none'}`}
               draggable={false}
             />
             
