@@ -433,20 +433,13 @@ const ProfilePage: React.FC = () => {
           <div className="relative">
             <img
               src={getCurrentAvatar()}
-              alt={user.name}
+              alt={profileDisplayData?.name || user.name}
               className="w-24 h-24 rounded-2xl object-cover border-2 border-[#ff7551]/20"
             />
           </div>
 
-          {/* User Info */}
+          {/* User Info - Removed duplicate display */}
           <div className="flex-1">
-            <h2 className="text-2xl font-bold text-white mb-2">
-              {profileDisplayData?.name || user.name}
-            </h2>
-            <p className="text-slate-400 mb-4 text-lg">
-              {profileDisplayData?.email || user.email}
-            </p>
-            
             <div className="flex flex-wrap items-center gap-4">
               {/* Subscription Status */}
               <div className={`flex items-center space-x-2 px-4 py-2 rounded-full font-medium ${
