@@ -839,6 +839,12 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
           />
           
           <ScrollableVideoRow 
+            title="Inteligência Artificial" 
+            videos={aiVideos} 
+            scrollRef={aiScrollRef} 
+          />
+          
+          <ScrollableVideoRow 
             title="Prompts" 
             videos={promptVideos} 
             scrollRef={promptScrollRef} 
