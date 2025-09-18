@@ -438,12 +438,6 @@ const ProfilePage: React.FC = () => {
           <div className="flex-1">
             <h2 className="text-2xl font-bold text-white mb-2">{user.name}</h2>
             <p className="text-slate-400 mb-4 text-lg">{user.email}</p>
-            <h2 className="text-2xl font-bold text-white mb-2">
-              {profileDisplayData?.name || user.name}
-            </h2>
-            <p className="text-slate-400 mb-4 text-lg">
-              {profileDisplayData?.email || user.email}
-            </p>
             
             <div className="flex flex-wrap items-center gap-4">
               {/* Premium Status */}
