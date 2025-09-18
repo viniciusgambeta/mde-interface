@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { User as SupabaseUser, Session, AuthChangeEvent } from '@supabase/supabase-js';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '../lib/supabase';
+import { supabase, clearOldSupabaseTokens } from '../lib/supabase';
 
 // Simple User type using only auth.user data
 export interface User {
@@ -108,6 +108,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   }, [navigate]);
 
   const signIn = async (email: string, password: string): Promise<{ user: User | null; error: string | null }> => {
+    // Preventive cleanup before login attempt
+    clearOldSupabaseTokens();
+
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
@@ -120,15 +123,42 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
       return { user: null, error: null };
     } catch (error: any) {
-      if (error.name === 'QuotaExceededError') {
-        localStorage.clear();
-        return { user: null, error: 'Armazenamento local cheio. Dados limpos. Tente fazer login novamente.' };
+      if (error.name === 'QuotaExceededError' || error.message?.includes('quota')) {
+        console.warn('Storage quota exceeded during login, clearing and retrying...');
+        
+        // Clear all storage
+        try {
+          localStorage.clear();
+          sessionStorage.clear();
+        } catch (clearError) {
+          console.warn('Error clearing storage:', clearError);
+        }
+        
+        // Retry login once after clearing storage
+        try {
+          const { data: retryData, error: retryError } = await supabase.auth.signInWithPassword({
+            email,
+            password,
+          });
+
+          if (retryError) {
+            return { user: null, error: retryError.message };
+          }
+
+          return { user: null, error: null };
+        } catch (retryError: any) {
+          return { user: null, error: 'Erro de armazenamento. Tente recarregar a página e fazer login novamente.' };
+        }
       }
+      
       return { user: null, error: error.message || 'Erro desconhecido durante o login' };
     }
   };
 
   const signUp = async (email: string, password: string, name: string): Promise<{ user: User | null; error: string | null }> => {
+    // Preventive cleanup before signup
+    clearOldSupabaseTokens();
+
     const { data, error } = await supabase.auth.signUp({
       email,
       password,

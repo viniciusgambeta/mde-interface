@@ -102,7 +102,8 @@ const ProfilePage: React.FC = () => {
             name: data["Nome do cliente"] || user.name || '',
             email: data.email_cliente || user.email || '',
             joinedAt: data.created_at_profile || user.joinedAt,
-            isPremium: data.is_premium || false
+            isPremium: data.is_premium || false,
+            subscriptionStatus: data["Status da assinatura"]
           });
 
           // Set current avatar
@@ -138,7 +139,8 @@ const ProfilePage: React.FC = () => {
             name: user.name || '',
             email: user.email || '',
             joinedAt: user.joinedAt,
-            isPremium: false
+            isPremium: false,
+            subscriptionStatus: undefined
           });
         }
       } catch (error) {
@@ -151,7 +153,8 @@ const ProfilePage: React.FC = () => {
           name: user.name || '',
           email: user.email || '',
           joinedAt: user.joinedAt,
-          isPremium: false
+          isPremium: false,
+          subscriptionStatus: undefined
         });
       }
     };
