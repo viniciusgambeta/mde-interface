@@ -201,6 +201,7 @@ export interface Video {
   is_bookmarked?: boolean;
   is_upvoted?: boolean;
   user_assinatura?: Assinatura; // For fetching user details in comments/suggestions
+  video_categories?: { category: Category }[]; // Temporary field for intermediate query
 }
 
 export interface VideoVersion {
@@ -364,6 +365,9 @@ export const videoService = {
       .select(`
         *,
         instructor:instructors(*),
+        video_categories(
+          category:categories(*)
+        ),
         difficulty_level:difficulty_levels(*),
         materials:video_materials(*),
         ferramentas:video_ferramentas(
@@ -385,18 +389,13 @@ export const videoService = {
       return null;
     }
 
-    // Fetch category separately if video has category_id
-    if (video.category_id) {
-      const { data: category, error: categoryError } = await supabase
-        .from('categories')
-        .select('*')
-        .eq('id', video.category_id)
-        .maybeSingle();
-
-      if (!categoryError && category) {
-        video.category = category;
-      }
+    // Extract category from video_categories relationship
+    if (video.video_categories && video.video_categories.length > 0) {
+      video.category = video.video_categories[0].category;
     }
+    
+    // Remove the temporary video_categories field
+    delete video.video_categories;
 
     // Transform ferramentas data structure
     if (video.ferramentas) {
