@@ -29,11 +29,14 @@ const SuggestedLives: React.FC<{ currentLive: Video }> = ({ currentLive }) => {
 
       try {
         // Get lives from the same category, excluding the current live
-        const allVideos = await videoService.getVideosByCategory(
-          currentLive.category.slug, 
-          10, 
-          user?.id
-        );
+       let allVideos: Video[] = [];
+       if (currentLive.categories && currentLive.categories.length > 0) {
+         allVideos = await videoService.getVideosByCategory(
+           currentLive.categories[0].slug, 
+           10, 
+           user?.id
+         );
+       }
         
         // Filter for lives only and exclude current live
         const lives = allVideos.filter(v => v.tipo === 'live' && v.id !== currentLive.id);
@@ -46,7 +49,7 @@ const SuggestedLives: React.FC<{ currentLive: Video }> = ({ currentLive }) => {
     };
 
     loadSuggestedLives();
-  }, [currentLive.id, currentLive.category?.slug, user?.id]);
+  }, [currentLive.category?.slug, currentLive.categories, currentLive.id, user?.id]);
 
   if (loading) {
     return (
@@ -91,10 +94,10 @@ const SuggestedLives: React.FC<{ currentLive: Video }> = ({ currentLive }) => {
               {suggestion.title}
             </h5>
             <div className="flex items-center space-x-2 text-xs text-slate-400 mt-1">
-             {suggestion.categories && suggestion.categories.length > 0 && (
-               <span>{suggestion.categories[0].name}</span>
+              {suggestion.category && (
+                <span>{suggestion.category.name}</span>
               )}
-             {suggestion.categories && suggestion.categories.length > 0 && (
+              {suggestion.category && (
                 <span>•</span>
               )}
               <span>Live</span>
@@ -233,6 +236,7 @@ const YouTubeEmbed: React.FC<{ url: string; title: string }> = ({ url, title }) 
 interface LiveViewerProps {
   live: Video;
   onBack: () => void;
+  onVideoSelect?: (video: Video) => void;
 }
 
 const LiveViewer: React.FC<LiveViewerProps> = ({ live, onBack, onVideoSelect }) => {
