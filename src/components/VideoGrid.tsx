@@ -44,7 +44,6 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
   const [boltVideos, setBoltVideos] = useState<Video[]>([]);
   const [liveVideos, setLiveVideos] = useState<Video[]>([]);
   const [promptVideos, setPromptVideos] = useState<Video[]>([]);
-  const [aiVideos, setAiVideos] = useState<Video[]>([]);
 
   // Setup realtime subscription for bookmarks
   useEffect(() => {
