@@ -55,65 +55,61 @@ const PoderzinhosPage: React.FC = () => {
 
   const FerramentaCard: React.FC<{ ferramenta: HallFerramenta }> = ({ ferramenta }) => {
     return (
-      <div className="relative bg-slate-700/30 border border-slate-600/30 rounded-xl overflow-hidden aspect-[3/4] group cursor-pointer">
-        {/* Background Image */}
-        <div className="absolute inset-0">
-          {ferramenta.img_ferramenta ? (
-            <img 
-              src={ferramenta.img_ferramenta} 
-              alt={ferramenta.nome_ferramenta}
-              className="w-full h-full object-cover"
-              onError={(e) => {
-                const target = e.target as HTMLImageElement;
-                target.style.display = 'none';
-                const fallback = target.nextElementSibling as HTMLElement;
-                if (fallback) fallback.style.display = 'flex';
-              }}
-            />
-          ) : null}
-          <div className={`w-full h-full bg-slate-600/30 ${ferramenta.img_ferramenta ? 'hidden' : 'flex'} items-center justify-center`}>
-            <ExternalLink className="w-12 h-12 text-slate-400" />
-          </div>
-        </div>
-        
-        {/* Gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent group-hover:from-black/90 group-hover:via-black/40 transition-all duration-300"></div>
-        
-        {/* Content at bottom */}
-        <div className="absolute bottom-0 left-0 right-0 p-6">
-          {ferramenta.tipo_ferramenta && (
-            <div className="flex items-center space-x-2 mb-2">
-              <DollarSign className="w-3 h-3 text-[#ff7551]" />
-              <span className="text-xs px-2 py-1 bg-[#ff7551]/20 text-[#ff7551] rounded-full font-medium">
-                {ferramenta.tipo_ferramenta}
-              </span>
+      <div className="bg-slate-700/30 border border-slate-600/30 rounded-xl overflow-hidden hover:bg-slate-600/20 transition-all duration-300 group">
+        {/* Header */}
+        <div className="p-6">
+          <div className="flex items-start justify-between mb-4">
+            <div className="flex items-center space-x-3">
+              <div className="w-12 h-12 bg-slate-600/30 rounded-lg flex items-center justify-center overflow-hidden">
+                {ferramenta.img_ferramenta ? (
+                  <img
+                    src={ferramenta.img_ferramenta}
+                    alt={`${ferramenta.nome_ferramenta} logo`}
+                    className="w-full h-full object-contain"
+                    onError={(e) => {
+                      // Fallback to icon if image fails to load
+                      const target = e.target as HTMLImageElement;
+                      target.style.display = 'none';
+                      const fallback = target.nextElementSibling as HTMLElement;
+                      if (fallback) fallback.style.display = 'flex';
+                    }}
+                  />
+                ) : null}
+                <div className={`w-full h-full bg-slate-600/30 rounded-lg ${ferramenta.img_ferramenta ? 'hidden' : 'flex'} items-center justify-center text-2xl`}>
+                  🛠️
+                </div>
+              </div>
+              <div>
+                <h3 className="text-white font-semibold text-lg">{ferramenta.nome_ferramenta}</h3>
+                <div className="flex items-center space-x-2 mt-1">
+                  {ferramenta.tipo_ferramenta && (
+                    <span className="text-xs px-2 py-1 bg-slate-600/30 text-slate-300 rounded">
+                      {ferramenta.tipo_ferramenta}
+                    </span>
+                  )}
+                </div>
+              </div>
             </div>
-          )}
-          
-          <h3 className="text-white font-bold text-3xl mb-3 leading-tight">
-            {ferramenta.nome_ferramenta}
-          </h3>
-          
-          {/* Description - shown on hover */}
-          <div className="hidden group-hover:block mb-3 animate-fade-in">
-            <p className="text-slate-200 text-sm leading-relaxed line-clamp-2">
-              {ferramenta.descricao_ferramenta || 'Acesse esta ferramenta útil através do link fornecido.'}
-            </p>
+            
+            <div className="text-right">
+              <ExternalLink className="w-5 h-5 text-slate-400 group-hover:text-[#ff7551] transition-colors" />
+            </div>
           </div>
-          
-          {/* Button - shown on hover */}
-          <div className="hidden group-hover:block animate-fade-in">
-            <a
-              href={ferramenta.link_ferramenta}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={(e) => e.stopPropagation()}
-              className="w-full flex items-center justify-center space-x-2 py-2 px-3 bg-[#ff7551] hover:bg-[#ff7551]/90 text-white font-medium rounded-lg transition-colors"
-            >
-              <ExternalLink className="w-4 h-4" />
-              <span>Acessar</span>
-            </a>
-          </div>
+
+          <p className="text-slate-300 text-base leading-relaxed mb-4">
+            {ferramenta.descricao_ferramenta || 'Ferramenta útil para automação e produtividade.'}
+          </p>
+
+          {/* Action Button */}
+          <a
+            href={ferramenta.link_ferramenta}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-full flex items-center justify-center space-x-2 py-3 px-4 bg-[#ff7551] hover:bg-[#ff7551]/80 text-white font-medium rounded-lg transition-all duration-200 transform hover:scale-105"
+          >
+            <ExternalLink className="w-4 h-4" />
+            <span>Acessar Ferramenta</span>
+          </a>
         </div>
       </div>
     );
@@ -169,7 +165,7 @@ const PoderzinhosPage: React.FC = () => {
 
       {/* Ferramentas Grid */}
       {ferramentas.length > 0 ? (
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {ferramentas.map((ferramenta, index) => (
             <div
               key={ferramenta.id}
