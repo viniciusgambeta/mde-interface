@@ -316,7 +316,7 @@ const RequestLessonPage: React.FC = () => {
       <div className="flex items-start justify-between">
         <div>
           <h1 className="text-3xl font-bold text-white mb-4">Envie sugestões de aulas</h1>
-          <p className="text-slate-400 text-lg max-w-2xl">
+          <p className="text-slate-400 text-lg max-w-4xl">
             Vote nas aulas que mais quer ver e sugira novos tópicos para a plataforma.
           </p>
         </div>
