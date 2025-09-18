@@ -126,39 +126,12 @@ const AffiliatesPage: React.FC = () => {
         <h1 className="text-3xl font-bold text-white mb-4">Programa de Afiliados</h1>
         <p className="text-slate-400 text-lg max-w-4xl leading-relaxed">
           Ganhe dinheiro indicando a comunidade Me dá um Exemplo para outras pessoas. 
-          Nosso programa de afiliados oferece comissões atrativas tanto na primeira venda quanto nas renovações mensais/anuais.
+          Nosso programa de afiliados oferece <strong className="text-[#ff7551]">50% de comissão na primeira venda</strong> e <strong className="text-[#ff7551]">10% nas recorrências</strong>.
           <br /><br />
           Como afiliado, você receberá um link exclusivo para compartilhar com sua audiência. Sempre que alguém se inscrever através do seu link, você ganha uma comissão imediata e também uma porcentagem de todas as renovações futuras dessa pessoa.
           <br /><br />
           É uma excelente oportunidade para monetizar seu conteúdo, seja em redes sociais, blog, YouTube ou qualquer outro canal onde você tenha audiência interessada em automação e inteligência artificial.
         </p>
-      </div>
-
-      {/* Commission Structure - Minimal */}
-      <div className="bg-slate-700/30 border border-slate-600/30 rounded-xl p-8 max-w-4xl">
-        <h2 className="text-2xl font-bold text-white mb-6 text-center">Estrutura de Comissões</h2>
-        
-        <div className="grid md:grid-cols-2 gap-8 text-center">
-          {/* First Sale Commission */}
-          <div>
-            <div className="text-4xl font-bold text-green-400 mb-2">50%</div>
-            <h3 className="text-white font-semibold mb-3">Primeira Venda</h3>
-            <div className="space-y-1 text-sm text-slate-400">
-              <div>Mensal: até R$ 33,50</div>
-              <div>Anual: até R$ 299,00</div>
-            </div>
-          </div>
-
-          {/* Recurring Commission */}
-          <div>
-            <div className="text-4xl font-bold text-[#ff7551] mb-2">10%</div>
-            <h3 className="text-white font-semibold mb-3">Recorrências</h3>
-            <div className="space-y-1 text-sm text-slate-400">
-              <div>Mensal: até R$ 6,70/mês</div>
-              <div>Anual: até R$ 59,00/ano</div>
-            </div>
-          </div>
-        </div>
       </div>
 
       {/* CTA Button */}
