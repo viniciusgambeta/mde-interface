@@ -36,7 +36,6 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
   const basicScrollRef = useRef<HTMLDivElement>(null);
   const boltScrollRef = useRef<HTMLDivElement>(null);
   const configuracoesScrollRef = useRef<HTMLDivElement>(null);
-  const vibeCodingScrollRef = useRef<HTMLDivElement>(null);
 
   // Category-specific videos
   const [aiVideos, setAiVideos] = useState<Video[]>([]);
@@ -45,7 +44,6 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
   const [basicVideos, setBasicVideos] = useState<Video[]>([]);
   const [boltVideos, setBoltVideos] = useState<Video[]>([]);
   const [configuracoesVideos, setConfiguracoesVideos] = useState<Video[]>([]);
-  const [vibeCodingVideos, setVibeCodingVideos] = useState<Video[]>([]);
   const [liveVideos, setLiveVideos] = useState<Video[]>([]);
   const [promptVideos, setPromptVideos] = useState<Video[]>([]);
 
@@ -193,10 +191,6 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
         // Load Configurações category videos
         const configuracoesVideos = await videoService.getVideosByCategory('configuracoes', 20, user?.id);
         setConfiguracoesVideos(configuracoesVideos);
-        
-        // Load Vibe Coding category videos
-        const vibeCodingVideos = await videoService.getVideosByCategory('vibe-coding', 20, user?.id);
-        setVibeCodingVideos(vibeCodingVideos);
       } catch (error) {
         console.error('Error loading category videos:', error);
       }
@@ -883,11 +877,6 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
             title="Configurações" 
             videos={configuracoesVideos} 
             scrollRef={configuracoesScrollRef} 
-          />
-          <ScrollableVideoRow 
-            title="Vibe Coding" 
-            videos={vibeCodingVideos} 
-            scrollRef={vibeCodingScrollRef} 
           />
         </>
       )}
