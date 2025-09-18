@@ -440,7 +440,7 @@ export const videoService = {
           )
         `)
         .eq('status', 'published')
-        .eq('category_id', category.id)
+        .contains('category_id', [category.id])
         .order('published_at', { ascending: false });
       
       if (limit) {
