@@ -35,6 +35,7 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
   const whatsappScrollRef = useRef<HTMLDivElement>(null);
   const basicScrollRef = useRef<HTMLDivElement>(null);
   const boltScrollRef = useRef<HTMLDivElement>(null);
+  const configuracoesScrollRef = useRef<HTMLDivElement>(null);
 
   // Category-specific videos
   const [aiVideos, setAiVideos] = useState<Video[]>([]);
@@ -42,6 +43,7 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
   const [whatsappVideos, setWhatsappVideos] = useState<Video[]>([]);
   const [basicVideos, setBasicVideos] = useState<Video[]>([]);
   const [boltVideos, setBoltVideos] = useState<Video[]>([]);
+  const [configuracoesVideos, setConfiguracoesVideos] = useState<Video[]>([]);
   const [liveVideos, setLiveVideos] = useState<Video[]>([]);
   const [promptVideos, setPromptVideos] = useState<Video[]>([]);
 
@@ -185,6 +187,10 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
         // Load Basic category videos
         const basicCategoryVideos = await videoService.getVideosByCategory('basico', 20, user?.id);
         setBasicVideos(basicCategoryVideos);
+        
+        // Load Configurações category videos
+        const configuracoesVideos = await videoService.getVideosByCategory('configuracoes', 20, user?.id);
+        setConfiguracoesVideos(configuracoesVideos);
       } catch (error) {
         console.error('Error loading category videos:', error);
       }
@@ -866,6 +872,11 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
             title="Aulas Básicas" 
             videos={basicVideos} 
             scrollRef={basicScrollRef} 
+          />
+          <ScrollableVideoRow 
+            title="Configurações" 
+            videos={configuracoesVideos} 
+            scrollRef={configuracoesScrollRef} 
           />
         </>
       )}
