@@ -110,8 +110,9 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
         console.log('Loading videos for view:', currentView);
         
         if (currentView === 'discover') {
+          // Load all videos for the "Últimos Vídeos" section
           videoData = await videoService.getVideos({ 
-            limit: 20, 
+            limit: 50, 
             userId: user?.id 
           });
         } else if (currentView === 'trending') {
@@ -166,41 +167,19 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
       try {
         console.log('Loading category-specific videos...');
         
-        // Load videos for each category using known slugs
-        const [
-          aiData,
-          automationData,
-          whatsappData,
-          basicData,
-          boltData,
-          allVideosData
-        ] = await Promise.all([
-          videoService.getVideosByCategory('inteligencia-artificial', 10, user?.id),
-          videoService.getVideosByCategory('automacao', 10, user?.id),
-          videoService.getVideosByCategory('whatsapp', 10, user?.id),
-          videoService.getVideosByCategory('basico', 10, user?.id),
-          videoService.getVideosByCategory('bolt', 10, user?.id),
-          videoService.getVideos({ limit: 50, userId: user?.id })
-        ]);
+        // For now, just load all videos and filter by type
+        const allVideosData = await videoService.getVideos({ limit: 100, userId: user?.id });
         
-        console.log('Category videos loaded with slugs:', {
-          'inteligencia-artificial': aiData.length,
-          'automacao': automationData.length,
-          'whatsapp': whatsappData.length,
-          'basico': basicData.length,
-          'bolt': boltData.length
-        });
-        
-        // Set category videos
-        setAiVideos(aiData);
-        setAutomationVideos(automationData);
-        setWhatsappVideos(whatsappData);
-        setBasicVideos(basicData);
-        setBoltVideos(boltData);
-        
-        // Set live and prompt videos from all videos
+        // Set videos by type instead of category
         setLiveVideos(allVideosData.filter(v => v.tipo === 'live'));
         setPromptVideos(allVideosData.filter(v => v.tipo === 'prompt'));
+        
+        // Set empty arrays for category-specific videos for now
+        setAiVideos([]);
+        setAutomationVideos([]);
+        setWhatsappVideos([]);
+        setBasicVideos([]);
+        setBoltVideos([]);
       } catch (error) {
         console.error('Error loading category videos:', error);
       }
