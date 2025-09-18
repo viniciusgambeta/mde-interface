@@ -230,7 +230,6 @@ export const videoService = {
       .select(`
         *,
         instructor:instructors(*),
-        category:categories(*),
         difficulty_level:difficulty_levels(*),
         materials:video_materials(*),
         ferramentas:video_ferramentas(
@@ -497,7 +496,6 @@ export const videoService = {
         .select(`
           *,
           instructor:instructors(*),
-          category:categories(*),
           difficulty_level:difficulty_levels(*),
           materials:video_materials(*),
           ferramentas:video_ferramentas(
@@ -914,7 +912,6 @@ export const videoService = {
           related_video:videos(
             *,
             instructor:instructors(*),
-            category:categories(*),
             difficulty_level:difficulty_levels(*),
             materials:video_materials(*),
             ferramentas:video_ferramentas(
