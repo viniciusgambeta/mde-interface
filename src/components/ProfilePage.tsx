@@ -40,6 +40,7 @@ const ProfilePage: React.FC = () => {
     email: string;
     joinedAt: string;
     isPremium: boolean;
+    plan: string;
   } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -101,7 +102,8 @@ const ProfilePage: React.FC = () => {
             name: data["Nome do cliente"] || user.name || '',
             email: data.email_cliente || user.email || '',
             joinedAt: data.created_at_profile || user.joinedAt,
-            isPremium: data.is_premium || false
+            isPremium: data.is_premium || false,
+            plan: data["Plano"] || 'Free'
           });
 
           // Set current avatar
@@ -137,7 +139,8 @@ const ProfilePage: React.FC = () => {
             name: user.name || '',
             email: user.email || '',
             joinedAt: user.joinedAt,
-            isPremium: false
+            isPremium: false,
+            plan: 'Free'
           });
         }
       } catch (error) {
@@ -150,7 +153,8 @@ const ProfilePage: React.FC = () => {
           name: user.name || '',
           email: user.email || '',
           joinedAt: user.joinedAt,
-          isPremium: false
+          isPremium: false,
+          plan: 'Free'
         });
       }
     };
@@ -447,7 +451,7 @@ const ProfilePage: React.FC = () => {
                   : 'bg-slate-600/30 text-slate-400 border border-slate-600/30'
               }`}>
                 <Shield className="w-4 h-4" />
-                <span>{(profileDisplayData?.isPremium || user.isPremium) ? 'Premium' : 'Free'}</span>
+                <span>{profileDisplayData?.plan || 'Free'}</span>
               </div>
 
               {/* Join Date */}
