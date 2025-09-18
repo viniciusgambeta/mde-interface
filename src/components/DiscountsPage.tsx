@@ -143,7 +143,7 @@ const DiscountsPage: React.FC = () => {
         <div className="p-6">
           <div className="flex items-start justify-between mb-4">
             <div className="flex items-center space-x-3">
-              <div className="w-12 h-12 bg-slate-600/30 rounded-lg flex items-center justify-center overflow-hidden">
+              <div className="w-16 h-16 bg-slate-600/30 rounded-lg flex items-center justify-center overflow-hidden">
                 <img
                   src={coupon.logo}
                   alt={`${coupon.nome} logo`}
@@ -156,17 +156,12 @@ const DiscountsPage: React.FC = () => {
                     if (fallback) fallback.style.display = 'flex';
                   }}
                 />
-                <div className="w-full h-full bg-slate-600/30 rounded-lg hidden items-center justify-center text-2xl">
+                <div className="w-full h-full bg-slate-600/30 rounded-lg hidden items-center justify-center text-3xl">
                   🎁
                 </div>
               </div>
               <div>
                 <h3 className="text-white font-semibold text-lg">{coupon.nome}</h3>
-                <div className="flex items-center space-x-2 mt-1">
-                  <span className="text-xs px-2 py-1 bg-slate-600/30 text-slate-300 rounded">
-                    {coupon.categoria}
-                  </span>
-                </div>
               </div>
             </div>
             
@@ -192,7 +187,7 @@ const DiscountsPage: React.FC = () => {
                     : 'bg-slate-600/30 hover:bg-slate-500/30 text-slate-300 hover:text-white'
                 }`}
               >
-                <span>{isExpanded ? 'Ocultar Cupom' : 'Ver Cupom'}</span>
+                <span>{isExpanded ? 'Ocultar cupom' : 'Ver cupom'}</span>
                 <svg 
                   className={`w-4 h-4 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} 
                   fill="none" 
@@ -209,8 +204,10 @@ const DiscountsPage: React.FC = () => {
                 rel="noopener noreferrer"
                 className="w-full flex items-center justify-center space-x-2 py-3 px-4 bg-slate-600/30 hover:bg-slate-500/30 text-slate-300 hover:text-white rounded-lg font-medium transition-all duration-200"
               >
-                <ExternalLink className="w-4 h-4" />
-                <span>Acessar Link</span>
+                <span>Acessar link</span>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
               </a>
             )}
           </div>
@@ -257,8 +254,10 @@ const DiscountsPage: React.FC = () => {
                 rel="noopener noreferrer"
                 className="w-full flex items-center justify-center space-x-2 py-3 px-4 bg-[#ff7551] hover:bg-[#ff7551]/80 text-white rounded-lg font-medium transition-all duration-200 transform hover:scale-105 mt-3"
               >
-                <ExternalLink className="w-4 h-4" />
-                <span>Acessar Link</span>
+                <span>Acessar link</span>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
               </a>
               
               <p className="text-slate-400 text-xs mt-3">
