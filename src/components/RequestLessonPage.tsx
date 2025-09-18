@@ -188,6 +188,10 @@ const RequestLessonPage: React.FC = () => {
    const getFirstName = (fullName: string) => {
      return fullName.split(' ')[0];
    };
+
+   // Get the correct user data for display
+   const displayUserName = isUserSuggestion ? 'Você' : getFirstName(suggestion.user_name || 'Usuário Anônimo');
+   const displayUserAvatar = suggestion.user_avatar || '/avatar1.png';
     
     return (
       <div className={`relative border rounded-lg p-6 hover:bg-slate-600/20 transition-all duration-200 group ${
@@ -232,14 +236,14 @@ const RequestLessonPage: React.FC = () => {
         {/* User info */}
        <div className="flex items-center space-x-3">
           <img
-            src={suggestion.user_avatar || '/avatar1.png'}
-            alt="User"
+            src={displayUserAvatar}
+            alt={displayUserName}
            className="w-8 h-8 rounded-lg object-cover"
           />
           <span className="text-slate-400 text-sm">
             Sugerido por{' '}
             <span className="font-bold text-slate-300">
-             {isUserSuggestion ? 'Você' : getFirstName(suggestion.user_name || 'Usuário Anônimo')}
+             {displayUserName}
             </span>
           </span>
         </div>
