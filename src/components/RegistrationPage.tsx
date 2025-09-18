@@ -275,8 +275,6 @@ const RegistrationPage: React.FC = () => {
           }
         }
         
-        // Force logout to ensure user is not automatically logged in
-        await supabase.auth.signOut();
         console.log('✅ Registration successful, showing success screen...');
         setShowSuccessScreen(true);
       }
@@ -289,9 +287,16 @@ const RegistrationPage: React.FC = () => {
   };
 
   const handleGoToLogin = async () => {
-    console.log('🚪 Forcing logout before login redirect...');
-    await supabase.auth.signOut();
-    navigate('/?login=true');
+    try {
+      console.log('🚪 User clicked login button, forcing logout...');
+      await supabase.auth.signOut();
+      console.log('✅ Logout successful, redirecting to login...');
+      navigate('/?login=true');
+    } catch (error) {
+      console.error('❌ Error during logout before login redirect:', error);
+      // Force redirect even if logout fails
+      navigate('/?login=true');
+    }
   };
 
   const canProceed = () => {
@@ -332,19 +337,19 @@ const RegistrationPage: React.FC = () => {
             Conta Criada com Sucesso!
           </h1>
           
-          <p className="text-slate-300 mb-6">
-            Sua conta foi criada com sucesso! Para sua segurança, você precisa fazer login novamente para acessar a plataforma.
+          <p className="text-slate-300 mb-8">
+            Parabéns! Sua conta foi criada com sucesso. Agora você pode fazer login para acessar todo o conteúdo da plataforma.
           </p>
           
           <button
             onClick={handleGoToLogin}
-            className="w-full bg-[#ff7551] hover:bg-[#ff7551]/80 text-white font-medium py-3 rounded-lg transition-colors mb-4"
+            className="w-full bg-[#ff7551] hover:bg-[#ff7551]/80 text-white font-medium py-4 rounded-lg transition-colors mb-6 text-lg"
           >
             Fazer Login
           </button>
           
           <p className="text-slate-400 text-sm">
-            Use o email e senha que você acabou de criar para entrar na plataforma.
+            Clique no botão acima para ser redirecionado para a tela de login.
           </p>
         </div>
       </div>
