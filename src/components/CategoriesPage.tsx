@@ -81,13 +81,15 @@ const CategoriesPage: React.FC<CategoriesPageProps> = ({ onVideoSelect }) => {
         video.description?.toLowerCase().includes(searchTerm) ||
         video.summary?.toLowerCase().includes(searchTerm) ||
         video.instructor?.name.toLowerCase().includes(searchTerm) ||
-        video.category?.name.toLowerCase().includes(searchTerm)
+        (video.categories && video.categories.some(cat => cat.name.toLowerCase().includes(searchTerm)))
       );
     }
 
     // Category filter
     if (filters.category) {
-      filtered = filtered.filter(video => video.category?.id === filters.category);
+     filtered = filtered.filter(video => 
+       video.categories && video.categories.some(cat => cat.id === filters.category)
+     );
     }
 
     // Difficulty filter

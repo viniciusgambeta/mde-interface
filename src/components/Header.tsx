@@ -362,11 +362,11 @@ const Header: React.FC<HeaderProps> = ({ sidebarCollapsed, onSidebarToggle, onVi
                                 {video.instructor && (
                                   <span>{video.instructor.name}</span>
                                 )}
-                                {video.category && video.instructor && (
+                               {video.categories && video.categories.length > 0 && video.instructor && (
                                   <span>•</span>
                                 )}
-                                {video.category && (
-                                  <span>{video.category.name}</span>
+                               {video.categories && video.categories.length > 0 && (
+                                 <span>{video.categories[0].name}</span>
                                 )}
                               </div>
                               <div className="flex items-center space-x-2 text-sm text-slate-500 mt-1">

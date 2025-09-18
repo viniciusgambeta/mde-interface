@@ -30,11 +30,14 @@ const SuggestedVideos: React.FC<{ currentVideo: Video }> = ({ currentVideo }) =>
 
       try {
         // Get videos from the same category, excluding the current video
-        const videos = await videoService.getVideosByCategory(
-          currentVideo.category.slug, 
-          6, 
-          user?.id
-        );
+       let videos: Video[] = [];
+       if (currentVideo.categories && currentVideo.categories.length > 0) {
+         videos = await videoService.getVideosByCategory(
+           currentVideo.categories[0].slug, 
+           6, 
+           user?.id
+         );
+       }
         
         // Filter out the current video
         const filtered = videos.filter(v => v.id !== currentVideo.id);
@@ -47,7 +50,6 @@ const SuggestedVideos: React.FC<{ currentVideo: Video }> = ({ currentVideo }) =>
     };
 
     loadSuggestedVideos();
-  }, [currentVideo.id, currentVideo.category?.slug, user?.id]);
 
   if (loading) {
     return (
