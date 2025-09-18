@@ -169,28 +169,33 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
       try {
         console.log('Loading category-specific videos...');
         
-        // Load all videos and filter by type
-        const allVideosData = await videoService.getVideos({ limit: 100, userId: user?.id });
+        // Load all videos once and filter by type/category
+        const allVideosData = await videoService.getVideos({ limit: 80, userId: user?.id });
         
-        // Set videos by type instead of category
-        setLiveVideos(allVideosData.filter(v => v.tipo === 'live' && v.status === 'published'));
-        setPromptVideos(allVideosData.filter(v => v.tipo === 'prompt'));
+        // Group videos by type and category in one pass
+        const newCategoryVideos = {
+          live: allVideosData.filter(v => v.tipo === 'live' && v.status === 'published').slice(0, 12),
+          prompt: allVideosData.filter(v => v.tipo === 'prompt').slice(0, 12),
+          ai: [],
+          automation: [],
+          basic: [],
+          configuracoes: []
+        };
         
-        // Load AI category videos (category id: f737e29d-e1b1-43b4-bce0-8c84f1a79759)
-        const aiCategoryVideos = await videoService.getVideosByCategory('ia', 20, user?.id);
-        setAiVideos(aiCategoryVideos);
+        // Load specific categories in parallel
+        const [aiVideos, automationVideos, basicVideos, configuracoesVideos] = await Promise.all([
+          videoService.getVideosByCategory('ia', 12, user?.id),
+          videoService.getVideosByCategory('automacao', 12, user?.id),
+          videoService.getVideosByCategory('basico', 12, user?.id),
+          videoService.getVideosByCategory('configuracoes', 12, user?.id)
+        ]);
         
-        // Load Automation category videos
-        const automationCategoryVideos = await videoService.getVideosByCategory('automacao', 20, user?.id);
-        setAutomationVideos(automationCategoryVideos);
+        newCategoryVideos.ai = aiVideos;
+        newCategoryVideos.automation = automationVideos;
+        newCategoryVideos.basic = basicVideos;
+        newCategoryVideos.configuracoes = configuracoesVideos;
         
-        // Load Basic category videos
-        const basicCategoryVideos = await videoService.getVideosByCategory('basico', 20, user?.id);
-        setBasicVideos(basicCategoryVideos);
-        
-        // Load Configurações category videos
-        const configuracoesVideos = await videoService.getVideosByCategory('configuracoes', 20, user?.id);
-        setConfiguracoesVideos(configuracoesVideos);
+        setCategoryVideos(newCategoryVideos);
       } catch (error) {
         console.error('Error loading category videos:', error);
       }
@@ -837,46 +842,47 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
     <section className="animate-page-transition">
       {currentView !== 'discover' ? (
         <ScrollableVideoRow title={getViewTitle(currentView)} videos={videos} scrollRef={latestScrollRef} />
+        <ScrollableVideoRow title={getViewTitle(currentView)} videos={videos} scrollRef={scrollRefs.latest} />
       ) : (
         <>
           <ScrollableVideoRow 
             title="Últimos Vídeos" 
             videos={videos} 
-            scrollRef={latestScrollRef} 
+            scrollRef={scrollRefs.latest} 
           />
       
           <ScrollableVideoRow 
             title="Eventos ao Vivo" 
-            videos={liveVideos} 
-            scrollRef={liveScrollRef} 
+            videos={categoryVideos.live} 
+            scrollRef={scrollRefs.live} 
           />
           
           <ScrollableVideoRow 
             title="Inteligência Artificial" 
-            videos={aiVideos} 
-            scrollRef={aiScrollRef} 
+            videos={categoryVideos.ai} 
+            scrollRef={scrollRefs.ai} 
           />
           
           <ScrollableVideoRow 
             title="Automações" 
-            videos={automationVideos} 
-            scrollRef={automationScrollRef} 
+            videos={categoryVideos.automation} 
+            scrollRef={scrollRefs.automation} 
           />
           
           <ScrollableVideoRow 
             title="Prompts" 
-            videos={promptVideos} 
-            scrollRef={promptScrollRef} 
+            videos={categoryVideos.prompt} 
+            scrollRef={scrollRefs.prompt} 
           />
           <ScrollableVideoRow 
             title="Aulas Básicas" 
-            videos={basicVideos} 
-            scrollRef={basicScrollRef} 
+            videos={categoryVideos.basic} 
+            scrollRef={scrollRefs.basic} 
           />
           <ScrollableVideoRow 
             title="Configurações" 
-            videos={configuracoesVideos} 
-            scrollRef={configuracoesScrollRef} 
+            videos={categoryVideos.configuracoes} 
+            scrollRef={scrollRefs.configuracoes} 
           />
         </>
       )}
