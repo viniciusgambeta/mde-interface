@@ -39,7 +39,6 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
   // Category-specific videos
   const [aiVideos, setAiVideos] = useState<Video[]>([]);
   const [automationVideos, setAutomationVideos] = useState<Video[]>([]);
-  const [automationVideos, setAutomationVideos] = useState<Video[]>([]);
   const [whatsappVideos, setWhatsappVideos] = useState<Video[]>([]);
   const [basicVideos, setBasicVideos] = useState<Video[]>([]);
   const [boltVideos, setBoltVideos] = useState<Video[]>([]);
