@@ -40,7 +40,6 @@ const ProfilePage: React.FC = () => {
     email: string;
     joinedAt: string;
     isPremium: boolean;
-    subscriptionStatus?: string;
   } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -102,8 +101,7 @@ const ProfilePage: React.FC = () => {
             name: data["Nome do cliente"] || user.name || '',
             email: data.email_cliente || user.email || '',
             joinedAt: data.created_at_profile || user.joinedAt,
-            isPremium: data.is_premium || false,
-            subscriptionStatus: data["Status da assinatura"]
+            isPremium: data.is_premium || false
           });
 
           // Set current avatar
@@ -139,8 +137,7 @@ const ProfilePage: React.FC = () => {
             name: user.name || '',
             email: user.email || '',
             joinedAt: user.joinedAt,
-            isPremium: false,
-            subscriptionStatus: undefined
+            isPremium: false
           });
         }
       } catch (error) {
@@ -153,8 +150,7 @@ const ProfilePage: React.FC = () => {
           name: user.name || '',
           email: user.email || '',
           joinedAt: user.joinedAt,
-          isPremium: false,
-          subscriptionStatus: undefined
+          isPremium: false
         });
       }
     };
@@ -433,22 +429,31 @@ const ProfilePage: React.FC = () => {
           <div className="relative">
             <img
               src={getCurrentAvatar()}
-              alt={profileDisplayData?.name || user.name}
+              alt={user.name}
               className="w-24 h-24 rounded-2xl object-cover border-2 border-[#ff7551]/20"
             />
           </div>
 
-          {/* User Info - Removed duplicate display */}
+          {/* User Info */}
           <div className="flex-1">
+            <h2 className="text-2xl font-bold text-white mb-2">{user.name}</h2>
+            <p className="text-slate-400 mb-4 text-lg">{user.email}</p>
+            <h2 className="text-2xl font-bold text-white mb-2">
+              {profileDisplayData?.name || user.name}
+            </h2>
+            <p className="text-slate-400 mb-4 text-lg">
+              {profileDisplayData?.email || user.email}
+            </p>
+            
             <div className="flex flex-wrap items-center gap-4">
-              {/* Subscription Status */}
+              {/* Premium Status */}
               <div className={`flex items-center space-x-2 px-4 py-2 rounded-full font-medium ${
-                profileDisplayData?.subscriptionStatus === 'active'
-                  ? 'bg-green-500/20 text-green-400 border border-green-500/30' 
-                  : 'bg-red-500/20 text-red-400 border border-red-500/30'
+                profileDisplayData?.isPremium || user.isPremium
+                  ? 'bg-[#ff7551]/20 text-[#ff7551] border border-[#ff7551]/30' 
+                  : 'bg-slate-600/30 text-slate-400 border border-slate-600/30'
               }`}>
                 <Shield className="w-4 h-4" />
-                <span>{profileDisplayData?.subscriptionStatus === 'active' ? 'Ativo' : 'Inativo'}</span>
+                <span>{(profileDisplayData?.isPremium || user.isPremium) ? 'Premium' : 'Free'}</span>
               </div>
 
               {/* Join Date */}
