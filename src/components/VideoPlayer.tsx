@@ -50,6 +50,7 @@ const SuggestedVideos: React.FC<{ currentVideo: Video }> = ({ currentVideo }) =>
     };
 
     loadSuggestedVideos();
+  }, [currentVideo.category?.slug, currentVideo.categories, currentVideo.id, user?.id]);
 
   if (loading) {
     return (
