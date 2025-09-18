@@ -29,14 +29,11 @@ const SuggestedLives: React.FC<{ currentLive: Video }> = ({ currentLive }) => {
 
       try {
         // Get lives from the same category, excluding the current live
-       let allVideos: Video[] = [];
-       if (currentLive.categories && currentLive.categories.length > 0) {
-         allVideos = await videoService.getVideosByCategory(
-           currentLive.categories[0].slug, 
-           10, 
-           user?.id
-         );
-       }
+        const allVideos = await videoService.getVideosByCategory(
+          currentLive.category.slug, 
+          10, 
+          user?.id
+        );
         
         // Filter for lives only and exclude current live
         const lives = allVideos.filter(v => v.tipo === 'live' && v.id !== currentLive.id);
@@ -49,7 +46,7 @@ const SuggestedLives: React.FC<{ currentLive: Video }> = ({ currentLive }) => {
     };
 
     loadSuggestedLives();
-  }, [currentLive.category?.slug, currentLive.categories, currentLive.id, user?.id]);
+  }, [currentLive.id, currentLive.category?.slug, user?.id]);
 
   if (loading) {
     return (
@@ -236,7 +233,6 @@ const YouTubeEmbed: React.FC<{ url: string; title: string }> = ({ url, title }) 
 interface LiveViewerProps {
   live: Video;
   onBack: () => void;
-  onVideoSelect?: (video: Video) => void;
 }
 
 const LiveViewer: React.FC<LiveViewerProps> = ({ live, onBack, onVideoSelect }) => {
