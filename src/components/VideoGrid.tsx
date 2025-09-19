@@ -57,6 +57,9 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
   const [categories, setCategories] = useState<any[]>([]);
   const [difficulties, setDifficulties] = useState<any[]>([]);
   
+  // Auto-scroll state
+  const [autoScrollIntervals, setAutoScrollIntervals] = useState<Record<string, NodeJS.Timeout>>({});
+  
   const scrollRefs = {
     latest: useRef<HTMLDivElement>(null),
     ai: useRef<HTMLDivElement>(null),
@@ -67,6 +70,15 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
     configuracoes: useRef<HTMLDivElement>(null),
     audiovisual: useRef<HTMLDivElement>(null)
   };
+
+  // Cleanup auto-scroll intervals on unmount
+  useEffect(() => {
+    return () => {
+      Object.values(autoScrollIntervals).forEach(interval => {
+        if (interval) clearInterval(interval);
+      });
+    };
+  }, [autoScrollIntervals]);
 
   // Category-specific videos - simplified state
   const [categoryVideos, setCategoryVideos] = useState<Record<string, Video[]>>({
@@ -338,8 +350,52 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
     }
   };
 
-  // Auto-scroll functionality
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>, scrollRef: React.RefObject<HTMLDivElement>) => {
+  // Clear auto-scroll interval for a specific ref
+  const clearAutoScroll = (refKey: string) => {
+    if (autoScrollIntervals[refKey]) {
+      clearInterval(autoScrollIntervals[refKey]);
+      setAutoScrollIntervals(prev => {
+        const newIntervals = { ...prev };
+        delete newIntervals[refKey];
+        return newIntervals;
+      });
+    }
+  };
+
+  // Start auto-scroll interval for a specific ref
+  const startAutoScroll = (refKey: string, scrollRef: React.RefObject<HTMLDivElement>, direction: 'left' | 'right', intensity: number) => {
+    // Clear existing interval first
+    clearAutoScroll(refKey);
+    
+    const scrollSpeed = Math.max(1, intensity * 2);
+    const interval = setInterval(() => {
+      if (!scrollRef.current) return;
+      
+      const container = scrollRef.current;
+      const scrollAmount = direction === 'right' ? scrollSpeed : -scrollSpeed;
+      const maxScrollLeft = container.scrollWidth - container.clientWidth;
+      
+      // Check bounds and stop if we've reached the end
+      if (direction === 'right' && container.scrollLeft >= maxScrollLeft) {
+        clearAutoScroll(refKey);
+        return;
+      }
+      if (direction === 'left' && container.scrollLeft <= 0) {
+        clearAutoScroll(refKey);
+        return;
+      }
+      
+      container.scrollBy({ left: scrollAmount, behavior: 'auto' });
+    }, 16); // ~60fps for smooth scrolling
+    
+    setAutoScrollIntervals(prev => ({
+      ...prev,
+      [refKey]: interval
+    }));
+  };
+
+  // Auto-scroll functionality - now with continuous scrolling
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>, scrollRef: React.RefObject<HTMLDivElement>, refKey: string) => {
     if (!scrollRef.current) return;
     
     const container = scrollRef.current;
@@ -350,7 +406,10 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
     const scrollLeft = container.scrollLeft;
     
     // Only auto-scroll if there's content to scroll
-    if (scrollWidth <= containerWidth) return;
+    if (scrollWidth <= containerWidth) {
+      clearAutoScroll(refKey);
+      return;
+    }
     
     // Define scroll zones (last 100px on each side)
     const scrollZone = 100;
@@ -359,16 +418,20 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
     // Right edge - scroll right
     if (mouseX > containerWidth - scrollZone && scrollLeft < maxScrollLeft) {
       const intensity = (mouseX - (containerWidth - scrollZone)) / scrollZone;
-      const scrollSpeed = Math.max(1, intensity * 3);
-      container.scrollBy({ left: scrollSpeed, behavior: 'auto' });
-    }
-    
-    // Left edge - scroll left
-    if (mouseX < scrollZone && scrollLeft > 0) {
+      startAutoScroll(refKey, scrollRef, 'right', intensity);
+    } else if (mouseX < scrollZone && scrollLeft > 0) {
+      // Left edge - scroll left
       const intensity = (scrollZone - mouseX) / scrollZone;
-      const scrollSpeed = Math.max(1, intensity * 3);
-      container.scrollBy({ left: -scrollSpeed, behavior: 'auto' });
+      startAutoScroll(refKey, scrollRef, 'left', intensity);
+    } else {
+      // Mouse is in the middle, stop auto-scrolling
+      clearAutoScroll(refKey);
     }
+  };
+
+  // Handle mouse leave - stop auto-scrolling
+  const handleMouseLeave = (refKey: string) => {
+    clearAutoScroll(refKey);
   };
 
   const FilterDropdown: React.FC<{
@@ -932,7 +995,8 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
           <div 
             ref={scrollRef}
             className="flex space-x-8 overflow-x-auto scrollbar-hide pb-6"
-            onMouseMove={(e) => handleMouseMove(e, scrollRef)}
+            onMouseMove={(e) => handleMouseMove(e, scrollRef, title.toLowerCase().replace(/\s+/g, '_'))}
+            onMouseLeave={() => handleMouseLeave(title.toLowerCase().replace(/\s+/g, '_'))}
             style={{
               scrollbarWidth: 'none',
               msOverflowStyle: 'none'
