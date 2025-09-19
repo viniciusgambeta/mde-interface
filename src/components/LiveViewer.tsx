@@ -201,7 +201,7 @@ const Countdown: React.FC<{ targetDate: Date }> = ({ targetDate }) => {
 // YouTube embed component
 const YouTubeEmbed: React.FC<{ url: string; title: string }> = ({ url, title }) => {
   const getYouTubeId = (url: string) => {
-    const regExp = /^.*(youtu\.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+    const regExp = /^.*(youtu\.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#&?]*).*/;
     const match = url.match(regExp);
     return (match && match[2].length === 11) ? match[2] : null;
   };
@@ -219,11 +219,11 @@ const YouTubeEmbed: React.FC<{ url: string; title: string }> = ({ url, title }) 
   return (
     <div className="aspect-video bg-black rounded-lg overflow-hidden">
       <iframe
-        src={`https://www.youtube.com/embed/${videoId}?autoplay=0&controls=1&modestbranding=1&rel=0&showinfo=0`}
+        src={`https://www.youtube.com/embed/${videoId}?autoplay=0&controls=1&modestbranding=1&rel=0&showinfo=0&origin=${window.location.origin}`}
         title={title}
         className="w-full h-full"
         frameBorder="0"
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
         allowFullScreen
       />
     </div>
