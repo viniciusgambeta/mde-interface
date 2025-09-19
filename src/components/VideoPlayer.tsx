@@ -85,7 +85,7 @@ const SuggestedVideos: React.FC<{ currentVideo: Video }> = ({ currentVideo }) =>
             />
           </div>
           <div className="flex-1 min-w-0">
-            <h5 className="text-white text-sm font-medium line-clamp-2 group-hover:text-[#ff7551] transition-colors">
+            <h5 className="text-white text-base font-medium line-clamp-2 group-hover:text-[#ff7551] transition-colors">
               {suggestion.title}
             </h5>
             <div className="flex items-center space-x-2 text-xs text-slate-400 mt-1">
