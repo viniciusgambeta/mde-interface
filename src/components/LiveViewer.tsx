@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, Heart, Bookmark, ThumbsUp, Users, Calendar, Clock, ExternalLink, BarChart3, MessageCircle, Phone, Instagram, Download, FileText, Shield } from 'lucide-react';
+import { ArrowLeft, Heart, Bookmark, ThumbsUp, Users, Calendar, Clock, ExternalLink, BarChart3, MessageCircle, Phone, Instagram, Download, FileText, Shield, AlertTriangle } from 'lucide-react';
 import { videoService, type Video } from '../lib/database';
 import { useAuth } from '../contexts/AuthContext';
 import CommentsSection from './CommentsSection';
 import PaywallModal from './PaywallModal';
+import ReportModal from './ReportModal';
 
 // Component for suggested lives
 const SuggestedLives: React.FC<{ currentLive: Video }> = ({ currentLive }) => {
@@ -277,6 +278,7 @@ const LiveViewer: React.FC<LiveViewerProps> = ({ live, onBack, onVideoSelect }) 
   const [bookmarkLoading, setBookmarkLoading] = useState(false);
   const [likeLoading, setLikeLoading] = useState(false);
   const [selectedVersion, setSelectedVersion] = useState<Video | null>(null);
+  const [showReportModal, setShowReportModal] = useState(false);
 
   // Check if user should see paywall
   useEffect(() => {
@@ -617,6 +619,18 @@ const LiveViewer: React.FC<LiveViewerProps> = ({ live, onBack, onVideoSelect }) 
                   {saved ? 'Salvo' : 'Salvar'}
                 </span>
               </button>
+              
+              {/* Report Button */}
+              <button 
+                onClick={() => setShowReportModal(true)}
+                disabled={!user}
+                className="group flex items-center justify-center hover:justify-start rounded-lg transition-all duration-300 overflow-hidden cursor-pointer disabled:cursor-not-allowed mr-1 hover:mr-0 bg-slate-700 text-slate-300 hover:bg-slate-600 disabled:opacity-50 w-12 h-12 hover:w-auto hover:pl-4 hover:pr-4"
+              >
+                <AlertTriangle className="w-5 h-5 flex-shrink-0 group-hover:ml-0 mt-0 ml-0" />
+                <span className="ml-2 text-sm font-medium whitespace-nowrap hidden group-hover:block">
+                  Reportar
+                </span>
+              </button>
             </div>
           </div>
 
@@ -859,6 +873,14 @@ const LiveViewer: React.FC<LiveViewerProps> = ({ live, onBack, onVideoSelect }) 
           </div>
         </div>
       )}
+
+      {/* Report Modal */}
+      <ReportModal
+        isOpen={showReportModal}
+        onClose={() => setShowReportModal(false)}
+        videoId={currentLive.id}
+        videoTitle={currentLive.title}
+      />
     </div>
   );
 };
