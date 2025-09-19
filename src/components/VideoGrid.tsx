@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { ChevronRight, ChevronLeft, Play, Clock, Bookmark, Filter, X, BarChart3, User, ChevronDown } from 'lucide-react';
+import { ChevronRight, ChevronLeft, Play, Clock, Bookmark, Filter, X, BarChart3, User, ChevronDown, Radio } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { videoService, categoryService, difficultyService, type Video } from '../lib/database';
 import { useAuth } from '../contexts/AuthContext';
@@ -786,10 +786,8 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
           {/* Live Badge */}
           {video.tipo === 'live' && (
             <div className="absolute top-3 right-3 z-10 flex items-center space-x-1 bg-red-500 text-white text-sm px-3 py-1.5 rounded font-medium">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 14.142M5 7h4l1 1v8l-1 1H5a2 2 0 01-2-2V9a2 2 0 012-2z" />
-              </svg>
-              <span>Live</span>
+              <Radio className="w-4 h-4" />
+              <span>Ao vivo</span>
             </div>
           )}
           
