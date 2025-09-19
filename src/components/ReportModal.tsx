@@ -29,11 +29,24 @@ const ReportModal: React.FC<ReportModalProps> = ({ isOpen, onClose, videoId, vid
     setError('');
 
     try {
+      // Get user's assinatura ID
+      const { data: assinaturaData, error: assinaturaError } = await supabase
+        .from('assinaturas')
+        .select('id_assinatura')
+        .eq('user_id', user.id)
+        .single();
+
+      if (assinaturaError || !assinaturaData) {
+        console.error('Error getting user assinatura ID:', assinaturaError);
+        setError('Erro ao identificar usuário. Tente novamente.');
+        return;
+      }
+
       const { error: insertError } = await supabase
         .from('video_reports')
         .insert({
           video_id: videoId,
-          user_id: user.id,
+          assinatura_id: assinaturaData.id_assinatura,
           report_content: reportContent.trim(),
           status: 'pending'
         });
