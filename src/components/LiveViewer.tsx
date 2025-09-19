@@ -665,6 +665,14 @@ const LiveViewer: React.FC<LiveViewerProps> = ({ live, onBack, onVideoSelect }) 
         </div>
       </div>
 
+      {/* Comments Section */}
+      <div className="mt-12">
+        <CommentsSection 
+          videoId={currentLive.id} 
+          videoTitle={currentLive.title} 
+        />
+      </div>
+
       {/* Materials Section - Only show if there are materials or versions */}
       {!isUpcoming && ((currentLive.materials && currentLive.materials.length > 0) || (currentLive.ferramentas && currentLive.ferramentas.length > 0) || versionsToShow.length > 0) && (
         <div className="w-full lg:w-96 border-l border-slate-700/30 flex flex-col">
