@@ -372,7 +372,7 @@ const PromptViewer: React.FC<PromptViewerProps> = ({ prompt, onBack, onVideoSele
                 <div className="flex items-center space-x-1">
                   <span className="text-white font-semibold text-xl pl-2" style={{ marginBottom: '-3px' }}>{currentPrompt.instructor?.name || 'Instrutor'}</span>
                 </div>
-                <div className="flex items-center mt-0 pl-[3px]">
+                <div className="flex items-center mt-0">
                   {currentPrompt.instructor?.social_instagram && (
                     <a 
                       href={`https://instagram.com/${currentPrompt.instructor.social_instagram}`} 
@@ -398,8 +398,6 @@ const PromptViewer: React.FC<PromptViewerProps> = ({ prompt, onBack, onVideoSele
                 )}
               </div>
               
-              {/* Version Selector - Always show */}
-
               <button
                 onClick={handleToggleLike}
                 disabled={!user || likeLoading}
