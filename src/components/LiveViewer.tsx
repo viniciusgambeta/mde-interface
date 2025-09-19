@@ -22,18 +22,13 @@ const SuggestedLives: React.FC<{ currentLive: Video }> = ({ currentLive }) => {
 
   useEffect(() => {
     const loadSuggestedLives = async () => {
-      if (!currentLive.category?.slug) {
-        setLoading(false);
-        return;
-      }
 
       try {
-        // Get lives from the same category, excluding the current live
-        const allVideos = await videoService.getVideosByCategory(
-          currentLive.category.slug, 
-          10, 
-          user?.id
-        );
+        // Get all videos and filter for lives only, excluding the current live
+        const allVideos = await videoService.getVideos({ 
+          limit: 50, 
+          userId: user?.id 
+        });
         
         // Filter for lives only and exclude current live
         const lives = allVideos.filter(v => v.tipo === 'live' && v.id !== currentLive.id);
@@ -46,7 +41,7 @@ const SuggestedLives: React.FC<{ currentLive: Video }> = ({ currentLive }) => {
     };
 
     loadSuggestedLives();
-  }, [currentLive.id, currentLive.category?.slug, user?.id]);
+  }, [currentLive.id, user?.id]);
 
   if (loading) {
     return (
@@ -82,9 +77,6 @@ const SuggestedLives: React.FC<{ currentLive: Video }> = ({ currentLive }) => {
               alt={suggestion.title}
               className="w-16 h-24 rounded-lg object-cover group-hover:opacity-80 transition-opacity"
             />
-            <div className="absolute top-2 right-2 bg-red-500 text-white text-xs px-1.5 py-0.5 rounded font-medium">
-              LIVE
-            </div>
           </div>
           <div className="flex-1 min-w-0">
             <h5 className="text-white text-sm font-medium line-clamp-2 group-hover:text-[#ff7551] transition-colors">
@@ -94,10 +86,6 @@ const SuggestedLives: React.FC<{ currentLive: Video }> = ({ currentLive }) => {
               {suggestion.category && (
                 <span>{suggestion.category.name}</span>
               )}
-              {suggestion.category && (
-                <span>•</span>
-              )}
-              <span>Live</span>
             </div>
           </div>
         </div>
