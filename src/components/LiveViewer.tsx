@@ -201,17 +201,58 @@ const Countdown: React.FC<{ targetDate: Date }> = ({ targetDate }) => {
 // YouTube embed component
 const YouTubeEmbed: React.FC<{ url: string; title: string }> = ({ url, title }) => {
   const getYouTubeId = (url: string) => {
-    const regExp = /^.*(youtu\.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#&?]*).*/;
-    const match = url.match(regExp);
-    return (match && match[2].length === 11) ? match[2] : null;
+    // Remove any whitespace and convert to lowercase for consistent processing
+    const cleanUrl = url.trim();
+    
+    // Handle different YouTube URL formats
+    const patterns = [
+      // Standard watch URLs: https://www.youtube.com/watch?v=VIDEO_ID
+      /(?:youtube\.com\/watch\?v=)([a-zA-Z0-9_-]{11})/,
+      // Short URLs: https://youtu.be/VIDEO_ID
+      /(?:youtu\.be\/)([a-zA-Z0-9_-]{11})/,
+      // Embed URLs: https://www.youtube.com/embed/VIDEO_ID
+      /(?:youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/,
+      // Mobile URLs: https://m.youtube.com/watch?v=VIDEO_ID
+      /(?:m\.youtube\.com\/watch\?v=)([a-zA-Z0-9_-]{11})/,
+      // URLs with additional parameters: https://www.youtube.com/watch?v=VIDEO_ID&t=123s
+      /(?:youtube\.com\/watch\?.*v=)([a-zA-Z0-9_-]{11})/,
+      // Live stream URLs: https://www.youtube.com/live/VIDEO_ID
+      /(?:youtube\.com\/live\/)([a-zA-Z0-9_-]{11})/
+    ];
+    
+    for (const pattern of patterns) {
+      const match = cleanUrl.match(pattern);
+      if (match && match[1] && match[1].length === 11) {
+        console.log('YouTube ID extracted:', match[1], 'from URL:', cleanUrl);
+        return match[1];
+      }
+    }
+    
+    console.error('Could not extract YouTube ID from URL:', cleanUrl);
+    return null;
   };
 
   const videoId = getYouTubeId(url);
 
   if (!videoId) {
     return (
-      <div className="aspect-video bg-slate-700 rounded-lg flex items-center justify-center">
-        <p className="text-slate-400">URL do YouTube inválida</p>
+      <div className="aspect-video bg-slate-700 rounded-lg flex items-center justify-center p-8">
+        <div className="text-center">
+          <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+            <ExternalLink className="w-8 h-8 text-red-400" />
+          </div>
+          <p className="text-slate-400 mb-4">Não foi possível carregar o vídeo do YouTube</p>
+          <p className="text-slate-500 text-sm mb-4">URL: {url}</p>
+          <a
+            href={url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center space-x-2 px-4 py-2 bg-[#ff7551] hover:bg-[#ff7551]/80 text-white rounded-lg transition-colors"
+          >
+            <ExternalLink className="w-4 h-4" />
+            <span>Abrir no YouTube</span>
+          </a>
+        </div>
       </div>
     );
   }
@@ -219,12 +260,13 @@ const YouTubeEmbed: React.FC<{ url: string; title: string }> = ({ url, title }) 
   return (
     <div className="aspect-video bg-black rounded-lg overflow-hidden">
       <iframe
-        src={`https://www.youtube.com/embed/${videoId}?autoplay=0&controls=1&modestbranding=1&rel=0&showinfo=0&origin=${window.location.origin}`}
+        src={`https://www.youtube.com/embed/${videoId}?autoplay=0&controls=1&modestbranding=1&rel=0&showinfo=0&enablejsapi=1&origin=${encodeURIComponent(window.location.origin)}`}
         title={title}
         className="w-full h-full"
         frameBorder="0"
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
         allowFullScreen
+        loading="lazy"
       />
     </div>
   );
@@ -447,7 +489,7 @@ const LiveViewer: React.FC<LiveViewerProps> = ({ live, onBack, onVideoSelect }) 
   const isYouTubeUrl = currentLive.video_url && (
     currentLive.video_url.includes('youtube.com') || 
     currentLive.video_url.includes('youtu.be') ||
-    currentLive.video_url.includes('www.youtube.com')
+    currentLive.video_url.includes('m.youtube.com')
   );
 
   // Show paywall if user is not authenticated
