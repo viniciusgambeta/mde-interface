@@ -65,7 +65,8 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
     prompt: useRef<HTMLDivElement>(null),
     basic: useRef<HTMLDivElement>(null),
     configuracoes: useRef<HTMLDivElement>(null),
-    audiovisual: useRef<HTMLDivElement>(null)
+    audiovisual: useRef<HTMLDivElement>(null),
+    vibecoding: useRef<HTMLDivElement>(null)
   };
 
   // Category-specific videos - simplified state
@@ -75,6 +76,7 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
     basic: [],
     configuracoes: [],
     audiovisual: [],
+    vibecoding: [],
     live: [],
     prompt: []
   });
@@ -225,12 +227,13 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
         };
         
         // Load specific categories in parallel
-        const [aiVideos, automationVideos, basicVideos, configuracoesVideos, audiovisualVideos] = await Promise.all([
+        const [aiVideos, automationVideos, basicVideos, configuracoesVideos, audiovisualVideos, vibecodingVideos] = await Promise.all([
           videoService.getVideosByCategory('ia', 12, user?.id),
           videoService.getVideosByCategory('automacao', 12, user?.id),
           videoService.getVideosByCategory('basico', 12, user?.id),
           videoService.getVideosByCategory('configuracoes', 12, user?.id),
-          videoService.getVideosByCategory('audio-visual', 12, user?.id)
+          videoService.getVideosByCategory('audio-visual', 12, user?.id),
+          videoService.getVideosByCategory('vibe-coding', 12, user?.id)
         ]);
         
         // Apply random shuffling to all category videos except latest
@@ -239,6 +242,7 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
         newCategoryVideos.basic = shuffleArray(basicVideos);
         newCategoryVideos.configuracoes = shuffleArray(configuracoesVideos);
         newCategoryVideos.audiovisual = shuffleArray(audiovisualVideos);
+        newCategoryVideos.vibecoding = shuffleArray(vibecodingVideos);
         
         // Also shuffle live and prompt videos
         newCategoryVideos.live = shuffleArray(newCategoryVideos.live);
@@ -1016,6 +1020,11 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
             title="Áudio Visual" 
             videos={categoryVideos.audiovisual} 
             scrollRef={scrollRefs.audiovisual} 
+          />
+          <ScrollableVideoRow 
+            title="Vibe Coding" 
+            videos={categoryVideos.vibecoding} 
+            scrollRef={scrollRefs.vibecoding} 
           />
         </>
       )}
