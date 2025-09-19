@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { ChevronRight, ChevronLeft, Play, Clock, Bookmark, Filter, X, BarChart3, User, ChevronDown, Radio } from 'lucide-react';
+import { ChevronRight, ChevronLeft, Play, Clock, Bookmark, Filter, X, BarChart3, User, ChevronDown, Radio, FileText } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { videoService, categoryService, difficultyService, type Video } from '../lib/database';
 import { useAuth } from '../contexts/AuthContext';
@@ -776,9 +776,7 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
           {/* Content Type Badge */}
           {video.tipo === 'prompt' && (
             <div className="absolute top-3 right-3 z-10 flex items-center space-x-1 bg-blue-500 text-white text-sm px-3 py-1.5 rounded font-medium">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-              </svg>
+              <FileText className="w-4 h-4" />
               <span>Prompt</span>
             </div>
           )}
