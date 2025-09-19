@@ -275,6 +275,7 @@ const YouTubeEmbed: React.FC<{ url: string; title: string }> = ({ url, title }) 
 interface LiveViewerProps {
   live: Video;
   onBack: () => void;
+  onVideoSelect?: (video: Video) => void;
 }
 
 const LiveViewer: React.FC<LiveViewerProps> = ({ live, onBack, onVideoSelect }) => {
@@ -663,23 +664,14 @@ const LiveViewer: React.FC<LiveViewerProps> = ({ live, onBack, onVideoSelect }) 
             </div>
           )}
         </div>
-      </div>
 
-      {/* Comments Section */}
-      <div className="mt-12">
-        <CommentsSection 
-          videoId={currentLive.id} 
-          videoTitle={currentLive.title} 
-        />
-      </div>
-    </div>
-  </div>
-      {/* Comments Section */}
-      <div className="mt-12">
-        <CommentsSection 
-          videoId={currentLive.id} 
-          videoTitle={currentLive.title} 
-        />
+        {/* Comments Section */}
+        <div className="mt-12">
+          <CommentsSection 
+            videoId={currentLive.id} 
+            videoTitle={currentLive.title} 
+          />
+        </div>
       </div>
 
       {/* Materials Section - Only show if there are materials or versions */}
@@ -833,6 +825,13 @@ const LiveViewer: React.FC<LiveViewerProps> = ({ live, onBack, onVideoSelect }) 
             ) : (
               <div className="space-y-6" key={currentLive.id}>
                 <h3 className="text-white font-semibold mb-6">Lives Relacionadas</h3>
+                <SuggestedLives currentLive={currentLive} />
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Materials Section for Upcoming Lives - Show locked state */}
       {isUpcoming && (
         <div className="w-full lg:w-96 border-l border-slate-700/30 flex flex-col">
