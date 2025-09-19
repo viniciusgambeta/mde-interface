@@ -338,6 +338,39 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
     }
   };
 
+  // Auto-scroll functionality
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>, scrollRef: React.RefObject<HTMLDivElement>) => {
+    if (!scrollRef.current) return;
+    
+    const container = scrollRef.current;
+    const rect = container.getBoundingClientRect();
+    const mouseX = e.clientX - rect.left;
+    const containerWidth = rect.width;
+    const scrollWidth = container.scrollWidth;
+    const scrollLeft = container.scrollLeft;
+    
+    // Only auto-scroll if there's content to scroll
+    if (scrollWidth <= containerWidth) return;
+    
+    // Define scroll zones (last 100px on each side)
+    const scrollZone = 100;
+    const maxScrollLeft = scrollWidth - containerWidth;
+    
+    // Right edge - scroll right
+    if (mouseX > containerWidth - scrollZone && scrollLeft < maxScrollLeft) {
+      const intensity = (mouseX - (containerWidth - scrollZone)) / scrollZone;
+      const scrollSpeed = Math.max(1, intensity * 3);
+      container.scrollBy({ left: scrollSpeed, behavior: 'auto' });
+    }
+    
+    // Left edge - scroll left
+    if (mouseX < scrollZone && scrollLeft > 0) {
+      const intensity = (scrollZone - mouseX) / scrollZone;
+      const scrollSpeed = Math.max(1, intensity * 3);
+      container.scrollBy({ left: -scrollSpeed, behavior: 'auto' });
+    }
+  };
+
   const FilterDropdown: React.FC<{
     label: string;
     value: string;
@@ -899,6 +932,7 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
           <div 
             ref={scrollRef}
             className="flex space-x-8 overflow-x-auto scrollbar-hide pb-6"
+            onMouseMove={(e) => handleMouseMove(e, scrollRef)}
             style={{
               scrollbarWidth: 'none',
               msOverflowStyle: 'none'
