@@ -69,26 +69,20 @@ const SuggestedPrompts: React.FC<{ currentPrompt: Video }> = ({ currentPrompt })
       {suggestedPrompts.map((suggestion, index) => (
         <div key={suggestion.id} className="flex space-x-4 cursor-pointer group p-2 rounded-lg hover:bg-slate-700/20 transition-colors">
           <div className="relative flex-shrink-0">
-            <div className="relative">
-              <img
-                src={currentPrompt.instructor?.avatar_url || '/avatar1.png'}
-                alt={currentPrompt.instructor?.name || 'Instrutor'}
-                className="w-16 h-12 rounded-lg object-cover"
-              />
-            </div>
+            <img
+              src={suggestion.thumbnail_url || 'https://images.pexels.com/photos/11035380/pexels-photo-11035380.jpeg?auto=compress&cs=tinysrgb&w=120&h=180&fit=crop'}
+              alt={suggestion.title}
+              className="w-16 h-24 rounded-lg object-cover"
+            />
           </div>
           <div className="flex-1 min-w-0">
-            <h5 className="text-white text-sm font-medium line-clamp-2 group-hover:text-[#ff7551] transition-colors">
+            <h5 className="text-white text-base font-medium line-clamp-2 group-hover:text-[#ff7551] transition-colors">
               {suggestion.title}
             </h5>
             <div className="flex items-center space-x-2 text-xs text-slate-400 mt-1">
               {suggestion.category && (
                 <span>{suggestion.category.name}</span>
               )}
-              {suggestion.category && (
-                <span>•</span>
-              )}
-              <span>Prompt</span>
             </div>
           </div>
         </div>
@@ -362,11 +356,18 @@ const PromptViewer: React.FC<PromptViewerProps> = ({ prompt, onBack, onVideoSele
           {/* Creator Info & Actions */}
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3 pl-[5px]">
-              <img
-                src={currentPrompt.instructor?.avatar_url || '/avatar1.png'}
-                alt={currentPrompt.instructor?.name || 'Instrutor'}
-                className="w-16 h-16 rounded-xl object-cover"
-              />
+              <div className="relative">
+                <img
+                  src={currentPrompt.instructor?.avatar_url || '/avatar1.png'}
+                  alt={currentPrompt.instructor?.name || 'Instrutor'}
+                  className="w-16 h-16 rounded-xl object-cover"
+                />
+                <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-[#ff7551] rounded-full flex items-center justify-center border-2 border-[#1f1d2b]">
+                  <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                  </svg>
+                </div>
+              </div>
               <div>
                 <div className="flex items-center space-x-1">
                   <span className="text-white font-semibold text-xl pl-2" style={{ marginBottom: '-3px' }}>{currentPrompt.instructor?.name || 'Instrutor'}</span>
