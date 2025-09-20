@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, Heart, Bookmark, ThumbsUp, Users, Copy, Download, CheckCircle, BarChart3, ChevronDown, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, Heart, Bookmark, ThumbsUp, Users, Copy, Download, CheckCircle, BarChart3, ChevronDown, AlertTriangle, ExternalLink } from 'lucide-react';
 import { videoService, type Video } from '../lib/database';
 import { useAuth } from '../contexts/AuthContext';
 import CommentsSection from './CommentsSection';
@@ -531,7 +531,7 @@ const PromptViewer: React.FC<PromptViewerProps> = ({ prompt, onBack, onVideoSele
                   <h3 className="text-white font-semibold mb-6">Materiais e downloads</h3>
                   
                   <div className="space-y-4">
-                 <div className="space-y-4">
+                    {currentPrompt.materials
                       .sort((a, b) => a.order_index - b.order_index)
                       .map((material) => (
                         <a
@@ -539,24 +539,26 @@ const PromptViewer: React.FC<PromptViewerProps> = ({ prompt, onBack, onVideoSele
                           href={material.url}
                           target="_blank"
                           rel="noopener noreferrer"
-                         <div className="w-8 h-8 flex items-center justify-center flex-shrink-0">
-                           <img 
-                             src={ferramenta.icone} 
-                             alt={ferramenta.nome}
-                             className="w-8 h-8 object-contain"
-                             onError={(e) => {
-                               // Fallback to ExternalLink icon if image fails to load
-                               const target = e.target as HTMLImageElement;
-                               target.style.display = 'none';
-                               const fallback = target.nextElementSibling as HTMLElement;
-                               if (fallback) fallback.style.display = 'flex';
-                             }}
-                           />
-                           <ExternalLink className="w-8 h-8 text-slate-400 hidden" />
-                         </div>
-                         <div className="flex-1">
-                           <div className="text-white font-medium text-sm">{ferramenta.nome}</div>
-                         </div>
+                          className="flex items-center space-x-3 p-3 bg-slate-700/30 rounded-lg hover:bg-slate-600/30 transition-colors group"
+                        >
+                          <div className="w-8 h-8 flex items-center justify-center flex-shrink-0">
+                            <img 
+                              src={material.icone} 
+                              alt={material.nome}
+                              className="w-8 h-8 object-contain"
+                              onError={(e) => {
+                                // Fallback to ExternalLink icon if image fails to load
+                                const target = e.target as HTMLImageElement;
+                                target.style.display = 'none';
+                                const fallback = target.nextElementSibling as HTMLElement;
+                                if (fallback) fallback.style.display = 'flex';
+                              }}
+                            />
+                            <ExternalLink className="w-8 h-8 text-slate-400 hidden" />
+                          </div>
+                          <div className="flex-1">
+                            <div className="text-white font-medium text-sm">{material.nome}</div>
+                          </div>
                         </a>
                       ))}
                   </div>
