@@ -917,53 +917,86 @@ export const videoService = {
     if (!videoId) return [];
 
     try {
-      const { data, error } = await supabase
+      // First, get all relations where this video appears as either main_video_id or version_video_id
+      const { data: relations, error: relationsError } = await supabase
         .from('video_relateds')
-        .select(`
-          related_video_id,
-          videos!inner(
-            *,
-            instructor:instructors(*),
-            difficulty_level:difficulty_levels(*),
-            materials:video_materials(*),
-            ferramentas:video_ferramentas(
-              ferramenta:ferramentas_links(*)
-            )
-          )
-        `)
-        .eq('video_id', videoId)
-        .order('created_at', { ascending: false });
+        .select('main_video_id, version_video_id')
+        .or(`main_video_id.eq.${videoId},version_video_id.eq.${videoId}`);
 
-      if (error) {
-        console.error('Error fetching related videos:', error);
+      if (relationsError) {
+        console.error('Error fetching video relations:', relationsError);
         return [];
       }
 
-      // Extract videos from the nested structure
-      const relatedVideos = (data || [])
-        .map(item => item.videos)
-        .filter(Boolean) as Video[];
+      if (!relations || relations.length === 0) {
+        return [];
+      }
+
+      // Collect the IDs of the "other" videos in each relation
+      const relatedVideoIds = new Set<string>();
+      
+      relations.forEach(relation => {
+        if (relation.main_video_id === videoId) {
+          // Current video is the main video, so add the version video
+          relatedVideoIds.add(relation.version_video_id);
+        } else if (relation.version_video_id === videoId) {
+          // Current video is the version video, so add the main video
+          relatedVideoIds.add(relation.main_video_id);
+        }
+      });
+
+      // Remove current video ID if it was accidentally added
+      relatedVideoIds.delete(videoId);
+
+      const relatedIds = Array.from(relatedVideoIds);
+      
+      if (relatedIds.length === 0) {
+        return [];
+      }
+
+      // Now fetch the full video data for these related videos
+      const { data: relatedVideos, error: videosError } = await supabase
+        .from('videos')
+        .select(`
+          *,
+          instructor:instructors(*),
+          difficulty_level:difficulty_levels(*),
+          materials:video_materials(*),
+          ferramentas:video_ferramentas(
+            ferramenta:ferramentas_links(*)
+          )
+        `)
+        .in('id', relatedIds)
+        .eq('status', 'published')
+        .order('created_at', { ascending: false });
+
+      if (videosError) {
+        console.error('Error fetching related videos details:', videosError);
+        return [];
+      }
+
+      const videos = relatedVideos as Video[];
 
       // Transform ferramentas data structure
-      relatedVideos.forEach(video => {
+      videos.forEach(video => {
         if (video.ferramentas) {
           video.ferramentas = (video.ferramentas as any[]).map((item: any) => item.ferramenta).filter(Boolean);
         }
       });
 
       // If user is provided, check bookmark status for each related video
-      if (userId && relatedVideos.length > 0) {
+      if (userId && videos.length > 0) {
         const bookmarkStatuses = await this.getBookmarkStatuses(
-          relatedVideos.map(v => v.id), 
+          videos.map(v => v.id), 
           userId
         );
         
-        relatedVideos.forEach(video => {
+        videos.forEach(video => {
           video.is_bookmarked = bookmarkStatuses[video.id] || false;
         });
       }
 
-      return relatedVideos;
+      return videos;
     } catch (error) {
       console.error('Error fetching related videos:', error);
       return [];
