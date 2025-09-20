@@ -920,7 +920,7 @@ export const videoService = {
       const { data, error } = await supabase
         .from('video_relateds')
         .select(`
-          related_video:videos!video_relateds_related_video_id_fkey(
+          related_video:videos(
             *,
             instructor:instructors(*),
             difficulty_level:difficulty_levels(*),
