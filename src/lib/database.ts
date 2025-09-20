@@ -920,7 +920,8 @@ export const videoService = {
       const { data, error } = await supabase
         .from('video_relateds')
         .select(`
-          related_video:videos(
+          related_video_id,
+          videos!inner(
             *,
             instructor:instructors(*),
             difficulty_level:difficulty_levels(*),
@@ -940,7 +941,7 @@ export const videoService = {
 
       // Extract videos from the nested structure
       const relatedVideos = (data || [])
-        .map(item => item.related_video)
+        .map(item => item.videos)
         .filter(Boolean) as Video[];
 
       // Transform ferramentas data structure
