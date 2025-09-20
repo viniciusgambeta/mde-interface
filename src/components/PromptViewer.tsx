@@ -531,7 +531,7 @@ const PromptViewer: React.FC<PromptViewerProps> = ({ prompt, onBack, onVideoSele
                   <h3 className="text-white font-semibold mb-6">Materiais e downloads</h3>
                   
                   <div className="space-y-4">
-                    {currentPrompt.materials
+                 <div className="space-y-4">
                       .sort((a, b) => a.order_index - b.order_index)
                       .map((material) => (
                         <a
@@ -539,20 +539,24 @@ const PromptViewer: React.FC<PromptViewerProps> = ({ prompt, onBack, onVideoSele
                           href={material.url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="flex items-center space-x-3 px-3 py-4 bg-slate-700/30 rounded-lg hover:bg-slate-600/30 transition-colors cursor-pointer"
-                        >
-                          <svg className="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                          </svg>
-                          <div className="flex-1">
-                            <div className="text-white font-medium text-sm">{material.title}</div>
-                            {material.description && (
-                              <div className="text-slate-400 text-xs mt-1">{material.description}</div>
-                            )}
-                            {material.file_size_mb && (
-                              <div className="text-slate-500 text-xs mt-1">{material.file_size_mb}MB</div>
-                            )}
-                          </div>
+                         <div className="w-8 h-8 flex items-center justify-center flex-shrink-0">
+                           <img 
+                             src={ferramenta.icone} 
+                             alt={ferramenta.nome}
+                             className="w-8 h-8 object-contain"
+                             onError={(e) => {
+                               // Fallback to ExternalLink icon if image fails to load
+                               const target = e.target as HTMLImageElement;
+                               target.style.display = 'none';
+                               const fallback = target.nextElementSibling as HTMLElement;
+                               if (fallback) fallback.style.display = 'flex';
+                             }}
+                           />
+                           <ExternalLink className="w-8 h-8 text-slate-400 hidden" />
+                         </div>
+                         <div className="flex-1">
+                           <div className="text-white font-medium text-sm">{ferramenta.nome}</div>
+                         </div>
                         </a>
                       ))}
                   </div>

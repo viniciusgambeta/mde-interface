@@ -573,7 +573,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video, onBack, onVideoSelect 
                <div className="mt-12">
                  <h3 className="text-white font-semibold mb-6">Ferramentas usadas</h3>
                  
-                 <div className="flex flex-wrap gap-3">
+                 <div className="space-y-4">
                    {currentVideo.ferramentas.map((ferramenta) => {
                      return (
                        <a
@@ -581,22 +581,26 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video, onBack, onVideoSelect 
                          href={ferramenta.link}
                          target="_blank"
                          rel="noopener noreferrer"
-                         className="block hover:scale-110 transition-transform duration-200"
-                         title={ferramenta.nome}
+                         className="flex items-center space-x-3 px-3 py-4 bg-slate-700/30 rounded-lg hover:bg-slate-600/30 transition-colors cursor-pointer"
                        >
-                         <img 
-                           src={ferramenta.icone} 
-                           alt={ferramenta.nome}
-                           className="w-10 h-10 object-contain rounded"
-                           onError={(e) => {
-                             // Fallback to ExternalLink icon if image fails to load
-                             const target = e.target as HTMLImageElement;
-                             target.style.display = 'none';
-                             const fallbackIcon = target.nextElementSibling as HTMLElement;
-                             if (fallbackIcon) fallbackIcon.style.display = 'block';
-                           }}
-                         />
-                         <ExternalLink className="w-10 h-10 text-slate-400 hidden rounded" />
+                         <div className="w-8 h-8 flex items-center justify-center flex-shrink-0">
+                           <img 
+                             src={ferramenta.icone} 
+                             alt={ferramenta.nome}
+                             className="w-8 h-8 object-contain"
+                             onError={(e) => {
+                               // Fallback to ExternalLink icon if image fails to load
+                               const target = e.target as HTMLImageElement;
+                               target.style.display = 'none';
+                               const fallback = target.nextElementSibling as HTMLElement;
+                               if (fallback) fallback.style.display = 'flex';
+                             }}
+                           />
+                           <ExternalLink className="w-8 h-8 text-slate-400 hidden" />
+                         </div>
+                         <div className="flex-1">
+                           <div className="text-white font-medium text-sm">{ferramenta.nome}</div>
+                         </div>
                        </a>
                      );
                    })}
