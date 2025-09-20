@@ -617,7 +617,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video, onBack, onVideoSelect 
              
              {/* Ferramentas Section - Only show if there are tools */}
              {currentVideo.ferramentas && currentVideo.ferramentas.length > 0 && (
-               <div className="mt-12">
+               <div className={currentVideo.materials && currentVideo.materials.length > 0 ? "mt-12" : ""}>
                  <h3 className="text-white font-semibold mb-6">Ferramentas usadas</h3>
                  
                  <div className="space-y-4">
@@ -654,46 +654,6 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video, onBack, onVideoSelect 
                  </div>
                </div>
              )}
-              
-              {/* Ferramentas Section - Only show if there are tools */}
-              {currentVideo.ferramentas && currentVideo.ferramentas.length > 0 && (
-                <div className={currentVideo.materials && currentVideo.materials.length > 0 ? "mt-12" : ""}>
-                  <h3 className="text-white font-semibold mb-6">Ferramentas usadas</h3>
-                  
-                  <div className="space-y-4">
-                    {currentVideo.ferramentas.map((ferramenta) => {
-                      return (
-                        <a
-                          key={ferramenta.id}
-                          href={ferramenta.link}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center space-x-3 px-3 py-4 bg-slate-700/30 rounded-lg hover:bg-slate-600/30 transition-colors cursor-pointer"
-                        >
-                          <div className="w-8 h-8 flex items-center justify-center flex-shrink-0">
-                            <img 
-                              src={ferramenta.icone} 
-                              alt={ferramenta.nome}
-                              className="w-8 h-8 object-contain"
-                              onError={(e) => {
-                                // Fallback to ExternalLink icon if image fails to load
-                                const target = e.target as HTMLImageElement;
-                                target.style.display = 'none';
-                                const fallback = target.nextElementSibling as HTMLElement;
-                                if (fallback) fallback.style.display = 'flex';
-                              }}
-                            />
-                            <ExternalLink className="w-8 h-8 text-slate-400 hidden" />
-                          </div>
-                          <div className="flex-1">
-                            <div className="text-white font-medium text-sm">{ferramenta.nome}</div>
-                          </div>
-                        </a>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
               
               {/* Related Videos Section - Only show if there are related videos */}
               {relatedVideos.length > 0 && (
