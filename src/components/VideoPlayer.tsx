@@ -735,17 +735,11 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video, onBack, onVideoSelect 
                               <div className="font-medium text-sm text-white group-hover:text-[#ff7551] transition-colors line-clamp-2">
                                 {relatedVideo.title}
                               </div>
-                              <div className="text-xs text-slate-400 mt-1 flex items-center space-x-2">
-                                {relatedVideo.instructor && (
-                                  <span>{relatedVideo.instructor.name}</span>
-                                )}
-                                {relatedVideo.category && relatedVideo.instructor && (
-                                  <span>•</span>
-                                )}
-                                {relatedVideo.category && (
+                              {relatedVideo.category && (
+                                <div className="text-xs text-slate-400 mt-1">
                                   <span>{relatedVideo.category.name}</span>
-                                )}
-                              </div>
+                                </div>
+                              )}
                             </div>
                             <div className="flex-shrink-0">
                               <svg className="w-4 h-4 text-slate-400 group-hover:text-[#ff7551] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
