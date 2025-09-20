@@ -428,71 +428,6 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video, onBack, onVideoSelect 
                   </div>
                 )}
                 <div className="flex items-center space-x-1">
-               {/* Related Videos Section - Only show if there are related videos */}
-               {relatedVideos.length > 0 && (
-                 <div className="mt-12">
-                   <h3 className="text-white font-semibold mb-6">Veja também</h3>
-                   
-                   {loadingRelated ? (
-                     <div className="space-y-4">
-                       {Array.from({ length: 3 }).map((_, index) => (
-                         <div key={index} className="flex space-x-3 p-3">
-                           <div className="w-16 h-12 bg-slate-700/30 rounded animate-pulse"></div>
-                           <div className="flex-1 space-y-2">
-                             <div className="h-4 bg-slate-700/30 rounded animate-pulse"></div>
-                             <div className="h-3 bg-slate-700/20 rounded w-2/3 animate-pulse"></div>
-                           </div>
-                         </div>
-                       ))}
-                     </div>
-                   ) : (
-                     <div className="space-y-4">
-                       {relatedVideos.map((relatedVideo) => (
-                         <button
-                           key={relatedVideo.id}
-                           onClick={() => onVideoSelect(relatedVideo)}
-                           className="w-full text-left p-3 bg-slate-700/30 rounded-lg hover:bg-slate-600/30 transition-colors group"
-                         >
-                           <div className="flex items-center space-x-3">
-                             <div className="relative flex-shrink-0">
-                               <img
-                                 src={relatedVideo.thumbnail_url || 'https://images.pexels.com/photos/11035380/pexels-photo-11035380.jpeg?auto=compress&cs=tinysrgb&w=80&h=60&fit=crop'}
-                                 alt={relatedVideo.title}
-                                 className="w-16 h-12 rounded object-cover"
-                               />
-                               <div className="absolute inset-0 flex items-center justify-center bg-black/20 rounded opacity-0 group-hover:opacity-100 transition-opacity">
-                                 <Play className="w-4 h-4 text-white" fill="currentColor" />
-                               </div>
-                             </div>
-                             <div className="flex-1 min-w-0">
-                               <div className="font-medium text-sm text-white group-hover:text-[#ff7551] transition-colors line-clamp-2">
-                                 {relatedVideo.title}
-                               </div>
-                               <div className="text-xs text-slate-400 mt-1 flex items-center space-x-2">
-                                 {relatedVideo.instructor && (
-                                   <span>{relatedVideo.instructor.name}</span>
-                                 )}
-                                 {relatedVideo.category && relatedVideo.instructor && (
-                                   <span>•</span>
-                                 )}
-                                 {relatedVideo.category && (
-                                   <span>{relatedVideo.category.name}</span>
-                                 )}
-                               </div>
-                             </div>
-                             <div className="flex-shrink-0">
-                               <svg className="w-4 h-4 text-slate-400 group-hover:text-[#ff7551] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                               </svg>
-                             </div>
-                           </div>
-                         </button>
-                       ))}
-                     </div>
-                   )}
-                 </div>
-               )}
-               
                   <Clock className="w-4 h-4 text-slate-400" />
                   <span>{formatDuration(currentVideo.duration_minutes)}</span>
                 </div>
@@ -611,7 +546,39 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video, onBack, onVideoSelect 
         <div className="flex-1 overflow-y-auto p-6">
           {activeTab === 'materials' ? (
             <div className="space-y-6">
-             <h3 className="text-white font-semibold mb-6">Materiais e downloads</h3>
+              {/* Materials Section */}
+              {currentVideo.materials && currentVideo.materials.length > 0 && (
+                <div>
+                  <h3 className="text-white font-semibold mb-6">Materiais e downloads</h3>
+                  
+                  <div className="space-y-4">
+                    {currentVideo.materials
+                      .sort((a, b) => a.order_index - b.order_index)
+                      .map((material) => {
+                        return (
+                          <a
+                            key={material.id}
+                            href={material.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center space-x-3 px-3 py-4 bg-slate-700/30 rounded-lg hover:bg-slate-600/30 transition-colors cursor-pointer"
+                          >
+                            <Download className="w-5 h-5 text-slate-400" />
+                            <div className="flex-1">
+                              <div className="text-white font-medium text-sm">{material.title}</div>
+                              {material.description && (
+                                <div className="text-slate-400 text-xs mt-1">{material.description}</div>
+                              )}
+                              {material.file_size_mb && (
+                                <div className="text-slate-500 text-xs mt-1">{material.file_size_mb}MB</div>
+                              )}
+                            </div>
+                          </a>
+                        );
+                      })}
+                  </div>
+                </div>
+              )}
               
               {/* Downloads */}
               {currentVideo.materials && currentVideo.materials.length > 0 ? (
@@ -678,62 +645,168 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video, onBack, onVideoSelect 
                            />
                            <ExternalLink className="w-8 h-8 text-slate-400 hidden" />
                          </div>
-                         <div className="flex-1">
-                           <div className="text-white font-medium text-sm">{ferramenta.nome}</div>
-                         </div>
-                       </a>
-                     );
-                   })}
-                 </div>
-               </div>
-             )}
-             
-             {/* Version Selector - Only show if there are versions */}
-             {versionsToShow.length > 0 && (
-               <div className="mt-12">
-                 <h3 className="text-white font-semibold mb-4">Outras versões</h3>
-                 
-                 <div className="space-y-2">
-                   {versionsToShow.map((version) => (
-                     <button
-                       key={version.id}
-                       onClick={() => handleVersionChange(version)}
-                       className={`w-full text-left p-3 rounded-lg transition-colors ${
-                         currentVideo.id === version.id
-                           ? 'bg-[#ff7551] text-white'
-                           : 'bg-slate-700/30 text-slate-300 hover:bg-slate-600/30'
-                       }`}
-                     >
-                       <div className="flex items-center space-x-3">
-                         <img
-                           src={version.thumbnail_url || 'https://images.pexels.com/photos/11035380/pexels-photo-11035380.jpeg?auto=compress&cs=tinysrgb&w=80&h=60&fit=crop'}
-                           alt={version.title}
-                           className="w-20 h-15 rounded object-cover flex-shrink-0"
-                         />
-                         <div className="flex-1 min-w-0">
-                           <div className="font-medium text-sm">
-                             {(version as any).version_name || version.title}
-                             {(version as any).is_main_version && (
-                               <span className="ml-2 text-xs bg-slate-600/50 text-slate-300 px-2 py-0.5 rounded">
-                                 Original
-                               </span>
-                             )}
-                           </div>
-                           <div className="text-xs text-slate-400 mt-1">
-                             {formatDuration(version.duration_minutes)}
-                           </div>
-                         </div>
-                         <div className="flex-shrink-0">
-                           <svg className="w-5 h-5 text-[#ff7551]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                           </svg>
-                         </div>
-                       </div>
-                     </button>
-                   ))}
-                 </div>
-               </div>
-             )}
+              {/* Ferramentas Section - Only show if there are tools */}
+              {currentVideo.ferramentas && currentVideo.ferramentas.length > 0 && (
+                <div className={currentVideo.materials && currentVideo.materials.length > 0 ? "mt-12" : ""}>
+                  <h3 className="text-white font-semibold mb-6">Ferramentas usadas</h3>
+                  
+                  <div className="space-y-4">
+                    {currentVideo.ferramentas.map((ferramenta) => {
+                      return (
+                        <a
+                          key={ferramenta.id}
+                          href={ferramenta.link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center space-x-3 px-3 py-4 bg-slate-700/30 rounded-lg hover:bg-slate-600/30 transition-colors cursor-pointer"
+                        >
+                          <div className="w-8 h-8 flex items-center justify-center flex-shrink-0">
+                            <img 
+                              src={ferramenta.icone} 
+                              alt={ferramenta.nome}
+                              className="w-8 h-8 object-contain"
+                              onError={(e) => {
+                                // Fallback to ExternalLink icon if image fails to load
+                                const target = e.target as HTMLImageElement;
+                                target.style.display = 'none';
+                                const fallback = target.nextElementSibling as HTMLElement;
+                                if (fallback) fallback.style.display = 'flex';
+                              }}
+                            />
+                            <ExternalLink className="w-8 h-8 text-slate-400 hidden" />
+                          </div>
+                          <div className="flex-1">
+                            <div className="text-white font-medium text-sm">{ferramenta.nome}</div>
+                          </div>
+                        </a>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+              
+              {/* Related Videos Section - Only show if there are related videos */}
+              {relatedVideos.length > 0 && (
+                <div className={((currentVideo.materials && currentVideo.materials.length > 0) || (currentVideo.ferramentas && currentVideo.ferramentas.length > 0)) ? "mt-12" : ""}>
+                  <h3 className="text-white font-semibold mb-6">Veja também</h3>
+                  
+                  {loadingRelated ? (
+                    <div className="space-y-4">
+                      {Array.from({ length: 3 }).map((_, index) => (
+                        <div key={index} className="flex space-x-3 p-3">
+                          <div className="w-16 h-12 bg-slate-700/30 rounded animate-pulse"></div>
+                          <div className="flex-1 space-y-2">
+                            <div className="h-4 bg-slate-700/30 rounded animate-pulse"></div>
+                            <div className="h-3 bg-slate-700/20 rounded w-2/3 animate-pulse"></div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {relatedVideos.map((relatedVideo) => (
+                        <button
+                          key={relatedVideo.id}
+                          onClick={() => onVideoSelect(relatedVideo)}
+                          className="w-full text-left p-3 bg-slate-700/30 rounded-lg hover:bg-slate-600/30 transition-colors group"
+                        >
+                          <div className="flex items-center space-x-3">
+                            <div className="relative flex-shrink-0">
+                              <img
+                                src={relatedVideo.thumbnail_url || 'https://images.pexels.com/photos/11035380/pexels-photo-11035380.jpeg?auto=compress&cs=tinysrgb&w=80&h=60&fit=crop'}
+                                alt={relatedVideo.title}
+                                className="w-16 h-12 rounded object-cover"
+                              />
+                              <div className="absolute inset-0 flex items-center justify-center bg-black/20 rounded opacity-0 group-hover:opacity-100 transition-opacity">
+                                <Play className="w-4 h-4 text-white" fill="currentColor" />
+                              </div>
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="font-medium text-sm text-white group-hover:text-[#ff7551] transition-colors line-clamp-2">
+                                {relatedVideo.title}
+                              </div>
+                              <div className="text-xs text-slate-400 mt-1 flex items-center space-x-2">
+                                {relatedVideo.instructor && (
+                                  <span>{relatedVideo.instructor.name}</span>
+                                )}
+                                {relatedVideo.category && relatedVideo.instructor && (
+                                  <span>•</span>
+                                )}
+                                {relatedVideo.category && (
+                                  <span>{relatedVideo.category.name}</span>
+                                )}
+                              </div>
+                            </div>
+                            <div className="flex-shrink-0">
+                              <svg className="w-4 h-4 text-slate-400 group-hover:text-[#ff7551] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                              </svg>
+                            </div>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+              
+              {/* Version Selector - Only show if there are versions */}
+              {versionsToShow.length > 0 && (
+                <div className={((currentVideo.materials && currentVideo.materials.length > 0) || (currentVideo.ferramentas && currentVideo.ferramentas.length > 0) || relatedVideos.length > 0) ? "mt-12" : ""}>
+                  <h3 className="text-white font-semibold mb-4">Outras versões</h3>
+                  
+                  <div className="space-y-2">
+                    {versionsToShow.map((version) => (
+                      <button
+                        key={version.id}
+                        onClick={() => handleVersionChange(version)}
+                        className={`w-full text-left p-3 rounded-lg transition-colors ${
+                          currentVideo.id === version.id
+                            ? 'bg-[#ff7551] text-white'
+                            : 'bg-slate-700/30 text-slate-300 hover:bg-slate-600/30'
+                        }`}
+                      >
+                        <div className="flex items-center space-x-3">
+                          <img
+                            src={version.thumbnail_url || 'https://images.pexels.com/photos/11035380/pexels-photo-11035380.jpeg?auto=compress&cs=tinysrgb&w=80&h=60&fit=crop'}
+                            alt={version.title}
+                            className="w-20 h-15 rounded object-cover flex-shrink-0"
+                          />
+                          <div className="flex-1 min-w-0">
+                            <div className="font-medium text-sm">
+                              {(version as any).version_name || version.title}
+                              {(version as any).is_main_version && (
+                                <span className="ml-2 text-xs bg-slate-600/50 text-slate-300 px-2 py-0.5 rounded">
+                                  Original
+                                </span>
+                              )}
+                            </div>
+                            <div className="text-xs text-slate-400 mt-1">
+                              {formatDuration(version.duration_minutes)}
+                            </div>
+                          </div>
+                          <div className="flex-shrink-0">
+                            <svg className="w-5 h-5 text-[#ff7551]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                            </svg>
+                          </div>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+              
+              {/* Empty state - Only show if no materials, tools, related videos, or versions */}
+              {!((currentVideo.materials && currentVideo.materials.length > 0) || 
+                  (currentVideo.ferramentas && currentVideo.ferramentas.length > 0) || 
+                  relatedVideos.length > 0 || 
+                  versionsToShow.length > 0) && (
+                <div className="text-center py-8">
+                  <FileText className="w-12 h-12 text-slate-600 mx-auto mb-4" />
+                  <p className="text-slate-400">Nenhum link disponível para este vídeo.</p>
+                </div>
+              )}
             </div>
           ) : (
             <div className="space-y-6" key={currentVideo.id}>
