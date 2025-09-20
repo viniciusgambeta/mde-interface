@@ -580,41 +580,6 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video, onBack, onVideoSelect 
                 </div>
               )}
               
-              {/* Downloads */}
-              {currentVideo.materials && currentVideo.materials.length > 0 ? (
-                <div className="space-y-4">
-                  {currentVideo.materials
-                    .sort((a, b) => a.order_index - b.order_index)
-                    .map((material) => {
-                      return (
-                        <a
-                          key={material.id}
-                          href={material.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center space-x-3 px-3 py-4 bg-slate-700/30 rounded-lg hover:bg-slate-600/30 transition-colors cursor-pointer"
-                        >
-                          <Download className="w-5 h-5 text-slate-400" />
-                          <div className="flex-1">
-                            <div className="text-white font-medium text-sm">{material.title}</div>
-                            {material.description && (
-                              <div className="text-slate-400 text-xs mt-1">{material.description}</div>
-                            )}
-                            {material.file_size_mb && (
-                              <div className="text-slate-500 text-xs mt-1">{material.file_size_mb}MB</div>
-                            )}
-                          </div>
-                        </a>
-                      );
-                    })}
-                </div>
-              ) : (
-                <div className="text-center py-8">
-                  <FileText className="w-12 h-12 text-slate-600 mx-auto mb-4" />
-                 <p className="text-slate-400">Nenhum link disponível para este vídeo.</p>
-                </div>
-              )}
-             
              {/* Ferramentas Section - Only show if there are tools */}
              {currentVideo.ferramentas && currentVideo.ferramentas.length > 0 && (
                <div className={currentVideo.materials && currentVideo.materials.length > 0 ? "mt-12" : ""}>
