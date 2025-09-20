@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, Heart, Bookmark, ThumbsUp, Users, Send, Download, ExternalLink, FileText, MessageCircle, Phone, Instagram, BarChart3, Clock, ChevronDown, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, Heart, Bookmark, ThumbsUp, Users, Send, Download, ExternalLink, FileText, MessageCircle, Phone, Instagram, BarChart3, Clock, ChevronDown, AlertTriangle, Play } from 'lucide-react';
 import { videoService, type Video } from '../lib/database';
 import { useAuth } from '../contexts/AuthContext';
 import CustomVideoPlayer from './CustomVideoPlayer';
@@ -120,6 +120,8 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video, onBack, onVideoSelect 
   const [selectedVersion, setSelectedVersion] = useState<Video | null>(null);
   const [showVersionDropdown, setShowVersionDropdown] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
+  const [relatedVideos, setRelatedVideos] = useState<Video[]>([]);
+  const [loadingRelated, setLoadingRelated] = useState(false);
 
   // Check if user should see paywall
   useEffect(() => {
@@ -183,6 +185,19 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video, onBack, onVideoSelect 
       const updatedVideoData = { ...currentVideoData, versions: versionResult.versions };
       setVideoData(updatedVideoData);
       console.log('VideoPlayer: Updated videoData with versions:', updatedVideoData.versions?.length || 0);
+      
+      // Load related videos
+      setLoadingRelated(true);
+      try {
+        const relatedData = await videoService.getRelatedVideos(currentVideoData.id, user?.id);
+        setRelatedVideos(relatedData);
+        console.log('VideoPlayer: Loaded related videos:', relatedData.length);
+      } catch (error) {
+        console.error('VideoPlayer: Error loading related videos:', error);
+        setRelatedVideos([]);
+      } finally {
+        setLoadingRelated(false);
+      }
       
       // Set bookmark and like status
       if (user) {
@@ -413,6 +428,71 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video, onBack, onVideoSelect 
                   </div>
                 )}
                 <div className="flex items-center space-x-1">
+               {/* Related Videos Section - Only show if there are related videos */}
+               {relatedVideos.length > 0 && (
+                 <div className="mt-12">
+                   <h3 className="text-white font-semibold mb-6">Veja também</h3>
+                   
+                   {loadingRelated ? (
+                     <div className="space-y-4">
+                       {Array.from({ length: 3 }).map((_, index) => (
+                         <div key={index} className="flex space-x-3 p-3">
+                           <div className="w-16 h-12 bg-slate-700/30 rounded animate-pulse"></div>
+                           <div className="flex-1 space-y-2">
+                             <div className="h-4 bg-slate-700/30 rounded animate-pulse"></div>
+                             <div className="h-3 bg-slate-700/20 rounded w-2/3 animate-pulse"></div>
+                           </div>
+                         </div>
+                       ))}
+                     </div>
+                   ) : (
+                     <div className="space-y-4">
+                       {relatedVideos.map((relatedVideo) => (
+                         <button
+                           key={relatedVideo.id}
+                           onClick={() => onVideoSelect(relatedVideo)}
+                           className="w-full text-left p-3 bg-slate-700/30 rounded-lg hover:bg-slate-600/30 transition-colors group"
+                         >
+                           <div className="flex items-center space-x-3">
+                             <div className="relative flex-shrink-0">
+                               <img
+                                 src={relatedVideo.thumbnail_url || 'https://images.pexels.com/photos/11035380/pexels-photo-11035380.jpeg?auto=compress&cs=tinysrgb&w=80&h=60&fit=crop'}
+                                 alt={relatedVideo.title}
+                                 className="w-16 h-12 rounded object-cover"
+                               />
+                               <div className="absolute inset-0 flex items-center justify-center bg-black/20 rounded opacity-0 group-hover:opacity-100 transition-opacity">
+                                 <Play className="w-4 h-4 text-white" fill="currentColor" />
+                               </div>
+                             </div>
+                             <div className="flex-1 min-w-0">
+                               <div className="font-medium text-sm text-white group-hover:text-[#ff7551] transition-colors line-clamp-2">
+                                 {relatedVideo.title}
+                               </div>
+                               <div className="text-xs text-slate-400 mt-1 flex items-center space-x-2">
+                                 {relatedVideo.instructor && (
+                                   <span>{relatedVideo.instructor.name}</span>
+                                 )}
+                                 {relatedVideo.category && relatedVideo.instructor && (
+                                   <span>•</span>
+                                 )}
+                                 {relatedVideo.category && (
+                                   <span>{relatedVideo.category.name}</span>
+                                 )}
+                               </div>
+                             </div>
+                             <div className="flex-shrink-0">
+                               <svg className="w-4 h-4 text-slate-400 group-hover:text-[#ff7551] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                               </svg>
+                             </div>
+                           </div>
+                         </button>
+                       ))}
+                     </div>
+                   )}
+                 </div>
+               )}
+               
                   <Clock className="w-4 h-4 text-slate-400" />
                   <span>{formatDuration(currentVideo.duration_minutes)}</span>
                 </div>
