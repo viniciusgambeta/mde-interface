@@ -645,6 +645,16 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video, onBack, onVideoSelect 
                            />
                            <ExternalLink className="w-8 h-8 text-slate-400 hidden" />
                          </div>
+                         <div className="flex-1">
+                           <div className="text-white font-medium text-sm">{ferramenta.nome}</div>
+                         </div>
+                       </a>
+                     );
+                   })}
+                 </div>
+               </div>
+             )}
+              
               {/* Ferramentas Section - Only show if there are tools */}
               {currentVideo.ferramentas && currentVideo.ferramentas.length > 0 && (
                 <div className={currentVideo.materials && currentVideo.materials.length > 0 ? "mt-12" : ""}>
