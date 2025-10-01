@@ -2,6 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { ExternalLink, HandMetal, Loader2, DollarSign } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
+// Custom styles for this page only
+const poderzinhosStyles = `
+  .poderzinhos-page .mt-8 {
+    margin-top: 5rem !important;
+  }
+`;
+
 interface HallFerramenta {
   id: string;
   nome_ferramenta: string;
@@ -154,7 +161,9 @@ const PoderzinhosPage: React.FC = () => {
   }
 
   return (
-    <div className="w-full space-y-8">
+    <>
+      <style>{poderzinhosStyles}</style>
+      <div className="w-full space-y-8 poderzinhos-page">
       {/* Header */}
       <div className="text-left">
         <h1 className="text-3xl font-bold text-white mb-4">Poderzinhos</h1>
@@ -192,7 +201,8 @@ const PoderzinhosPage: React.FC = () => {
           </div>
         )}
       </div>
-    </div>
+      </div>
+    </>
   );
 };
 
