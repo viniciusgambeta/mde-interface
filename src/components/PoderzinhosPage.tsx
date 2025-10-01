@@ -64,8 +64,8 @@ const PoderzinhosPage: React.FC = () => {
             <img
               src={ferramenta.img_ferramenta}
               alt={`${ferramenta.nome_ferramenta} logo`}
-              className="w-20 h-20 object-contain drop-shadow-lg"
-              style={{ marginTop: '8px' }}
+              className="w-28 h-28 object-contain drop-shadow-lg"
+              style={{ marginTop: '8px', marginLeft: '-4px' }}
               onError={(e) => {
                 // Fallback to emoji if image fails to load
                 const target = e.target as HTMLImageElement;
@@ -75,7 +75,7 @@ const PoderzinhosPage: React.FC = () => {
               }}
             />
           ) : null}
-          <div className={`w-20 h-20 ${ferramenta.img_ferramenta ? 'hidden' : 'flex'} items-center justify-center text-4xl drop-shadow-lg`}>
+          <div className={`w-28 h-28 ${ferramenta.img_ferramenta ? 'hidden' : 'flex'} items-center justify-center text-5xl drop-shadow-lg`} style={{ marginLeft: '-4px' }}>
             🛠️
           </div>
         </div>
