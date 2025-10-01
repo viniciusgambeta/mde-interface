@@ -165,7 +165,7 @@ const PoderzinhosPage: React.FC = () => {
       </div>
 
       {/* Ferramentas Grid */}
-      <div className="mt-16">
+      <div className="mt-8">
         {ferramentas.length > 0 ? (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mt-32">
             {ferramentas.map((ferramenta, index) => (
