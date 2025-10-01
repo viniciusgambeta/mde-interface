@@ -59,14 +59,13 @@ const PoderzinhosPage: React.FC = () => {
     return (
       <div className="bg-slate-700/30 border border-slate-600/30 rounded-xl hover:bg-slate-600/20 transition-all duration-300 group relative">
         {/* Icon - Positioned outside the card */}
-        <div className="absolute -top-8 left-6 z-10">
         <div className="absolute -top-12 left-6 z-10">
           {ferramenta.img_ferramenta ? (
             <img
               src={ferramenta.img_ferramenta}
               alt={`${ferramenta.nome_ferramenta} logo`}
               className="w-32 h-32 object-contain drop-shadow-lg"
-              style={{ marginTop: '0px', marginLeft: '-8px' }}
+              style={{ marginLeft: '-8px' }}
               onError={(e) => {
                 // Fallback to emoji if image fails to load
                 const target = e.target as HTMLImageElement;
