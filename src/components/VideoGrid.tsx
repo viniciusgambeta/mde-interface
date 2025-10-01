@@ -218,7 +218,7 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
         
         // Group videos by type and category in one pass
         const newCategoryVideos = {
-          live: allVideosData.filter(v => v.tipo === 'live' && v.status === 'published').slice(0, 12),
+          live: allVideosData.filter(v => v.tipo === 'live').slice(0, 12),
           prompt: allVideosData.filter(v => v.tipo === 'prompt').slice(0, 12),
           ai: [],
           automation: [],
