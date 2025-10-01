@@ -192,29 +192,6 @@ const PoderzinhosPage: React.FC = () => {
           </div>
         )}
       </div>
-          {ferramentas.map((ferramenta, index) => (
-            <div
-              key={ferramenta.id}
-              className="animate-fade-in"
-              style={{ animationDelay: `${index * 50}ms` }}
-            >
-              <FerramentaCard ferramenta={ferramenta} />
-            </div>
-          ))}
-        </div>
-      ) : (
-        <div className="text-center py-20">
-          <div className="w-16 h-16 bg-slate-700/30 rounded-full flex items-center justify-center mx-auto mb-4">
-            <HandMetal className="w-8 h-8 text-slate-500" />
-          </div>
-          <h3 className="text-xl font-semibold text-white mb-2">
-            Nenhuma ferramenta disponível
-          </h3>
-          <p className="text-slate-400 max-w-md mx-auto">
-            Não encontramos ferramentas para exibir no momento.
-          </p>
-        </div>
-      )}
     </div>
   );
 };
