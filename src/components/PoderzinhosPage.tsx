@@ -60,12 +60,13 @@ const PoderzinhosPage: React.FC = () => {
       <div className="bg-slate-700/30 border border-slate-600/30 rounded-xl hover:bg-slate-600/20 transition-all duration-300 group relative">
         {/* Icon - Positioned outside the card */}
         <div className="absolute -top-8 left-6 z-10">
+        <div className="absolute -top-12 left-6 z-10">
           {ferramenta.img_ferramenta ? (
             <img
               src={ferramenta.img_ferramenta}
               alt={`${ferramenta.nome_ferramenta} logo`}
-              className="w-28 h-28 object-contain drop-shadow-lg"
-              style={{ marginTop: '4px', marginLeft: '-8px' }}
+              className="w-32 h-32 object-contain drop-shadow-lg"
+              style={{ marginTop: '0px', marginLeft: '-8px' }}
               onError={(e) => {
                 // Fallback to emoji if image fails to load
                 const target = e.target as HTMLImageElement;
@@ -75,13 +76,13 @@ const PoderzinhosPage: React.FC = () => {
               }}
             />
           ) : null}
-          <div className={`w-28 h-28 ${ferramenta.img_ferramenta ? 'hidden' : 'flex'} items-center justify-center text-5xl drop-shadow-lg`} style={{ marginLeft: '-8px' }}>
+          <div className={`w-32 h-32 ${ferramenta.img_ferramenta ? 'hidden' : 'flex'} items-center justify-center text-6xl drop-shadow-lg`} style={{ marginLeft: '-8px' }}>
             🛠️
           </div>
         </div>
 
         {/* Header */}
-        <div className="p-8 pt-16 pb-4 group-hover:pb-8 transition-all duration-300">
+        <div className="p-8 pt-20 pb-4 group-hover:pb-8 transition-all duration-300">
           <div className="mb-6">
             <h3 className="text-white font-bold text-2xl mt-4">{ferramenta.nome_ferramenta}</h3>
             <div className="flex items-center space-x-2 mt-2">
