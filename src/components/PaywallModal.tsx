@@ -37,6 +37,37 @@ const PaywallModal: React.FC<PaywallModalProps> = ({ isOpen, onClose, contentTit
   };
 
   const benefits = [
+    { icon: Crown, text: 'Acesso completo a todos os vídeos premium' },
+    { icon: Zap, text: 'Prompts exclusivos para IA' },
+    { icon: Users, text: 'Comunidade VIP no Discord' },
+    { icon: BookOpen, text: 'E-books e materiais complementares' },
+    { icon: MessageCircle, text: 'Suporte prioritário' },
+    { icon: Download, text: 'Downloads ilimitados' },
+    { icon: Clock, text: 'Acesso antecipado a novos conteúdos' },
+    { icon: Headphones, text: 'Lives exclusivas mensais' }
+  ];
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="bg-slate-800 rounded-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+        {/* Header */}
+        <div className="flex items-center justify-between p-6 border-b border-slate-700">
+          <div>
+            <h2 className="text-2xl font-bold text-white">
+              Desbloqueie este {getContentTypeLabel()}
+            </h2>
+            <p className="text-slate-400 mt-1">
+              "{contentTitle}"
+            </p>
+          </div>
+          <button
+            onClick={onClose}
+            className="text-slate-400 hover:text-white transition-colors"
+          >
+            <X className="w-6 h-6" />
+          </button>
         </div>
 
         {/* Main content */}
