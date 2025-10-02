@@ -657,7 +657,6 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
 
   const VideoCard = ({ video, delay, showToolIcons = true }: { video: Video; delay: number; showToolIcons?: boolean }) => {
     const { user } = useAuth();
-    const [isBookmarked, setIsBookmarked] = useState(video.is_bookmarked || false);
     const [bookmarkLoading, setBookmarkLoading] = useState(false);
     const [imageSrc, setImageSrc] = useState('');
     const [isHighResLoaded, setIsHighResLoaded] = useState(false);
@@ -714,9 +713,8 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
         return;
       }
 
-      const newBookmarkState = !isBookmarked;
+      const newBookmarkState = !video.is_bookmarked;
       
-      setIsBookmarked(newBookmarkState);
       setBookmarkLoading(true);
 
       try {
@@ -725,7 +723,8 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
         const result = await videoService.toggleBookmarkOptimized(video.id, user.id);
         
         if (result.success) {
-          setIsBookmarked(result.isBookmarked);
+          // Update the video object directly
+          video.is_bookmarked = result.isBookmarked;
           
           if (currentView === 'bookmark' && !result.isBookmarked) {
             setTimeout(() => {
@@ -733,14 +732,35 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
             }, 300);
           }
         } else {
-          setIsBookmarked(!newBookmarkState); // Reverte se falhar
           console.error('Failed to toggle bookmark');
         }
       } catch (error) {
-        setIsBookmarked(!newBookmarkState); // Reverte se houver erro
         console.error('Error toggling bookmark:', error);
       } finally {
+              setFilteredVideos(prev => prev.filter(v => v.id !== video.id));
         setBookmarkLoading(false);
+          
+          // Also update filteredVideos array
+          setFilteredVideos(prev => prev.map(v => 
+            v.id === video.id 
+              ? { ...v, is_bookmarked: result.isBookmarked }
+              : v
+          ));
+          
+          // Update categoryVideos for discover page
+          if (currentView === 'discover') {
+            setCategoryVideos(prev => {
+              const updated = { ...prev };
+              Object.keys(updated).forEach(key => {
+                updated[key] = updated[key].map(v => 
+                  v.id === video.id 
+                    ? { ...v, is_bookmarked: result.isBookmarked }
+                    : v
+                );
+              });
+              return updated;
+            });
+          }
       }
     };
     
@@ -754,7 +774,7 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
             onClick={handleBookmarkClick}
             disabled={bookmarkLoading}
             className={`absolute top-3 left-3 z-20 p-2 rounded-full backdrop-blur-sm transition-all duration-200 group-hover:opacity-100 ${
-              isBookmarked 
+              video.is_bookmarked 
                 ? 'bg-[#ff7551] text-white shadow-lg' 
                 : 'bg-black/60 text-white hover:bg-[#ff7551]/80'
             } ${bookmarkLoading ? 'animate-pulse scale-110' : ''} disabled:cursor-not-allowed`}
