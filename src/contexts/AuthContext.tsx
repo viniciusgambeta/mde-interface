@@ -79,6 +79,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     // Setup auth listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event: AuthChangeEvent, session: Session | null) => {
+        console.log('🔐 Auth event:', event, 'Session:', !!session, 'Current path:', window.location.pathname);
+
         // Clear timeout since we got an auth event
         if (timeoutId) {
           clearTimeout(timeoutId);
@@ -88,13 +90,17 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           setUser(convertSupabaseUser(session.user));
         } else {
           setUser(null);
-          
-          // Only redirect on actual logout
-          if (event === 'SIGNED_OUT') {
+
+          // Only redirect on actual logout AND not on password reset page
+          const isPasswordResetPage = window.location.pathname === '/redefinir-senha';
+          if (event === 'SIGNED_OUT' && !isPasswordResetPage) {
+            console.log('🚪 Redirecting to home after logout');
             navigate('/');
+          } else if (event === 'SIGNED_OUT' && isPasswordResetPage) {
+            console.log('⏸️ Skipping redirect - user is on password reset page');
           }
         }
-        
+
         setLoading(false);
       }
     );

@@ -5,6 +5,8 @@ import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 
 const PasswordResetPage: React.FC = () => {
+  console.log('🎬 PasswordResetPage: Component rendering/mounting');
+
   const navigate = useNavigate();
   const { isAuthenticated, loading: authLoading } = useAuth();
   const hashProcessedRef = useRef(false);
@@ -28,12 +30,15 @@ const PasswordResetPage: React.FC = () => {
     const handlePasswordResetFromHash = async () => {
       // Prevent multiple executions
       if (hashProcessedRef.current) {
+        console.log('⏭️ Hash already processed, skipping');
         return;
       }
       hashProcessedRef.current = true;
-      
+
       console.log('🔍 Processing password reset hash on initial load...');
-      
+      console.log('📍 Current URL:', window.location.href);
+      console.log('📍 Current pathname:', window.location.pathname);
+
       // Check if there are parameters in the hash
       const hash = window.location.hash;
       

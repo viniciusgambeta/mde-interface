@@ -296,6 +296,14 @@ const AppWithAuth: React.FC = () => {
   const [needsOnboarding, setNeedsOnboarding] = React.useState<boolean | null>(null);
   const [checkingOnboarding, setCheckingOnboarding] = React.useState(false);
 
+  console.log('🎯 AppWithAuth render:', {
+    pathname: location.pathname,
+    hasUser: !!user,
+    loading,
+    needsOnboarding,
+    checkingOnboarding
+  });
+
   // Check if user needs onboarding
   React.useEffect(() => {
     const checkOnboardingStatus = async () => {
