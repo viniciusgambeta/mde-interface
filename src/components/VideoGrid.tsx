@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { videoService, categoryService, difficultyService, type Video } from '../lib/database';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
+import LazyVideoThumbnail from './common/LazyVideoThumbnail';
 
 // Helper function to generate Supabase image URLs with transformations
 const generateSupabaseImageUrl = (originalUrl: string | undefined, width: number, height: number, quality: number = 80) => {
@@ -662,13 +663,6 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
     const { user } = useAuth();
     const [bookmarkLoading, setBookmarkLoading] = useState(false);
     const [imageLoaded, setImageLoaded] = useState(false);
-    const [imageSrc, setImageSrc] = useState('');
-
-    useEffect(() => {
-      // Gera a URL da imagem de alta qualidade
-      const highResUrl = generateSupabaseImageUrl(video.thumbnail_url, 320, 480, 80);
-      setImageSrc(highResUrl);
-    }, [video.thumbnail_url]);
 
     const handleVideoClick = (event: React.MouseEvent) => {
       event.preventDefault();
@@ -800,15 +794,6 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
         >
           {/* Thumbnail Container */}
           <div className="relative overflow-hidden rounded-lg bg-slate-800 mb-4 aspect-[2/3] transition-all duration-300 hover:shadow-xl">
-          {/* Loading Skeleton */}
-          {!imageLoaded && (
-            <div className="absolute inset-0 bg-gradient-to-br from-slate-700/40 to-slate-800/60 animate-pulse">
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="w-12 h-12 border-3 border-slate-600/30 border-t-slate-500 rounded-full animate-spin"></div>
-              </div>
-            </div>
-          )}
-
           {/* Content Type Badge */}
           {video.tipo === 'prompt' && (
             <div className="absolute top-3 right-3 z-10 flex items-center space-x-1 bg-blue-500 text-white text-sm px-3 py-1.5 rounded font-medium">
@@ -825,24 +810,23 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
             </div>
           )}
 
-            <img
-              src={imageSrc}
+            <LazyVideoThumbnail
+              src={video.thumbnail_url || ''}
               alt={video.title}
-              className={`w-full h-full object-cover transition-all duration-300 group-hover:brightness-75 group-hover:scale-105 ${!imageLoaded ? 'opacity-0' : 'opacity-100'}`}
-              draggable={false}
+              className="group-hover:brightness-75 group-hover:scale-105"
+              aspectRatio="2/3"
               onLoad={() => setImageLoaded(true)}
-              onError={() => setImageLoaded(true)}
             />
 
             {/* Hover Overlay */}
-            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all duration-300" />
-            
+            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all duration-300 pointer-events-none" />
+
           {/* Title Overlay */}
-          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/95 via-black/80 to-transparent p-6 pt-12">
+          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/95 via-black/80 to-transparent p-6 pt-12 pointer-events-none">
             <h3 className="text-white font-medium leading-snug group-hover:text-[#ff7551] transition-colors text-xl">
               {video.title}
             </h3>
-            
+
             {/* Tools Icons - Below title, aligned left */}
             {showToolIcons && video.ferramentas && video.ferramentas.length > 0 && (
               <div className="flex items-center space-x-2 mt-3">
@@ -852,8 +836,8 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
                     className="w-6 h-6 rounded-sm overflow-hidden flex items-center justify-center group/tool relative transition-all duration-200"
                     title={ferramenta.nome}
                   >
-                    <img 
-                      src={ferramenta.icone} 
+                    <img
+                      src={ferramenta.icone}
                       alt={ferramenta.nome}
                       className="w-6 h-6 object-contain drop-shadow-lg filter brightness-90 contrast-110 transition-all duration-200 group-hover:brightness-100 group-hover:contrast-100"
                       onError={(e) => {
@@ -868,14 +852,14 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
                         {ferramenta.nome.charAt(0).toUpperCase()}
                       </span>
                     </div>
-                    
+
                     {/* Tooltip */}
                     <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-slate-800 text-white text-xs rounded opacity-0 group-hover/tool:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
                       {ferramenta.nome}
                     </div>
                   </div>
                 ))}
-                
+
                 {/* More indicator */}
                 {video.ferramentas.length > 5 && (
                   <div className="w-6 h-6 rounded-sm bg-slate-600 flex items-center justify-center drop-shadow-lg text-slate-200 filter brightness-90 contrast-110 transition-all duration-200 group-hover:brightness-100 group-hover:contrast-100">

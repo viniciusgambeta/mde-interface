@@ -3,6 +3,7 @@ import { Search, Filter, Clock, BarChart3, User, X, ChevronDown, Play } from 'lu
 import { useNavigate } from 'react-router-dom';
 import { videoService, categoryService, difficultyService, type Video, type Category, type DifficultyLevel, type Instructor } from '../lib/database';
 import { useAuth } from '../contexts/AuthContext';
+import LazyVideoThumbnail from './common/LazyVideoThumbnail';
 
 interface FilterState {
   category: string;
@@ -419,29 +420,29 @@ const VideoCard: React.FC<{
 
       {/* Thumbnail */}
       <div className="relative overflow-hidden rounded-lg bg-slate-700 mb-3 aspect-[2/3] transition-all duration-300 hover:shadow-xl">
-        <img
-          src={video.thumbnail_url || 'https://images.pexels.com/photos/11035380/pexels-photo-11035380.jpeg?auto=compress&cs=tinysrgb&w=320&h=480&fit=crop'}
+        <LazyVideoThumbnail
+          src={video.thumbnail_url || ''}
           alt={video.title}
-          className="w-full h-full object-cover transition-all duration-300 group-hover:brightness-75 group-hover:scale-105"
-          draggable={false}
+          className="group-hover:brightness-75 group-hover:scale-105"
+          aspectRatio="2/3"
         />
-        
+
         {/* Hover Overlay */}
-        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all duration-300" />
-        
+        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all duration-300 pointer-events-none" />
+
         {/* Duration Badge */}
-        <div className="absolute bottom-3 right-3 bg-black/80 text-white text-xs px-2 py-1 rounded flex items-center space-x-1">
+        <div className="absolute bottom-3 right-3 bg-black/80 text-white text-xs px-2 py-1 rounded flex items-center space-x-1 z-10">
           <Clock className="w-3 h-3" />
           <span>{formatDuration(video.duration_minutes)}</span>
         </div>
-        
+
         {/* Premium Badge */}
         {video.is_premium && (
-          <div className="absolute top-3 right-3 bg-[#ff7551] text-white text-xs px-2 py-1 rounded font-medium">
+          <div className="absolute top-3 right-3 bg-[#ff7551] text-white text-xs px-2 py-1 rounded font-medium z-10">
             Premium
           </div>
         )}
-        
+
         {/* Content Type Badge */}
         {video.tipo === 'prompt' && (
           <div className="absolute top-3 right-3 z-10 flex items-center space-x-1 bg-[#5691d4] text-white text-xs px-2.5 py-1 rounded font-medium">
@@ -451,7 +452,7 @@ const VideoCard: React.FC<{
             <span>Prompt</span>
           </div>
         )}
-        
+
         {/* Live Badge */}
         {video.tipo === 'live' && (
           <div className="absolute top-3 right-3 z-10 flex items-center space-x-1 bg-red-500 text-white text-xs px-2.5 py-1 rounded font-medium">
@@ -461,9 +462,9 @@ const VideoCard: React.FC<{
             <span>Live</span>
           </div>
         )}
-        
+
         {/* Title Overlay */}
-        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/95 via-black/80 to-transparent p-4 pt-10">
+        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/95 via-black/80 to-transparent p-4 pt-10 pointer-events-none">
          <h3 className="text-white font-medium leading-snug group-hover:text-[#ff7551] transition-colors text-lg">
             {video.title}
           </h3>

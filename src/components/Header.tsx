@@ -8,6 +8,7 @@ import { supabase } from '../lib/supabase';
 import LoginModal from './auth/LoginModal';
 import RegisterModal from './auth/RegisterModal';
 import PaywallModal from './PaywallModal';
+import LazyVideoThumbnail from './common/LazyVideoThumbnail';
 
 interface HeaderProps {
   sidebarCollapsed: boolean;
@@ -340,13 +341,13 @@ const Header: React.FC<HeaderProps> = ({ sidebarCollapsed, onSidebarToggle, onVi
                             style={{ animationDelay: `${index * 50}ms` }}
                           >
                             {/* Thumbnail */}
-                            <div className="relative flex-shrink-0">
-                              <img
-                                src={video.thumbnail_url || 'https://images.pexels.com/photos/11035380/pexels-photo-11035380.jpeg?auto=compress&cs=tinysrgb&w=80&h=60&fit=crop'}
+                            <div className="relative flex-shrink-0 w-20 h-28 rounded overflow-hidden">
+                              <LazyVideoThumbnail
+                                src={video.thumbnail_url || ''}
                                 alt={video.title}
-                                className="w-20 h-15 rounded object-cover"
+                                aspectRatio="5/7"
                               />
-                              <div className="absolute inset-0 flex items-center justify-center bg-black/20 rounded">
+                              <div className="absolute inset-0 flex items-center justify-center bg-black/20 rounded pointer-events-none">
                                 <Play className="w-5 h-5 text-white" fill="currentColor" />
                               </div>
                             </div>

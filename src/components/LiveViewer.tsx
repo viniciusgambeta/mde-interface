@@ -5,6 +5,7 @@ import { useAuth } from '../contexts/AuthContext';
 import CommentsSection from './CommentsSection';
 import PaywallModal from './PaywallModal';
 import ReportModal from './ReportModal';
+import LazyVideoThumbnail from './common/LazyVideoThumbnail';
 
 // Component for suggested lives
 const SuggestedLives: React.FC<{ currentLive: Video }> = ({ currentLive }) => {
@@ -72,11 +73,12 @@ const SuggestedLives: React.FC<{ currentLive: Video }> = ({ currentLive }) => {
     <div className="space-y-4">
       {suggestedLives.map((suggestion, index) => (
         <div key={suggestion.id} className="flex space-x-4 cursor-pointer group p-2 rounded-lg hover:bg-slate-700/20 transition-colors">
-          <div className="relative flex-shrink-0">
-            <img
-              src={suggestion.thumbnail_url || 'https://images.pexels.com/photos/11035380/pexels-photo-11035380.jpeg?auto=compress&cs=tinysrgb&w=100&h=150&fit=crop'}
+          <div className="relative flex-shrink-0 w-16 h-24 rounded-lg overflow-hidden">
+            <LazyVideoThumbnail
+              src={suggestion.thumbnail_url || ''}
               alt={suggestion.title}
-              className="w-16 h-24 rounded-lg object-cover group-hover:opacity-80 transition-opacity"
+              className="group-hover:opacity-80"
+              aspectRatio="2/3"
             />
           </div>
           <div className="flex-1 min-w-0">
@@ -798,11 +800,13 @@ const LiveViewer: React.FC<LiveViewerProps> = ({ live, onBack, onVideoSelect }) 
                           }`}
                         >
                          <div className="flex items-center space-x-3">
-                           <img
-                             src={version.thumbnail_url || 'https://images.pexels.com/photos/11035380/pexels-photo-11035380.jpeg?auto=compress&cs=tinysrgb&w=80&h=60&fit=crop'}
-                             alt={version.title}
-                             className="w-20 h-15 rounded object-cover flex-shrink-0"
-                           />
+                           <div className="relative flex-shrink-0 w-20 h-28 rounded overflow-hidden">
+                             <LazyVideoThumbnail
+                               src={version.thumbnail_url || ''}
+                               alt={version.title}
+                               aspectRatio="5/7"
+                             />
+                           </div>
                            <div className="flex-1 min-w-0">
                              <div className="font-medium text-sm">
                                {(version as any).version_name || version.title}
