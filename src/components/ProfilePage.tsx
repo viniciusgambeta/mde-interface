@@ -56,6 +56,7 @@ const ProfilePage: React.FC = () => {
           .from('assinaturas')
           .select(`
             "Nome do cliente",
+            "Plano",
             email_cliente,
             avatar_usuario,
             bio,
@@ -103,7 +104,7 @@ const ProfilePage: React.FC = () => {
             email: data.email_cliente || user.email || '',
             joinedAt: data.created_at_profile || user.joinedAt,
             isPremium: data.is_premium || false,
-            plan: data["Plano"] || 'Free'
+            plan: data["Plano"] || 'Plano não definido'
           });
 
           // Set current avatar
@@ -140,7 +141,7 @@ const ProfilePage: React.FC = () => {
             email: user.email || '',
             joinedAt: user.joinedAt,
             isPremium: false,
-            plan: 'Free'
+            plan: 'Plano não definido'
           });
         }
       } catch (error) {
@@ -154,7 +155,7 @@ const ProfilePage: React.FC = () => {
           email: user.email || '',
           joinedAt: user.joinedAt,
           isPremium: false,
-          plan: 'Free'
+          plan: 'Plano não definido'
         });
       }
     };
