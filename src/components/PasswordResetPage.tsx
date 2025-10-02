@@ -25,103 +25,81 @@ const PasswordResetPage: React.FC = () => {
   const [step, setStep] = useState<'loading' | 'request' | 'update' | 'success'>('loading');
   const [isValidatingToken, setIsValidatingToken] = useState(true);
 
-  // First useEffect: Process hash parameters on initial load only
+  // First useEffect: Detect if there's a recovery hash in the URL
   useEffect(() => {
-    const handlePasswordResetFromHash = async () => {
-      // Prevent multiple executions
-      if (hashProcessedRef.current) {
-        console.log('⏭️ Hash already processed, skipping');
-        return;
-      }
-      hashProcessedRef.current = true;
+    if (hashProcessedRef.current) {
+      console.log('⏭️ Hash already processed, skipping');
+      return;
+    }
+    hashProcessedRef.current = true;
 
-      console.log('🔍 Processing password reset hash on initial load...');
-      console.log('📍 Current URL:', window.location.href);
-      console.log('📍 Current pathname:', window.location.pathname);
+    console.log('🔍 Checking for password reset hash...');
+    console.log('📍 Current URL:', window.location.href);
+    console.log('📍 Current pathname:', window.location.pathname);
 
-      // Check if there are parameters in the hash
-      const hash = window.location.hash;
-      
-      if (!hash || hash.length <= 1) {
-        console.log('🔍 No hash found, setting step to request');
-        setIsValidatingToken(false);
-        setStep('request');
-        // Clear any existing hash
-        window.history.replaceState(null, '', window.location.pathname);
-        return;
-      }
+    const hash = window.location.hash;
 
-      console.log('🔑 Password reset hash found:', hash);
-      
-      try {
-        // Parse hash parameters (remove the # and parse as URLSearchParams)
-        const hashParams = new URLSearchParams(hash.substring(1));
-        const accessToken = hashParams.get('access_token');
-        const refreshToken = hashParams.get('refresh_token');
-        const type = hashParams.get('type');
+    if (!hash || hash.length <= 1) {
+      console.log('🔍 No hash found, showing request form');
+      setIsValidatingToken(false);
+      setStep('request');
+      return;
+    }
 
-        console.log('📋 Hash parameters:', { 
-          hasAccessToken: !!accessToken, 
-          hasRefreshToken: !!refreshToken, 
-          type 
-        });
+    const hashParams = new URLSearchParams(hash.substring(1));
+    const type = hashParams.get('type');
+    const accessToken = hashParams.get('access_token');
 
-        if (accessToken && type === 'recovery') {
-          console.log('🔐 Valid recovery token found, setting session...');
-          
-          // Set the session with the tokens from the hash
-          const { data, error } = await supabase.auth.setSession({
-            access_token: accessToken,
-            refresh_token: refreshToken || ''
-          });
+    if (type === 'recovery' && accessToken) {
+      console.log('🔑 Recovery token detected in URL, waiting for Supabase to process...');
+    } else {
+      console.log('⚠️ No valid recovery parameters found');
+      setIsValidatingToken(false);
+      setStep('request');
+      window.history.replaceState(null, '', window.location.pathname);
+    }
+  }, []);
 
-          if (error) {
-            console.error('❌ Error setting session:', error);
-            setError('Link de redefinição inválido ou expirado. Solicite um novo link.');
-            setIsValidatingToken(false);
-            setStep('request');
-            // Clear the hash from URL
-            window.history.replaceState(null, '', window.location.pathname);
-            return;
-          }
+  // Second useEffect: Listen for PASSWORD_RECOVERY event from Supabase
+  useEffect(() => {
+    console.log('🎧 Setting up auth state listener for password recovery...');
 
-          if (data.session) {
-            console.log('✅ Session set successfully, switching to update step');
-            setIsValidatingToken(false);
-            setStep('update');
-            // Clear the hash from URL
-            window.history.replaceState(null, '', window.location.pathname);
-          } else {
-            console.error('❌ No session created');
-            setError('Link de redefinição inválido. Solicite um novo link.');
-            setIsValidatingToken(false);
-            setStep('request');
-            // Clear the hash from URL
-            window.history.replaceState(null, '', window.location.pathname);
-          }
-        } else {
-          console.log('⚠️ Invalid or missing recovery parameters in hash');
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        console.log('🔐 Auth event received:', event, 'Session:', !!session);
+
+        if (event === 'PASSWORD_RECOVERY') {
+          console.log('✅ PASSWORD_RECOVERY event detected - user can now update password');
           setIsValidatingToken(false);
-          setStep('request');
-          // Clear the hash from URL
+          setStep('update');
+          window.history.replaceState(null, '', window.location.pathname);
+        } else if (event === 'SIGNED_IN' && window.location.hash.includes('type=recovery')) {
+          console.log('✅ Recovery session established');
+          setIsValidatingToken(false);
+          setStep('update');
           window.history.replaceState(null, '', window.location.pathname);
         }
-      } catch (error) {
-        console.error('💥 Exception handling password reset hash:', error);
-        setError('Erro ao processar link de redefinição. Tente novamente.');
+      }
+    );
+
+    const timeout = setTimeout(() => {
+      if (isValidatingToken && step === 'loading') {
+        console.log('⏱️ Validation timeout - no recovery event received');
+        setError('Link de redefinição inválido ou expirado. Solicite um novo link.');
         setIsValidatingToken(false);
         setStep('request');
-        // Clear the hash from URL
         window.history.replaceState(null, '', window.location.pathname);
       }
+    }, 10000);
+
+    return () => {
+      subscription.unsubscribe();
+      clearTimeout(timeout);
     };
+  }, [isValidatingToken, step]);
 
-    handlePasswordResetFromHash();
-  }, []); // Run only once on component mount
-
-  // Second useEffect: Handle redirects after hash processing is complete
+  // Third useEffect: Handle redirects (removed auto-redirect for authenticated users)
   useEffect(() => {
-    // Only run redirect logic after hash has been processed
     if (!hashProcessedRef.current || authLoading || isValidatingToken) {
       return;
     }
@@ -133,10 +111,6 @@ const PasswordResetPage: React.FC = () => {
       step,
       isValidatingToken
     });
-
-    // REMOVED: No automatic redirect for authenticated users
-    // This allows users with recovery tokens to complete password reset
-    // even if they get temporarily authenticated during the process
   }, [hashProcessedRef.current, authLoading, isAuthenticated, step, isValidatingToken, navigate]);
 
   const handleRequestReset = async (e: React.FormEvent) => {
@@ -178,7 +152,6 @@ const PasswordResetPage: React.FC = () => {
     setError('');
     setIsSubmitting(true);
 
-    // Validation
     if (!newPassword || !confirmPassword) {
       setError('Por favor, preencha todos os campos');
       setIsSubmitting(false);
@@ -199,7 +172,7 @@ const PasswordResetPage: React.FC = () => {
 
     try {
       console.log('🔐 Updating password...');
-      
+
       const { error } = await supabase.auth.updateUser({
         password: newPassword
       });
@@ -209,11 +182,15 @@ const PasswordResetPage: React.FC = () => {
         setError('Erro ao atualizar senha. Tente novamente.');
       } else {
         console.log('✅ Password updated successfully');
+
+        console.log('🚪 Signing out temporary recovery session...');
+        await supabase.auth.signOut();
+
         setSuccess(true);
         setStep('success');
-        
-        // Redirect to login after 3 seconds
+
         setTimeout(() => {
+          console.log('➡️ Redirecting to login page...');
           navigate('/?login=true');
         }, 3000);
       }

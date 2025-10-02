@@ -86,6 +86,13 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           clearTimeout(timeoutId);
         }
 
+        // Handle PASSWORD_RECOVERY event - don't update user or redirect
+        if (event === 'PASSWORD_RECOVERY') {
+          console.log('🔑 PASSWORD_RECOVERY event - maintaining current state for password reset flow');
+          setLoading(false);
+          return;
+        }
+
         if (session?.user) {
           setUser(convertSupabaseUser(session.user));
         } else {
