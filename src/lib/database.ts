@@ -639,39 +639,51 @@ export const videoService = {
 
     console.log('📚 getBookmarkedVideos: Fetching bookmarks for user:', userId);
 
-    const { data, error } = await supabase
+    // First get the bookmarked video IDs
+    const { data: bookmarks, error: bookmarkError } = await supabase
       .from('user_bookmarks')
-      .select(`
-        video:videos(
-          *,
-          instructor:instructors(*),
-          category:categories(*),
-          difficulty_level:difficulty_levels(*),
-          materials:video_materials(*),
-          ferramentas:video_ferramentas(
-            ferramenta:ferramentas_links(*)
-          )
-        )
-      `)
+      .select('video_id')
       .eq('user_id', userId)
       .order('created_at', { ascending: false });
 
-    if (error) {
-      console.error('❌ Error fetching bookmarked videos:', error);
+    if (bookmarkError) {
+      console.error('❌ Error fetching user bookmarks:', bookmarkError);
       return [];
     }
 
-    console.log('📊 getBookmarkedVideos: Raw data from query:', {
-      dataLength: data?.length || 0,
-      firstItem: data?.[0] || null
-    });
+    if (!bookmarks || bookmarks.length === 0) {
+      console.log('📊 No bookmarks found for user:', userId);
+      return [];
+    }
 
-    // Extract videos from the nested structure and mark them as bookmarked
-    const videos = (data || [])
-      .map(item => item.video)
-      .filter(Boolean) as Video[];
+    const videoIds = bookmarks.map(b => b.video_id);
+    console.log('📊 Found bookmark IDs:', videoIds.length);
 
-    console.log('📹 getBookmarkedVideos: Extracted videos:', videos.length);
+    // Now fetch the full video details for those IDs
+    const { data: videos, error: videosError } = await supabase
+      .from('videos')
+      .select(`
+        *,
+        instructor:instructors(*),
+        category:categories(*),
+        difficulty_level:difficulty_levels(*),
+        materials:video_materials(*),
+        ferramentas:video_ferramentas(
+          ferramenta:ferramentas_links(*)
+        )
+      `)
+      .in('id', videoIds);
+
+    if (videosError) {
+      console.error('❌ Error fetching bookmarked videos details:', videosError);
+      return [];
+    }
+
+    console.log('📹 getBookmarkedVideos: Fetched videos:', videos?.length || 0);
+
+    if (!videos) {
+      return [];
+    }
 
     // Transform ferramentas data structure and mark all as bookmarked
     videos.forEach(video => {
@@ -681,7 +693,10 @@ export const videoService = {
       video.is_bookmarked = true;
     });
 
-    return videos;
+    // Sort videos by the order they were bookmarked
+    const sortedVideos = videoIds.map(id => videos.find(v => v.id === id)).filter(Boolean) as Video[];
+
+    return sortedVideos;
   },
 
   // Toggle video bookmark
