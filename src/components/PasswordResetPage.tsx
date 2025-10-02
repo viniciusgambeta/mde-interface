@@ -52,9 +52,23 @@ const PasswordResetPage: React.FC = () => {
 
     if (type === 'recovery' && accessToken) {
       console.log('🔑 Recovery token detected in URL:', accessToken.substring(0, 20) + '...');
-      console.log('🔧 Manually setting session with recovery token...');
 
-      // Manually process the PKCE token
+      // Check if it's a PKCE code (starts with "pkce_")
+      if (accessToken.startsWith('pkce_')) {
+        console.log('🔧 Detected PKCE code - needs to be exchanged for session');
+        console.log('⚠️ PKCE flow is not fully supported for password recovery');
+        console.log('💡 Try using implicit flow or magic link instead');
+
+        setError('Este link de redefinição não é compatível com o modo de segurança atual. Por favor, solicite um novo link.');
+        setIsValidatingToken(false);
+        setStep('request');
+        window.history.replaceState(null, '', window.location.pathname);
+        return;
+      }
+
+      console.log('🔧 Setting session with recovery token...');
+
+      // For non-PKCE tokens, use setSession
       supabase.auth.setSession({
         access_token: accessToken,
         refresh_token: hashParams.get('refresh_token') || ''
