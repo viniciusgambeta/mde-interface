@@ -705,32 +705,63 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
       event.preventDefault();
       event.stopPropagation();
       event.nativeEvent.stopImmediatePropagation();
-      
+
       if (!user) {
         console.log('User not logged in, cannot bookmark');
-        return;
+        return false;
       }
 
       if (bookmarkLoading) {
-        return;
+        return false;
       }
 
       const newBookmarkState = !video.is_bookmarked;
-      
+
       setBookmarkLoading(true);
 
       try {
         console.log('Toggling bookmark for video:', video.id, 'New state:', newBookmarkState);
-        
+
         const result = await videoService.toggleBookmarkOptimized(video.id, user.id);
-        
+
         if (result.success) {
           // Update the video object directly
           video.is_bookmarked = result.isBookmarked;
-          
+
+          // Update videos array
+          setVideos(prev => prev.map(v =>
+            v.id === video.id
+              ? { ...v, is_bookmarked: result.isBookmarked }
+              : v
+          ));
+
+          // Update filteredVideos array
+          setFilteredVideos(prev => prev.map(v =>
+            v.id === video.id
+              ? { ...v, is_bookmarked: result.isBookmarked }
+              : v
+          ));
+
+          // Update categoryVideos for discover page
+          if (currentView === 'discover') {
+            setCategoryVideos(prev => {
+              const updated = { ...prev };
+              Object.keys(updated).forEach(key => {
+                updated[key] = updated[key].map(v =>
+                  v.id === video.id
+                    ? { ...v, is_bookmarked: result.isBookmarked }
+                    : v
+                );
+              });
+              return updated;
+            });
+          }
+
+          // Remove from view if we're on bookmark page and unbookmarked
           if (currentView === 'bookmark' && !result.isBookmarked) {
             setTimeout(() => {
               setVideos(prev => prev.filter(v => v.id !== video.id));
+              setFilteredVideos(prev => prev.filter(v => v.id !== video.id));
             }, 300);
           }
         } else {
@@ -739,31 +770,10 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
       } catch (error) {
         console.error('Error toggling bookmark:', error);
       } finally {
-              setFilteredVideos(prev => prev.filter(v => v.id !== video.id));
         setBookmarkLoading(false);
-          
-          // Also update filteredVideos array
-          setFilteredVideos(prev => prev.map(v => 
-            v.id === video.id 
-              ? { ...v, is_bookmarked: result.isBookmarked }
-              : v
-          ));
-          
-          // Update categoryVideos for discover page
-          if (currentView === 'discover') {
-            setCategoryVideos(prev => {
-              const updated = { ...prev };
-              Object.keys(updated).forEach(key => {
-                updated[key] = updated[key].map(v => 
-                  v.id === video.id 
-                    ? { ...v, is_bookmarked: result.isBookmarked }
-                    : v
-                );
-              });
-              return updated;
-            });
-          }
       }
+
+      return false;
     };
     
     return (
@@ -772,22 +782,29 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
       >
         {/* Bookmark Button - Positioned absolutely outside clickable area */}
         {user && (
-          <button
-            onClick={handleBookmarkClick}
-            disabled={bookmarkLoading}
-            className={`absolute top-3 left-3 z-30 p-2 rounded-full backdrop-blur-sm transition-all duration-200 group-hover:opacity-100 ${
-              video.is_bookmarked 
-                ? 'bg-[#ff7551] text-white shadow-lg' 
-                : 'bg-black/60 text-white hover:bg-[#ff7551]/80'
-            } ${bookmarkLoading ? 'animate-pulse scale-110' : ''} disabled:cursor-not-allowed`}
-            style={{ pointerEvents: 'auto' }}
+          <div
+            className="absolute top-3 left-3 z-30"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+            }}
           >
-            <Bookmark 
-              className={`w-5 h-5 transition-all duration-200 ${bookmarkLoading ? 'animate-pulse' : ''}`}
-              fill="none"
-              stroke="currentColor"
-            />
-          </button>
+            <button
+              onClick={handleBookmarkClick}
+              disabled={bookmarkLoading}
+              className={`p-2 rounded-full backdrop-blur-sm transition-all duration-200 group-hover:opacity-100 ${
+                video.is_bookmarked
+                  ? 'bg-[#ff7551] text-white shadow-lg'
+                  : 'bg-black/60 text-white hover:bg-[#ff7551]/80'
+              } ${bookmarkLoading ? 'animate-pulse scale-110' : ''} disabled:cursor-not-allowed`}
+            >
+              <Bookmark
+                className={`w-5 h-5 transition-all duration-200 ${bookmarkLoading ? 'animate-pulse' : ''}`}
+                fill="none"
+                stroke="currentColor"
+              />
+            </button>
+          </div>
         )}
 
         {/* Clickable Card Container */}
