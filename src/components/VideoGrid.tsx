@@ -658,30 +658,13 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
   const VideoCard = ({ video, delay, showToolIcons = true }: { video: Video; delay: number; showToolIcons?: boolean }) => {
     const { user } = useAuth();
     const [bookmarkLoading, setBookmarkLoading] = useState(false);
+    const [imageLoaded, setImageLoaded] = useState(false);
     const [imageSrc, setImageSrc] = useState('');
-    const [isHighResLoaded, setIsHighResLoaded] = useState(false);
 
     useEffect(() => {
-      // Carrega a versão de baixa resolução (20x30 pixels, qualidade 10)
-      const lowResUrl = generateSupabaseImageUrl(video.thumbnail_url, 20, 30, 10);
-      setImageSrc(lowResUrl);
-
-      // Pré-carrega a versão de alta resolução (320x480 pixels, qualidade 80)
-      const highResImage = new Image();
-      highResImage.src = generateSupabaseImageUrl(video.thumbnail_url, 320, 480, 80);
-      highResImage.onload = () => {
-        setIsHighResLoaded(true);
-        setImageSrc(highResImage.src); // Troca para alta resolução
-      };
-      highResImage.onerror = () => {
-        console.warn('Falha ao carregar imagem de alta resolução do Supabase, usando fallback.');
-        setIsHighResLoaded(true); // Ainda marca como carregado para remover o blur
-      };
-
-      return () => {
-        highResImage.onload = null;
-        highResImage.onerror = null;
-      };
+      // Gera a URL da imagem de alta qualidade
+      const highResUrl = generateSupabaseImageUrl(video.thumbnail_url, 320, 480, 80);
+      setImageSrc(highResUrl);
     }, [video.thumbnail_url]);
 
     const handleVideoClick = (event: React.MouseEvent) => {
@@ -813,7 +796,16 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
           className="block w-full cursor-pointer"
         >
           {/* Thumbnail Container */}
-          <div className="relative overflow-hidden rounded-lg bg-slate-700 mb-4 aspect-[2/3] transition-all duration-300 hover:shadow-xl">
+          <div className="relative overflow-hidden rounded-lg bg-slate-800 mb-4 aspect-[2/3] transition-all duration-300 hover:shadow-xl">
+          {/* Loading Skeleton */}
+          {!imageLoaded && (
+            <div className="absolute inset-0 bg-gradient-to-br from-slate-700/40 to-slate-800/60 animate-pulse">
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="w-12 h-12 border-3 border-slate-600/30 border-t-slate-500 rounded-full animate-spin"></div>
+              </div>
+            </div>
+          )}
+
           {/* Content Type Badge */}
           {video.tipo === 'prompt' && (
             <div className="absolute top-3 right-3 z-10 flex items-center space-x-1 bg-blue-500 text-white text-sm px-3 py-1.5 rounded font-medium">
@@ -821,7 +813,7 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
               <span>Prompt</span>
             </div>
           )}
-          
+
           {/* Live Badge */}
           {video.tipo === 'live' && (
             <div className="absolute top-3 right-3 z-10 flex items-center space-x-1 bg-red-500 text-white text-sm px-3 py-1.5 rounded font-medium">
@@ -829,14 +821,16 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
               <span>Ao vivo</span>
             </div>
           )}
-          
+
             <img
               src={imageSrc}
               alt={video.title}
-              className={`w-full h-full object-cover transition-all duration-300 group-hover:brightness-75 group-hover:scale-105 ${!isHighResLoaded ? 'blur-sm' : 'blur-none'}`}
+              className={`w-full h-full object-cover transition-all duration-300 group-hover:brightness-75 group-hover:scale-105 ${!imageLoaded ? 'opacity-0' : 'opacity-100'}`}
               draggable={false}
+              onLoad={() => setImageLoaded(true)}
+              onError={() => setImageLoaded(true)}
             />
-            
+
             {/* Hover Overlay */}
             <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all duration-300" />
             
