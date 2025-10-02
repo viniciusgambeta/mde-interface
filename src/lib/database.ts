@@ -646,7 +646,12 @@ export const videoService = {
       .eq('user_id', userId)
       .order('created_at', { ascending: false });
 
-    if (bookmarkError || !bookmarks || bookmarks.length === 0) {
+    if (bookmarkError) {
+      console.error('❌ Error fetching bookmarks:', bookmarkError);
+      return [];
+    }
+
+    if (!bookmarks || bookmarks.length === 0) {
       console.log('📊 No bookmarks found for user');
       return [];
     }
@@ -661,26 +666,31 @@ export const videoService = {
       const batch = bookmarks.slice(i, i + batchSize);
       const videoIds = batch.map(b => b.video_id);
 
+      console.log(`📦 Fetching batch ${Math.floor(i / batchSize) + 1} with ${videoIds.length} video IDs`);
+
       const { data: videos, error: videosError } = await supabase
         .from('videos')
         .select(`
           *,
           instructor:instructors(*),
-          category:categories(*),
           difficulty_level:difficulty_levels(*),
           materials:video_materials(*),
           ferramentas:video_ferramentas(
             ferramenta:ferramentas_links(*)
           )
         `)
-        .in('id', videoIds);
+        .in('id', videoIds)
+        .eq('status', 'published');
 
       if (videosError) {
         console.error('❌ Error fetching video batch:', videosError);
+        console.error('❌ Full error details:', JSON.stringify(videosError, null, 2));
         continue;
       }
 
       if (videos) {
+        console.log(`✅ Fetched ${videos.length} videos in this batch`);
+
         // Transform ferramentas and mark as bookmarked
         videos.forEach(video => {
           if (video.ferramentas) {
@@ -693,13 +703,15 @@ export const videoService = {
       }
     }
 
+    console.log('📊 Total videos fetched across all batches:', allVideos.length);
+
     // Sort videos by bookmark creation order
     const videoMap = new Map(allVideos.map(v => [v.id, v]));
     const sortedVideos = bookmarks
       .map(b => videoMap.get(b.video_id))
       .filter(Boolean) as Video[];
 
-    console.log('📹 Fetched', sortedVideos.length, 'videos total');
+    console.log('📹 Final sorted videos:', sortedVideos.length);
     return sortedVideos;
   },
 
