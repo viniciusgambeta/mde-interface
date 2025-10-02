@@ -586,7 +586,6 @@ const RegistrationPage: React.FC = () => {
           src="/logo1_branco.png"
           alt="Logo"
           className="h-32 w-auto mx-auto relative z-10"
-          style={{ marginBottom: '-3.77rem' }}
         />
       </div>
       
