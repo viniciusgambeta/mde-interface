@@ -632,7 +632,12 @@ export const videoService = {
 
   // Get bookmarked videos for a user
   async getBookmarkedVideos(userId: string): Promise<Video[]> {
-    if (!userId) return [];
+    if (!userId) {
+      console.log('⚠️ getBookmarkedVideos: No userId provided');
+      return [];
+    }
+
+    console.log('📚 getBookmarkedVideos: Fetching bookmarks for user:', userId);
 
     const { data, error } = await supabase
       .from('user_bookmarks')
@@ -652,14 +657,21 @@ export const videoService = {
       .order('created_at', { ascending: false });
 
     if (error) {
-      console.error('Error fetching bookmarked videos:', error);
+      console.error('❌ Error fetching bookmarked videos:', error);
       return [];
     }
+
+    console.log('📊 getBookmarkedVideos: Raw data from query:', {
+      dataLength: data?.length || 0,
+      firstItem: data?.[0] || null
+    });
 
     // Extract videos from the nested structure and mark them as bookmarked
     const videos = (data || [])
       .map(item => item.video)
       .filter(Boolean) as Video[];
+
+    console.log('📹 getBookmarkedVideos: Extracted videos:', videos.length);
 
     // Transform ferramentas data structure and mark all as bookmarked
     videos.forEach(video => {

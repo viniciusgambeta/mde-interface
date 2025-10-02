@@ -171,8 +171,11 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
         } else if (currentView === 'bookmark') {
           // Load bookmarked videos for the user
           if (user) {
+            console.log('📚 VideoGrid: Loading bookmarks for user:', user.id);
             videoData = await videoService.getBookmarkedVideos(user.id);
+            console.log('📚 VideoGrid: Bookmarked videos loaded:', videoData.length);
           } else {
+            console.log('⚠️ VideoGrid: No user logged in for bookmarks');
             videoData = [];
           }
         } else {
