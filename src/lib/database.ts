@@ -639,63 +639,67 @@ export const videoService = {
 
     console.log('📚 getBookmarkedVideos: Fetching bookmarks for user:', userId);
 
-    // First get the bookmarked video IDs
+    // Get bookmarked video IDs first
     const { data: bookmarks, error: bookmarkError } = await supabase
       .from('user_bookmarks')
-      .select('video_id')
+      .select('video_id, created_at')
       .eq('user_id', userId)
       .order('created_at', { ascending: false });
 
-    if (bookmarkError) {
-      console.error('❌ Error fetching user bookmarks:', bookmarkError);
+    if (bookmarkError || !bookmarks || bookmarks.length === 0) {
+      console.log('📊 No bookmarks found for user');
       return [];
     }
 
-    if (!bookmarks || bookmarks.length === 0) {
-      console.log('📊 No bookmarks found for user:', userId);
-      return [];
-    }
+    console.log('📊 Found', bookmarks.length, 'bookmarks');
 
-    const videoIds = bookmarks.map(b => b.video_id);
-    console.log('📊 Found bookmark IDs:', videoIds.length);
+    // Fetch videos in batches of 30 to avoid URL length limits
+    const batchSize = 30;
+    const allVideos: Video[] = [];
 
-    // Now fetch the full video details for those IDs
-    const { data: videos, error: videosError } = await supabase
-      .from('videos')
-      .select(`
-        *,
-        instructor:instructors(*),
-        category:categories(*),
-        difficulty_level:difficulty_levels(*),
-        materials:video_materials(*),
-        ferramentas:video_ferramentas(
-          ferramenta:ferramentas_links(*)
-        )
-      `)
-      .in('id', videoIds);
+    for (let i = 0; i < bookmarks.length; i += batchSize) {
+      const batch = bookmarks.slice(i, i + batchSize);
+      const videoIds = batch.map(b => b.video_id);
 
-    if (videosError) {
-      console.error('❌ Error fetching bookmarked videos details:', videosError);
-      return [];
-    }
+      const { data: videos, error: videosError } = await supabase
+        .from('videos')
+        .select(`
+          *,
+          instructor:instructors(*),
+          category:categories(*),
+          difficulty_level:difficulty_levels(*),
+          materials:video_materials(*),
+          ferramentas:video_ferramentas(
+            ferramenta:ferramentas_links(*)
+          )
+        `)
+        .in('id', videoIds);
 
-    console.log('📹 getBookmarkedVideos: Fetched videos:', videos?.length || 0);
-
-    if (!videos) {
-      return [];
-    }
-
-    // Transform ferramentas data structure and mark all as bookmarked
-    videos.forEach(video => {
-      if (video.ferramentas) {
-        video.ferramentas = (video.ferramentas as any[]).map((item: any) => item.ferramenta).filter(Boolean);
+      if (videosError) {
+        console.error('❌ Error fetching video batch:', videosError);
+        continue;
       }
-      video.is_bookmarked = true;
-    });
 
-    // Sort videos by the order they were bookmarked
-    const sortedVideos = videoIds.map(id => videos.find(v => v.id === id)).filter(Boolean) as Video[];
+      if (videos) {
+        // Transform ferramentas and mark as bookmarked
+        videos.forEach(video => {
+          if (video.ferramentas) {
+            video.ferramentas = (video.ferramentas as any[]).map((item: any) => item.ferramenta).filter(Boolean);
+          }
+          video.is_bookmarked = true;
+        });
 
+        allVideos.push(...videos);
+      }
+    }
+
+    // Sort videos by bookmark creation order
+    const videoMap = new Map(allVideos.map(v => [v.id, v]));
+    const sortedVideos = bookmarks
+      .map(b => videoMap.get(b.video_id))
+      .filter(Boolean) as Video[];
+
+    console.log('📹 Fetched', sortedVideos.length, 'videos total');
     return sortedVideos;
   },
 
