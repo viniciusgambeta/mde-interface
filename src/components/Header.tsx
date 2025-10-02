@@ -489,7 +489,7 @@ const Header: React.FC<HeaderProps> = ({ sidebarCollapsed, onSidebarToggle, onVi
                   className="flex items-center space-x-2 px-4 py-3 bg-[#ff7551] hover:bg-[#ff7551]/80 text-white font-medium rounded-lg transition-colors text-base"
                 >
                   <UserPlus className="w-5 h-5" />
-                  <span className="hidden sm:inline">Fazer Parte</span>
+                  <span className="hidden sm:inline">Assine agora</span>
                   <span className="sm:hidden">Entrar</span>
                 </button>
               </div>
