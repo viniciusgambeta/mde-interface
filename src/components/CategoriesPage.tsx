@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { videoService, categoryService, difficultyService, type Video, type Category, type DifficultyLevel, type Instructor } from '../lib/database';
 import { useAuth } from '../contexts/AuthContext';
 import LazyVideoThumbnail from './common/LazyVideoThumbnail';
+import VideoCardSkeleton from './common/VideoCardSkeleton';
 
 interface FilterState {
   category: string;
@@ -197,10 +198,22 @@ const CategoriesPage: React.FC<CategoriesPageProps> = ({ onVideoSelect }) => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-20">
-        <div className="flex items-center space-x-3">
-          <div className="w-6 h-6 border-2 border-[#ff7551]/30 border-t-[#ff7551] rounded-full animate-spin"></div>
-          <span className="text-slate-400">Carregando categorias...</span>
+      <div className="space-y-8">
+        <div>
+          <div className="h-8 bg-slate-700/30 rounded w-64 mb-2 animate-pulse" />
+          <div className="h-4 bg-slate-700/20 rounded w-96 animate-pulse" />
+        </div>
+        <div className="space-y-4">
+          <div className="flex flex-wrap gap-4">
+            {[...Array(5)].map((_, i) => (
+              <div key={i} className="h-10 w-32 bg-slate-700/30 rounded-lg animate-pulse" />
+            ))}
+          </div>
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-8">
+          {[...Array(12)].map((_, index) => (
+            <VideoCardSkeleton key={index} showTitle={true} />
+          ))}
         </div>
       </div>
     );

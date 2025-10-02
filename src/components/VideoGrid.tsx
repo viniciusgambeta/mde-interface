@@ -5,6 +5,7 @@ import { videoService, categoryService, difficultyService, type Video } from '..
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 import LazyVideoThumbnail from './common/LazyVideoThumbnail';
+import VideoCardSkeleton from './common/VideoCardSkeleton';
 
 // Helper function to generate Supabase image URLs with transformations
 const generateSupabaseImageUrl = (originalUrl: string | undefined, width: number, height: number, quality: number = 80) => {
@@ -517,21 +518,6 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
     }
   };
 
-  // Loading skeleton component
-  const VideoCardSkeleton = () => (
-    <div
-      className="relative"
-    >
-      <div className="relative overflow-hidden rounded-lg bg-slate-700/30 mb-3 aspect-[2/3] animate-pulse">
-        <div className="w-full h-full bg-gradient-to-br from-slate-600/20 to-slate-700/40"></div>
-      </div>
-      
-      <div className="space-y-2 px-1">
-        <div className="h-4 bg-slate-700/30 rounded animate-pulse"></div>
-        <div className="h-3 bg-slate-700/20 rounded w-3/4 animate-pulse"></div>
-      </div>
-    </div>
-  );
 
   // Grid layout for trending and bookmark pages
   const GridLayout: React.FC<{ videos: Video[]; title: string; description: string }> = ({ videos, title, description }) => (
@@ -650,10 +636,15 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
   if (loading) {
     console.log('🎬 VideoGrid: Showing loading state');
     return (
-      <div className="flex items-center justify-center py-20">
-        <div className="flex items-center space-x-3">
-          <div className="w-6 h-6 border-2 border-[#ff7551]/30 border-t-[#ff7551] rounded-full animate-spin"></div>
-          <span className="text-slate-400">Carregando...</span>
+      <div className="space-y-8">
+        <div>
+          <div className="h-8 bg-slate-700/30 rounded w-64 mb-2 animate-pulse" />
+          <div className="h-4 bg-slate-700/20 rounded w-96 animate-pulse" />
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-8">
+          {[...Array(12)].map((_, index) => (
+            <VideoCardSkeleton key={index} showTitle={true} showToolIcons={true} />
+          ))}
         </div>
       </div>
     );
@@ -938,12 +929,15 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
 
   if (loading) {
     return (
-      <section>
-        <div className="flex items-center justify-center py-20">
-          <div className="flex items-center space-x-3">
-            <div className="w-6 h-6 border-2 border-[#ff7551]/30 border-t-[#ff7551] rounded-full animate-spin"></div>
-            <span className="text-slate-400">Carregando...</span>
-          </div>
+      <section className="space-y-8">
+        <div>
+          <div className="h-8 bg-slate-700/30 rounded w-64 mb-2 animate-pulse" />
+          <div className="h-4 bg-slate-700/20 rounded w-96 animate-pulse" />
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-8">
+          {[...Array(12)].map((_, index) => (
+            <VideoCardSkeleton key={index} showTitle={true} showToolIcons={true} />
+          ))}
         </div>
       </section>
     );
