@@ -177,37 +177,14 @@ const PaywallModal: React.FC<PaywallModalProps> = ({ isOpen, onClose, contentTit
             </button>
 
             {/* Already a subscriber section */}
-            <div className="text-center p-4 bg-slate-700/20 rounded-lg border border-slate-600/20">
-              <h4 className="text-white font-semibold mb-2">Já é assinante?</h4>
-              <p className="text-slate-400 mb-4 text-sm">
-                Se você já tem uma assinatura ativa, faça login para acessar todo o conteúdo.
-              </p>
-              
-              <button
-                onClick={handleLogin}
-                className="px-6 py-2 bg-slate-600/30 hover:bg-slate-500/30 text-white font-medium rounded-lg transition-colors"
-              >
-                Fazer Login
-              </button>
-            </div>
-
-            {/* Trust indicators */}
-            <div className="mt-6 text-center">
-              <div className="flex items-center justify-center space-x-6 text-slate-400 text-sm">
-                <div className="flex items-center space-x-2">
-                  <Shield className="w-4 h-4" />
-                  <span>Pagamento Seguro</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Users className="w-4 h-4" />
-                  <span>+1000 Membros</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Star className="w-4 h-4" />
-                  <span>Cancele Quando Quiser</span>
-                </div>
-              </div>
-            </div>
+          {/* Login link */}
+          <div className="text-center mt-4">
+            <button
+              onClick={handleLogin}
+              className="text-slate-400 hover:text-[#ff7551] text-sm transition-colors"
+            >
+              Já é assinante? Fazer login
+            </button>
           </div>
         </div>
       </div>
