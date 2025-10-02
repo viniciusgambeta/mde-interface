@@ -236,6 +236,9 @@ export const videoService = {
         materials:video_materials(*),
         ferramentas:video_ferramentas(
           ferramenta:ferramentas_links(*)
+        ),
+        video_categories(
+          category:categories(*)
         )
       `)
       .eq('status', 'published')
@@ -305,11 +308,19 @@ export const videoService = {
 
       const videos = data as Video[];
 
-      // Transform ferramentas data structure
+      // Transform ferramentas data structure and extract category
       videos.forEach(video => {
         if (video.ferramentas) {
           video.ferramentas = (video.ferramentas as any[]).map((item: any) => item.ferramenta).filter(Boolean);
         }
+
+        // Extract category from video_categories relationship
+        if (video.video_categories && video.video_categories.length > 0) {
+          video.category = video.video_categories[0].category;
+        }
+
+        // Remove the temporary video_categories field
+        delete video.video_categories;
       });
 
       // If user is provided, check bookmark status for each video
