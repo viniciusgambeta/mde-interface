@@ -218,12 +218,14 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
         
         // Group videos by type and category in one pass
         const newCategoryVideos = {
-          live: allVideosData.filter(v => v.tipo === 'live').slice(0, 12),
-          prompt: allVideosData.filter(v => v.tipo === 'prompt').slice(0, 12),
+          live: shuffleArray(allVideosData.filter(v => v.tipo === 'live')).slice(0, 12),
+          prompt: shuffleArray(allVideosData.filter(v => v.tipo === 'prompt')).slice(0, 12),
           ai: [],
           automation: [],
           basic: [],
-          configuracoes: []
+          configuracoes: [],
+          audiovisual: [],
+          vibecoding: []
         };
         
         // Load specific categories in parallel
@@ -245,8 +247,7 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
         newCategoryVideos.vibecoding = shuffleArray(vibecodingVideos);
         
         // Also shuffle live and prompt videos
-        newCategoryVideos.live = shuffleArray(newCategoryVideos.live);
-        newCategoryVideos.prompt = shuffleArray(newCategoryVideos.prompt);
+        // Live and prompt videos are already shuffled above
         
         setCategoryVideos(newCategoryVideos);
       } catch (error) {
