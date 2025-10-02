@@ -7,6 +7,7 @@ import { useAuth } from '../contexts/AuthContext';
 const PasswordResetPage: React.FC = () => {
   const navigate = useNavigate();
   const { isAuthenticated, loading: authLoading } = useAuth();
+  const hashProcessedRef = useRef(false);
   
   // Form states
   const [email, setEmail] = useState('');
@@ -14,35 +15,40 @@ const PasswordResetPage: React.FC = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const hashProcessedRef = useRef(false);
   
   // UI states
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
   const [step, setStep] = useState<'loading' | 'request' | 'update' | 'success'>('loading');
-  const [isValidatingToken, setIsValidatingToken] = useState(false);
+  const [isValidatingToken, setIsValidatingToken] = useState(true);
 
-  // Handle password reset tokens from URL hash - only run once
+  // Single useEffect to handle both hash processing and authentication redirect
   useEffect(() => {
-    // Prevent multiple executions
-    if (hashProcessedRef.current) {
-      return;
-    }
-    
     const handlePasswordResetFromHash = async () => {
+      // Prevent multiple executions
+      if (hashProcessedRef.current) {
+        return;
+      }
       hashProcessedRef.current = true;
       
       // Check if there are parameters in the hash
       const hash = window.location.hash;
+      
       if (!hash || hash.length <= 1) {
         console.log('🔍 No hash found, setting step to request');
+        setIsValidatingToken(false);
         setStep('request');
+        
+        // Check if user is already authenticated and redirect if needed
+        if (!authLoading && isAuthenticated) {
+          console.log('🔒 Authenticated user on request step, redirecting to home');
+          navigate('/');
+        }
         return;
       }
 
       console.log('🔑 Password reset hash found:', hash);
-      setIsValidatingToken(true);
       
       try {
         // Parse hash parameters (remove the # and parse as URLSearchParams)
@@ -69,10 +75,8 @@ const PasswordResetPage: React.FC = () => {
           if (error) {
             console.error('❌ Error setting session:', error);
             setError('Link de redefinição inválido ou expirado. Solicite um novo link.');
+            setIsValidatingToken(false);
             setStep('request');
-            // Clear the hash from URL
-            window.history.replaceState(null, '', window.location.pathname);
-            
             // Clear the hash from URL
             window.history.replaceState(null, '', window.location.pathname);
             return;
@@ -80,47 +84,37 @@ const PasswordResetPage: React.FC = () => {
 
           if (data.session) {
             console.log('✅ Session set successfully, switching to update step');
+            setIsValidatingToken(false);
             setStep('update');
-            // Clear the hash from URL
-            window.history.replaceState(null, '', window.location.pathname);
-            
             // Clear the hash from URL
             window.history.replaceState(null, '', window.location.pathname);
           } else {
             console.error('❌ No session created');
             setError('Link de redefinição inválido. Solicite um novo link.');
+            setIsValidatingToken(false);
             setStep('request');
-            // Clear the hash from URL
-            window.history.replaceState(null, '', window.location.pathname);
-            
             // Clear the hash from URL
             window.history.replaceState(null, '', window.location.pathname);
           }
         } else {
           console.log('⚠️ Invalid or missing recovery parameters in hash');
+          setIsValidatingToken(false);
           setStep('request');
+          // Clear the hash from URL
+          window.history.replaceState(null, '', window.location.pathname);
         }
       } catch (error) {
         console.error('💥 Exception handling password reset hash:', error);
         setError('Erro ao processar link de redefinição. Tente novamente.');
+        setIsValidatingToken(false);
         setStep('request');
-        
         // Clear the hash from URL
         window.history.replaceState(null, '', window.location.pathname);
       }
     };
 
     handlePasswordResetFromHash();
-  }, []);
-
-  // Redirect if user is already authenticated and not updating password
-  useEffect(() => {
-    // Only redirect if we've processed the hash and we're not in update mode
-    if (!authLoading && isAuthenticated && hashProcessedRef.current && step === 'request') {
-      console.log('🔒 Authenticated user on request step, redirecting to home');
-      navigate('/');
-    }
-  }, [authLoading, isAuthenticated, step, navigate]);
+  }, [authLoading, isAuthenticated, navigate]);
 
   const handleRequestReset = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -385,24 +379,11 @@ const PasswordResetPage: React.FC = () => {
   if (authLoading || step === 'loading' || isValidatingToken) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-[#1f1d2b] via-[#1f1d2b] to-black flex items-center justify-center p-4">
-        <div className="bg-[#1f1d2b] border border-slate-700/30 rounded-xl w-full max-w-md">
-          <div className="p-8 text-center">
-            <div className="w-16 h-16 bg-[#ff7551]/20 rounded-full flex items-center justify-center mx-auto mb-6">
-              <Loader2 className="w-8 h-8 text-[#ff7551] animate-spin" />
-            </div>
-            <h2 className="text-xl font-semibold text-white mb-2">
-              Validando Link
-            </h2>
-            <p className="text-slate-400">
-              Verificando o link de redefinição de senha...
-            </p>
-          </div>
-          <div className="flex items-center space-x-3">
-            <div className="w-6 h-6 border-2 border-[#ff7551]/30 border-t-[#ff7551] rounded-full animate-spin"></div>
-            <span className="text-slate-400">
-              {isValidatingToken ? 'Validando link...' : 'Carregando...'}
-            </span>
-          </div>
+        <div className="flex items-center space-x-3">
+          <div className="w-6 h-6 border-2 border-[#ff7551]/30 border-t-[#ff7551] rounded-full animate-spin"></div>
+          <span className="text-slate-400">
+            {isValidatingToken ? 'Validando link...' : 'Carregando...'}
+          </span>
         </div>
       </div>
     );
