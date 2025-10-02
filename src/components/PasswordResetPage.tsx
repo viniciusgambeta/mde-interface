@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Mail, ArrowLeft, CheckCircle, AlertCircle, Loader2, Eye, EyeOff, Lock } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
@@ -7,12 +7,6 @@ import { useAuth } from '../contexts/AuthContext';
 const PasswordResetPage: React.FC = () => {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
-  const [searchParams] = useSearchParams();
-  
-  // Check if this is a password update (has access_token in URL)
-  const accessToken = searchParams.get('access_token');
-  const refreshToken = searchParams.get('refresh_token');
-  const isPasswordUpdate = !!(accessToken && refreshToken);
   
   // Form states
   const [email, setEmail] = useState('');
@@ -26,52 +20,91 @@ const PasswordResetPage: React.FC = () => {
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
   const [step, setStep] = useState<'request' | 'update' | 'success'>('request');
+  const [isValidatingToken, setIsValidatingToken] = useState(false);
 
   // Redirect if user is already authenticated and not updating password
   useEffect(() => {
-    if (isAuthenticated && !isPasswordUpdate) {
+    if (isAuthenticated && step !== 'update') {
       navigate('/');
     }
-  }, [isAuthenticated, isPasswordUpdate, navigate]);
+  }, [isAuthenticated, step, navigate]);
 
-  // Handle password reset tokens from URL
+  // Handle password reset tokens from URL hash
   useEffect(() => {
-    const handlePasswordReset = async () => {
-      if (accessToken && refreshToken) {
-        console.log('🔑 Password reset tokens found in URL');
-        
-        try {
-          // Set the session with the tokens from the URL
+    const handlePasswordResetFromHash = async () => {
+      // Check if there are parameters in the hash
+      const hash = window.location.hash;
+      if (!hash || hash.length <= 1) {
+        return;
+      }
+
+      console.log('🔑 Password reset hash found:', hash);
+      setIsValidatingToken(true);
+      
+      try {
+        // Parse hash parameters (remove the # and parse as URLSearchParams)
+        const hashParams = new URLSearchParams(hash.substring(1));
+        const accessToken = hashParams.get('access_token');
+        const refreshToken = hashParams.get('refresh_token');
+        const type = hashParams.get('type');
+
+        console.log('📋 Hash parameters:', { 
+          hasAccessToken: !!accessToken, 
+          hasRefreshToken: !!refreshToken, 
+          type 
+        });
+
+        if (accessToken && type === 'recovery') {
+          console.log('🔐 Valid recovery token found, setting session...');
+          
+          // Set the session with the tokens from the hash
           const { data, error } = await supabase.auth.setSession({
             access_token: accessToken,
-            refresh_token: refreshToken
+            refresh_token: refreshToken || ''
           });
 
           if (error) {
             console.error('❌ Error setting session:', error);
             setError('Link de redefinição inválido ou expirado. Solicite um novo link.');
             setStep('request');
+            
+            // Clear the hash from URL
+            window.history.replaceState(null, '', window.location.pathname);
             return;
           }
 
           if (data.session) {
             console.log('✅ Session set successfully, switching to update step');
             setStep('update');
+            
+            // Clear the hash from URL
+            window.history.replaceState(null, '', window.location.pathname);
           } else {
             console.error('❌ No session created');
             setError('Link de redefinição inválido. Solicite um novo link.');
             setStep('request');
+            
+            // Clear the hash from URL
+            window.history.replaceState(null, '', window.location.pathname);
           }
-        } catch (error) {
-          console.error('💥 Exception handling password reset:', error);
-          setError('Erro ao processar link de redefinição. Tente novamente.');
-          setStep('request');
+        } else {
+          console.log('⚠️ Invalid or missing recovery parameters in hash');
+          // Don't show error if no recovery params, user might just be visiting the page normally
         }
+      } catch (error) {
+        console.error('💥 Exception handling password reset hash:', error);
+        setError('Erro ao processar link de redefinição. Tente novamente.');
+        setStep('request');
+        
+        // Clear the hash from URL
+        window.history.replaceState(null, '', window.location.pathname);
+      } finally {
+        setIsValidatingToken(false);
       }
     };
 
-    handlePasswordReset();
-  }, [accessToken, refreshToken]);
+    handlePasswordResetFromHash();
+  }, []);
 
   const handleRequestReset = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -112,6 +145,7 @@ const PasswordResetPage: React.FC = () => {
     setError('');
     setIsSubmitting(true);
 
+    // Validation
     if (!newPassword || !confirmPassword) {
       setError('Por favor, preencha todos os campos');
       setIsSubmitting(false);
@@ -145,9 +179,9 @@ const PasswordResetPage: React.FC = () => {
         setSuccess(true);
         setStep('success');
         
-        // Redirect to home after 3 seconds
+        // Redirect to login after 3 seconds
         setTimeout(() => {
-          navigate('/');
+          navigate('/?login=true');
         }, 3000);
       }
     } catch (error) {
@@ -304,17 +338,17 @@ const PasswordResetPage: React.FC = () => {
       
       <div>
         <h2 className="text-2xl font-bold text-white mb-2">
-          {step === 'success' && isPasswordUpdate ? 'Senha Atualizada!' : 'Email Enviado!'}
+          {step === 'success' && step === 'update' ? 'Senha Atualizada!' : 'Email Enviado!'}
         </h2>
         <p className="text-slate-400">
-          {step === 'success' && isPasswordUpdate 
-            ? 'Sua senha foi atualizada com sucesso. Você será redirecionado em instantes.'
+          {step === 'success' && step === 'update'
+            ? 'Sua senha foi atualizada com sucesso. Você será redirecionado para o login em instantes.'
             : 'Verifique sua caixa de entrada e clique no link para redefinir sua senha.'
           }
         </p>
       </div>
 
-      {step === 'success' && !isPasswordUpdate && (
+      {step === 'success' && step !== 'update' && (
         <div className="p-4 bg-slate-700/20 rounded-lg">
           <p className="text-slate-400 text-sm">
             Não recebeu o email? Verifique sua pasta de spam ou tente novamente.
@@ -323,13 +357,34 @@ const PasswordResetPage: React.FC = () => {
       )}
 
       <button
-        onClick={() => navigate('/')}
+        onClick={() => navigate('/?login=true')}
         className="w-full bg-[#ff7551] hover:bg-[#ff7551]/80 text-white font-medium py-4 rounded-lg transition-colors"
       >
-        Voltar ao Início
+        {step === 'success' && step === 'update' ? 'Ir para Login' : 'Voltar ao Login'}
       </button>
     </div>
   );
+
+  // Show loading while validating token
+  if (isValidatingToken) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-[#1f1d2b] via-[#1f1d2b] to-black flex items-center justify-center p-4">
+        <div className="bg-[#1f1d2b] border border-slate-700/30 rounded-xl w-full max-w-md">
+          <div className="p-8 text-center">
+            <div className="w-16 h-16 bg-[#ff7551]/20 rounded-full flex items-center justify-center mx-auto mb-6">
+              <Loader2 className="w-8 h-8 text-[#ff7551] animate-spin" />
+            </div>
+            <h2 className="text-xl font-semibold text-white mb-2">
+              Validando Link
+            </h2>
+            <p className="text-slate-400">
+              Verificando o link de redefinição de senha...
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#1f1d2b] via-[#1f1d2b] to-black flex items-center justify-center p-4">
@@ -378,7 +433,7 @@ const PasswordResetPage: React.FC = () => {
             <p className="text-slate-400 text-sm">
               Lembrou da senha?{' '}
               <button
-                onClick={() => navigate('/')}
+                onClick={() => navigate('/?login=true')}
                 className="text-[#ff7551] hover:text-[#ff7551]/80 font-medium transition-colors"
               >
                 Fazer login
