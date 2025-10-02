@@ -292,6 +292,7 @@ function App() {
 // Component that has access to auth context
 const AppWithAuth: React.FC = () => {
   const { user, loading } = useAuth();
+  const location = useLocation();
   const [needsOnboarding, setNeedsOnboarding] = React.useState<boolean | null>(null);
   const [checkingOnboarding, setCheckingOnboarding] = React.useState(false);
 
@@ -368,8 +369,14 @@ const AppWithAuth: React.FC = () => {
     );
   }
 
+  // Check if current route should bypass onboarding
+  const isAuthRoute = location.pathname === '/redefinir-senha' ||
+                      location.pathname === '/registro' ||
+                      location.pathname === '/privacidade';
+
   // Show onboarding if user is authenticated but hasn't completed onboarding
-  if (user && needsOnboarding === true) {
+  // EXCEPT when on auth-related routes (password reset, registration, etc)
+  if (user && needsOnboarding === true && !isAuthRoute) {
     return (
       <OnboardingFlow
         userId={user.id}

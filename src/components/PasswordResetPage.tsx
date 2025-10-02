@@ -129,12 +129,9 @@ const PasswordResetPage: React.FC = () => {
       isValidatingToken
     });
 
-    // Only redirect if user is authenticated AND we're on the request step
-    // (meaning no valid recovery token was found)
-    if (isAuthenticated && step === 'request') {
-      console.log('🔒 Authenticated user on request step, redirecting to home');
-      navigate('/');
-    }
+    // REMOVED: No automatic redirect for authenticated users
+    // This allows users with recovery tokens to complete password reset
+    // even if they get temporarily authenticated during the process
   }, [hashProcessedRef.current, authLoading, isAuthenticated, step, isValidatingToken, navigate]);
 
   const handleRequestReset = async (e: React.FormEvent) => {
