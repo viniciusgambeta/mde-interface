@@ -6,7 +6,7 @@ import { useAuth } from '../contexts/AuthContext';
 
 const PasswordResetPage: React.FC = () => {
   const navigate = useNavigate();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, loading: authLoading } = useAuth();
   
   // Form states
   const [email, setEmail] = useState('');
@@ -19,22 +19,25 @@ const PasswordResetPage: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
-  const [step, setStep] = useState<'request' | 'update' | 'success'>('request');
+  const [step, setStep] = useState<'loading' | 'request' | 'update' | 'success'>('loading');
   const [isValidatingToken, setIsValidatingToken] = useState(false);
+  const hashProcessedRef = useRef(false);
 
-  // Redirect if user is already authenticated and not updating password
+  // Handle password reset tokens from URL hash - only run once
   useEffect(() => {
-    if (isAuthenticated && step !== 'update') {
-      navigate('/');
+    // Prevent multiple executions
+    if (hashProcessedRef.current) {
+      return;
     }
-  }, [isAuthenticated, step, navigate]);
-
-  // Handle password reset tokens from URL hash
-  useEffect(() => {
+    
     const handlePasswordResetFromHash = async () => {
+      hashProcessedRef.current = true;
+      
       // Check if there are parameters in the hash
       const hash = window.location.hash;
       if (!hash || hash.length <= 1) {
+        console.log('🔍 No hash found, setting step to request');
+        setStep('request');
         return;
       }
 
@@ -67,6 +70,8 @@ const PasswordResetPage: React.FC = () => {
             console.error('❌ Error setting session:', error);
             setError('Link de redefinição inválido ou expirado. Solicite um novo link.');
             setStep('request');
+            // Clear the hash from URL
+            window.history.replaceState(null, '', window.location.pathname);
             
             // Clear the hash from URL
             window.history.replaceState(null, '', window.location.pathname);
@@ -76,6 +81,8 @@ const PasswordResetPage: React.FC = () => {
           if (data.session) {
             console.log('✅ Session set successfully, switching to update step');
             setStep('update');
+            // Clear the hash from URL
+            window.history.replaceState(null, '', window.location.pathname);
             
             // Clear the hash from URL
             window.history.replaceState(null, '', window.location.pathname);
@@ -83,13 +90,15 @@ const PasswordResetPage: React.FC = () => {
             console.error('❌ No session created');
             setError('Link de redefinição inválido. Solicite um novo link.');
             setStep('request');
+            // Clear the hash from URL
+            window.history.replaceState(null, '', window.location.pathname);
             
             // Clear the hash from URL
             window.history.replaceState(null, '', window.location.pathname);
           }
         } else {
           console.log('⚠️ Invalid or missing recovery parameters in hash');
-          // Don't show error if no recovery params, user might just be visiting the page normally
+          setStep('request');
         }
       } catch (error) {
         console.error('💥 Exception handling password reset hash:', error);
@@ -98,13 +107,20 @@ const PasswordResetPage: React.FC = () => {
         
         // Clear the hash from URL
         window.history.replaceState(null, '', window.location.pathname);
-      } finally {
-        setIsValidatingToken(false);
       }
     };
 
     handlePasswordResetFromHash();
   }, []);
+
+  // Redirect if user is already authenticated and not updating password
+  useEffect(() => {
+    // Only redirect if we've processed the hash and we're not in update mode
+    if (!authLoading && isAuthenticated && hashProcessedRef.current && step === 'request') {
+      console.log('🔒 Authenticated user on request step, redirecting to home');
+      navigate('/');
+    }
+  }, [authLoading, isAuthenticated, step, navigate]);
 
   const handleRequestReset = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -365,8 +381,8 @@ const PasswordResetPage: React.FC = () => {
     </div>
   );
 
-  // Show loading while validating token
-  if (isValidatingToken) {
+  // Show loading while auth is initializing or validating token
+  if (authLoading || step === 'loading' || isValidatingToken) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-[#1f1d2b] via-[#1f1d2b] to-black flex items-center justify-center p-4">
         <div className="bg-[#1f1d2b] border border-slate-700/30 rounded-xl w-full max-w-md">
@@ -380,7 +396,9 @@ const PasswordResetPage: React.FC = () => {
             <p className="text-slate-400">
               Verificando o link de redefinição de senha...
             </p>
-          </div>
+          <span className="text-slate-400">
+            {isValidatingToken ? 'Validando link...' : 'Carregando...'}
+          </span>
         </div>
       </div>
     );
