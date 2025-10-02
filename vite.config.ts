@@ -9,9 +9,19 @@ export default defineConfig({
       output: {
         manualChunks: undefined,
       },
+      input: {
+        main: './index.html',
+        sw: './public/sw.js'
+      }
     },
+    copyPublicDir: true,
   },
   optimizeDeps: {
     exclude: ['lucide-react'],
   },
+  server: {
+    headers: {
+      'Cache-Control': 'public, max-age=31536000, immutable',
+    }
+  }
 });

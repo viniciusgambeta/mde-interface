@@ -22,6 +22,7 @@ const LazyVideoThumbnail: React.FC<LazyVideoThumbnailProps> = ({
 }) => {
   const [imageState, setImageState] = useState<'loading' | 'loaded' | 'error'>('loading');
   const [isIntersecting, setIsIntersecting] = useState(false);
+  const [cachedUrls, setCachedUrls] = useState<{ thumbnail: string; full: string } | null>(null);
   const imgRef = useRef<HTMLImageElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -96,8 +97,63 @@ const LazyVideoThumbnail: React.FC<LazyVideoThumbnailProps> = ({
     }
   };
 
-  const thumbnailUrl = getOptimizedUrl(src, 'thumbnail');
-  const fullUrl = getOptimizedUrl(src, 'full');
+  const loadImageWithCache = async (url: string): Promise<string> => {
+    if (!('caches' in window)) {
+      return url;
+    }
+
+    try {
+      const cacheName = 'video-thumbnails-v1';
+      const cache = await caches.open(cacheName);
+
+      const cachedResponse = await cache.match(url);
+
+      if (cachedResponse) {
+        const blob = await cachedResponse.blob();
+        return URL.createObjectURL(blob);
+      }
+
+      const response = await fetch(url, {
+        mode: 'cors',
+        cache: 'force-cache'
+      });
+
+      if (response.ok) {
+        const clonedResponse = response.clone();
+        cache.put(url, clonedResponse);
+        const blob = await response.blob();
+        return URL.createObjectURL(blob);
+      }
+    } catch (error) {
+      console.warn('Cache error, using direct URL:', error);
+    }
+
+    return url;
+  };
+
+  useEffect(() => {
+    if (!src || !isIntersecting) return;
+
+    const loadCachedImages = async () => {
+      const thumbnailUrl = getOptimizedUrl(src, 'thumbnail');
+      const fullUrl = getOptimizedUrl(src, 'full');
+
+      const [cachedThumb, cachedFull] = await Promise.all([
+        loadImageWithCache(thumbnailUrl),
+        loadImageWithCache(fullUrl)
+      ]);
+
+      setCachedUrls({
+        thumbnail: cachedThumb,
+        full: cachedFull
+      });
+    };
+
+    loadCachedImages();
+  }, [src, isIntersecting]);
+
+  const thumbnailUrl = cachedUrls?.thumbnail || getOptimizedUrl(src, 'thumbnail');
+  const fullUrl = cachedUrls?.full || getOptimizedUrl(src, 'full');
 
   return (
     <div
