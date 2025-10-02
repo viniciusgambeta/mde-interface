@@ -39,13 +39,8 @@ const PaywallModal: React.FC<PaywallModalProps> = ({ isOpen, onClose, contentTit
   const benefits = [
     { icon: Star, text: 'Acesso completo a todas as aulas' },
     { icon: Download, text: 'Downloads de materiais e recursos' },
-    { icon: MessageCircle, text: 'Participação em comentários e discussões' },
     { icon: Users, text: 'Acesso à comunidade exclusiva' },
     { icon: Clock, text: 'Conteúdo novo toda semana' },
-    { icon: Shield, text: 'Suporte prioritário' },
-    { icon: Zap, text: 'Automações e prompts exclusivos' },
-    { icon: BookOpen, text: 'Biblioteca completa de recursos' },
-    { icon: Headphones, text: 'Lives e eventos especiais' }
   ];
 
   if (!isOpen) return null;
@@ -71,37 +66,14 @@ const PaywallModal: React.FC<PaywallModalProps> = ({ isOpen, onClose, contentTit
             </h1>
             <h2 className="text-lg text-[#ff7551] font-semibold">
               "{contentTitle}"
-            </h2>
-          </div>
-        </div>
-
-        {/* Main Content */}
-        <div className="flex flex-col lg:flex-row">
-          {/* Left Side - Image */}
-          <div className="lg:w-1/2 p-8 flex items-center justify-center">
-            <img
-              src="/destaque1_modal.png"
-              alt="Me dá um Exemplo"
-              className="w-full max-w-md h-auto object-contain"
-            />
-          </div>
-
-          {/* Right Side - Benefits and Plans */}
-          <div className="lg:w-1/2 p-8 flex flex-col justify-center">
-            {/* Benefits List */}
-            <div className="mb-8">
-              <h3 className="text-xl font-bold text-white mb-6 text-left">
-                O que você vai ter acesso:
-              </h3>
-              
-              <div className="grid gap-4">
-                {benefits.map((benefit, index) => (
-                  <div 
-                    key={index} 
-                    className="flex items-center space-x-3 text-left animate-fade-in"
-                    style={{ animationDelay: `${index * 100}ms` }}
-                  >
-                    <div className="w-8 h-8 bg-[#ff7551]/20 rounded-full flex items-center justify-center flex-shrink-0">
+          {/* Already a subscriber link */}
+          <div className="text-center mt-4">
+            <button
+              onClick={handleLogin}
+              className="text-slate-400 hover:text-[#ff7551] text-sm transition-colors"
+            >
+              Já é assinante? Fazer login
+            </button>
                       <benefit.icon className="w-4 h-4 text-[#ff7551]" />
                     </div>
                     <span className="text-slate-300 text-sm">{benefit.text}</span>
