@@ -37,44 +37,35 @@ const PaywallModal: React.FC<PaywallModalProps> = ({ isOpen, onClose, contentTit
   };
 
   const benefits = [
-    { icon: Star, text: 'Acesso completo a todas as aulas' },
-    { icon: Download, text: 'Downloads de materiais e recursos' },
-    { icon: Users, text: 'Acesso à comunidade exclusiva' },
-    { icon: Clock, text: 'Conteúdo novo toda semana' },
-  ];
+        </div>
 
-  if (!isOpen) return null;
+        {/* Main content */}
+        <div className="p-6 grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Left side - Image */}
+          <div className="flex items-center justify-center">
+            <img 
+              src="/destaque1_modal.png" 
+              alt="Destaque da comunidade" 
+              className="w-full max-w-md rounded-lg shadow-lg"
+            />
+          </div>
 
-  return (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-[#1f1d2b] border border-slate-700/30 rounded-xl w-full max-w-6xl max-h-[90vh] overflow-y-auto animate-fade-in">
-        {/* Header */}
-        <div className="relative p-6 border-b border-slate-700/30">
-          <button
-            onClick={onClose}
-            className="absolute top-6 right-6 p-2 rounded-lg hover:bg-slate-700/30 transition-colors"
-          >
-            <X className="w-5 h-5 text-slate-400" />
-          </button>
-          
-          <div className="text-center">
-            <div className="w-16 h-16 bg-[#ff7551]/20 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Crown className="w-8 h-8 text-[#ff7551]" />
-            </div>
-            <h1 className="text-2xl font-bold text-white mb-2">
-              Desbloqueie o {getContentTypeLabel()}
-            </h1>
-            <h2 className="text-lg text-[#ff7551] font-semibold">
-              "{contentTitle}"
-            </h2>
-          {/* Already a subscriber link */}
-          <div className="text-center mt-4">
-            <button
-              onClick={handleLogin}
-              className="text-slate-400 hover:text-[#ff7551] text-sm transition-colors"
-            >
-              Já é assinante? Fazer login
-            </button>
+          {/* Right side - Benefits and Plans */}
+          <div className="space-y-6">
+            {/* Benefits */}
+            <div>
+              <h3 className="text-xl font-bold text-white mb-4">
+                O que você vai ter acesso:
+              </h3>
+              
+              <div className="space-y-3">
+                {benefits.map((benefit, index) => (
+                  <div 
+                    key={index}
+                    className="flex items-center space-x-3 animate-fade-in"
+                    style={{ animationDelay: `${index * 100}ms` }}
+                  >
+                    <div className="w-5 h-5 rounded-full bg-[#ff7551]/20 flex items-center justify-center flex-shrink-0">
                       <benefit.icon className="w-4 h-4 text-[#ff7551]" />
                     </div>
                     <span className="text-slate-300 text-sm">{benefit.text}</span>
