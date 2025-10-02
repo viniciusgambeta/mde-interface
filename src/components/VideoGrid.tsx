@@ -214,22 +214,10 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
         console.log('Loading category-specific videos...');
         
         // Load all videos once and filter by type/category
-        const allVideosData = await videoService.getVideos({ limit: 80, userId: user?.id });
-        
-        // Group videos by type and category in one pass
-        const newCategoryVideos = {
-          live: shuffleArray(allVideosData.filter(v => v.tipo === 'live')).slice(0, 12),
-          prompt: shuffleArray(allVideosData.filter(v => v.tipo === 'prompt')).slice(0, 12),
-          ai: [],
-          automation: [],
-          basic: [],
-          configuracoes: [],
-          audiovisual: [],
-          vibecoding: []
-        };
-        
-        // Load specific categories in parallel
-        const [aiVideos, automationVideos, basicVideos, configuracoesVideos, audiovisualVideos, vibecodingVideos] = await Promise.all([
+        // Load videos by type and category in parallel
+        const [liveVideos, promptVideos, aiVideos, automationVideos, basicVideos, configuracoesVideos, audiovisualVideos, vibecodingVideos] = await Promise.all([
+          videoService.getVideos({ type: 'live', limit: 12, userId: user?.id }),
+          videoService.getVideos({ type: 'prompt', limit: 12, userId: user?.id }),
           videoService.getVideosByCategory('ia', 12, user?.id),
           videoService.getVideosByCategory('automacao', 12, user?.id),
           videoService.getVideosByCategory('basico', 12, user?.id),
@@ -238,16 +226,24 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
           videoService.getVideosByCategory('vibe-coding', 12, user?.id)
         ]);
         
-        // Apply random shuffling to all category videos except latest
+        // Apply random shuffling to all videos
+        const newCategoryVideos = {
+          live: shuffleArray(liveVideos),
+          prompt: shuffleArray(promptVideos),
+          ai: [],
+          automation: [],
+          basic: [],
+          configuracoes: [],
+          audiovisual: [],
+          vibecoding: []
+        };
+        
         newCategoryVideos.ai = shuffleArray(aiVideos);
         newCategoryVideos.automation = shuffleArray(automationVideos);
         newCategoryVideos.basic = shuffleArray(basicVideos);
         newCategoryVideos.configuracoes = shuffleArray(configuracoesVideos);
         newCategoryVideos.audiovisual = shuffleArray(audiovisualVideos);
         newCategoryVideos.vibecoding = shuffleArray(vibecodingVideos);
-        
-        // Also shuffle live and prompt videos
-        // Live and prompt videos are already shuffled above
         
         setCategoryVideos(newCategoryVideos);
       } catch (error) {
