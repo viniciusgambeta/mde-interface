@@ -580,14 +580,12 @@ const RegistrationPage: React.FC = () => {
   return (
     <>
     <div className="min-h-screen bg-gradient-to-b from-[#1f1d2b] via-[#1f1d2b] to-black flex flex-col items-center justify-center p-4">
-      {/* Video - Centered above the form block */}
+      {/* Logo - Centered above the form block */}
       <div className="text-center mb-8">
-        <video
-          src="/src/images/outputgansotopo3.webm"
-          autoPlay
-          muted
-          playsInline
-          className="h-64 w-auto mx-auto relative z-10"
+        <img
+          src="/logo1_branco.png"
+          alt="Logo"
+          className="h-32 w-auto mx-auto relative z-10"
           style={{ marginBottom: '-3.77rem' }}
         />
       </div>
