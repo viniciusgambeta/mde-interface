@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Mail, ArrowLeft, CheckCircle, AlertCircle, Loader2, Eye, EyeOff, Lock } from 'lucide-react';
 import { supabase } from '../lib/supabase';
@@ -14,7 +14,6 @@ const PasswordResetPage: React.FC = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const hashProcessedRef = useRef(false);
   
   // UI states
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -22,6 +21,7 @@ const PasswordResetPage: React.FC = () => {
   const [error, setError] = useState('');
   const [step, setStep] = useState<'loading' | 'request' | 'update' | 'success'>('loading');
   const [isValidatingToken, setIsValidatingToken] = useState(false);
+  const hashProcessedRef = useRef(false);
 
   // Handle password reset tokens from URL hash - only run once
   useEffect(() => {
@@ -396,12 +396,10 @@ const PasswordResetPage: React.FC = () => {
             <p className="text-slate-400">
               Verificando o link de redefinição de senha...
             </p>
+            <span className="text-slate-400">
+              {isValidatingToken ? 'Validando link...' : 'Carregando...'}
+            </span>
           </div>
-          <div className="flex items-center space-x-3">
-            <div className="w-6 h-6 border-2 border-[#ff7551]/30 border-t-[#ff7551] rounded-full animate-spin"></div>
-          <span className="text-slate-400">
-            {isValidatingToken ? 'Validando link...' : 'Carregando...'}
-          </span>
         </div>
       </div>
     );
@@ -440,7 +438,6 @@ const PasswordResetPage: React.FC = () => {
             </p>
           </div>
         </div>
-      </div>
 
         {/* Content */}
         <div className="p-6">
