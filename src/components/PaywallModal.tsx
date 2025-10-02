@@ -66,6 +66,7 @@ const PaywallModal: React.FC<PaywallModalProps> = ({ isOpen, onClose, contentTit
             </h1>
             <h2 className="text-lg text-[#ff7551] font-semibold">
               "{contentTitle}"
+            </h2>
           {/* Already a subscriber link */}
           <div className="text-center mt-4">
             <button
