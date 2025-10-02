@@ -701,8 +701,10 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
     };
 
     const handleBookmarkClick = async (event: React.MouseEvent) => {
+      // CRITICAL: Stop all event propagation to prevent navigation
       event.preventDefault();
       event.stopPropagation();
+      event.nativeEvent.stopImmediatePropagation();
       
       if (!user) {
         console.log('User not logged in, cannot bookmark');
@@ -773,11 +775,12 @@ const VideoGrid: React.FC<VideoGridProps> = ({ currentView, onVideoSelect }) => 
           <button
             onClick={handleBookmarkClick}
             disabled={bookmarkLoading}
-            className={`absolute top-3 left-3 z-20 p-2 rounded-full backdrop-blur-sm transition-all duration-200 group-hover:opacity-100 ${
+            className={`absolute top-3 left-3 z-30 p-2 rounded-full backdrop-blur-sm transition-all duration-200 group-hover:opacity-100 ${
               video.is_bookmarked 
                 ? 'bg-[#ff7551] text-white shadow-lg' 
                 : 'bg-black/60 text-white hover:bg-[#ff7551]/80'
             } ${bookmarkLoading ? 'animate-pulse scale-110' : ''} disabled:cursor-not-allowed`}
+            style={{ pointerEvents: 'auto' }}
           >
             <Bookmark 
               className={`w-5 h-5 transition-all duration-200 ${bookmarkLoading ? 'animate-pulse' : ''}`}
