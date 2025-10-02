@@ -5,6 +5,8 @@ import { useAuth } from '../contexts/AuthContext';
 import { useVideo } from '../contexts/VideoContext';
 import { videoService, type Video } from '../lib/database';
 import { supabase } from '../lib/supabase';
+import LoginModal from './auth/LoginModal';
+import RegisterModal from './auth/RegisterModal';
 import PaywallModal from './PaywallModal';
 
 interface HeaderProps {
@@ -18,6 +20,8 @@ const Header: React.FC<HeaderProps> = ({ sidebarCollapsed, onSidebarToggle, onVi
   const navigate = useNavigate();
   const { currentVideo, isPiPActive, returnToVideo } = useVideo();
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [showRegisterModal, setShowRegisterModal] = useState(false);
   const [showPaywall, setShowPaywall] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<Video[]>([]);
@@ -81,11 +85,11 @@ const Header: React.FC<HeaderProps> = ({ sidebarCollapsed, onSidebarToggle, onVi
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('login') === 'true') {
-      navigate('/registro');
+      setShowLoginModal(true);
       // Clean up URL
       window.history.replaceState({}, '', window.location.pathname);
     }
-  }, [navigate]);
+  }, []);
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
@@ -473,17 +477,17 @@ const Header: React.FC<HeaderProps> = ({ sidebarCollapsed, onSidebarToggle, onVi
               /* Login/Register Buttons */
               <div className="flex items-center space-x-3">
                 <button
-                  onClick={() => navigate('/registro')}
+                  onClick={() => setShowLoginModal(true)}
                   className="hidden sm:block px-4 py-3 text-slate-300 hover:text-white transition-colors text-base"
                 >
                   Entrar
                 </button>
                 <button
-                  onClick={() => navigate('/registro')}
+                  onClick={() => setShowRegisterModal(true)}
                   className="flex items-center space-x-2 px-4 py-3 bg-[#ff7551] hover:bg-[#ff7551]/80 text-white font-medium rounded-lg transition-colors text-base"
                 >
                   <UserPlus className="w-5 h-5" />
-                  <span className="hidden sm:inline">Assine agora</span>
+                  <span className="hidden sm:inline">Cadastre-se</span>
                   <span className="sm:hidden">Entrar</span>
                 </button>
               </div>
@@ -493,6 +497,24 @@ const Header: React.FC<HeaderProps> = ({ sidebarCollapsed, onSidebarToggle, onVi
       </header>
 
       {/* Modals */}
+      <LoginModal
+        isOpen={showLoginModal}
+        onClose={() => setShowLoginModal(false)}
+        onSwitchToRegister={() => {
+          setShowLoginModal(false);
+          setShowRegisterModal(true);
+        }}
+      />
+
+      <RegisterModal
+        isOpen={showRegisterModal}
+        onClose={() => setShowRegisterModal(false)}
+        onSwitchToLogin={() => {
+          setShowRegisterModal(false);
+          setShowLoginModal(true);
+        }}
+      />
+
       <PaywallModal
         isOpen={showPaywall}
         onClose={() => setShowPaywall(false)}
