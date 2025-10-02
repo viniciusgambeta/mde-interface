@@ -64,17 +64,32 @@ const PasswordResetPage: React.FC = () => {
   useEffect(() => {
     console.log('🎧 Setting up auth state listener for password recovery...');
 
+    let eventReceived = false;
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         console.log('🔐 Auth event received:', event, 'Session:', !!session);
+        console.log('🔍 Session details:', session ? {
+          access_token: session.access_token?.substring(0, 20) + '...',
+          user_id: session.user?.id,
+          user_email: session.user?.email
+        } : 'No session');
 
         if (event === 'PASSWORD_RECOVERY') {
           console.log('✅ PASSWORD_RECOVERY event detected - user can now update password');
+          eventReceived = true;
           setIsValidatingToken(false);
           setStep('update');
           window.history.replaceState(null, '', window.location.pathname);
         } else if (event === 'SIGNED_IN' && window.location.hash.includes('type=recovery')) {
-          console.log('✅ Recovery session established');
+          console.log('✅ Recovery session established via SIGNED_IN');
+          eventReceived = true;
+          setIsValidatingToken(false);
+          setStep('update');
+          window.history.replaceState(null, '', window.location.pathname);
+        } else if (event === 'INITIAL_SESSION' && session && window.location.hash.includes('type=recovery')) {
+          console.log('✅ Recovery session found in INITIAL_SESSION');
+          eventReceived = true;
           setIsValidatingToken(false);
           setStep('update');
           window.history.replaceState(null, '', window.location.pathname);
@@ -83,14 +98,27 @@ const PasswordResetPage: React.FC = () => {
     );
 
     const timeout = setTimeout(() => {
-      if (isValidatingToken && step === 'loading') {
+      if (isValidatingToken && step === 'loading' && !eventReceived) {
         console.log('⏱️ Validation timeout - no recovery event received');
-        setError('Link de redefinição inválido ou expirado. Solicite um novo link.');
-        setIsValidatingToken(false);
-        setStep('request');
-        window.history.replaceState(null, '', window.location.pathname);
+        console.log('🔍 Attempting manual session check...');
+
+        supabase.auth.getSession().then(({ data: { session } }) => {
+          console.log('🔍 Manual session check result:', !!session);
+          if (session && window.location.hash.includes('type=recovery')) {
+            console.log('✅ Found recovery session manually');
+            setIsValidatingToken(false);
+            setStep('update');
+            window.history.replaceState(null, '', window.location.pathname);
+          } else {
+            console.log('❌ No recovery session found');
+            setError('Link de redefinição inválido ou expirado. Solicite um novo link.');
+            setIsValidatingToken(false);
+            setStep('request');
+            window.history.replaceState(null, '', window.location.pathname);
+          }
+        });
       }
-    }, 10000);
+    }, 8000);
 
     return () => {
       subscription.unsubscribe();
