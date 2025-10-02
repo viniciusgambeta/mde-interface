@@ -177,14 +177,15 @@ const PaywallModal: React.FC<PaywallModalProps> = ({ isOpen, onClose, contentTit
             </button>
 
             {/* Already a subscriber section */}
-          {/* Login link */}
-          <div className="text-center mt-4">
-            <button
-              onClick={handleLogin}
-              className="text-slate-400 hover:text-[#ff7551] text-sm transition-colors"
-            >
-              Já é assinante? Fazer login
-            </button>
+            {/* Login link */}
+            <div className="text-center mt-4">
+              <button
+                onClick={handleLogin}
+                className="text-slate-400 hover:text-[#ff7551] text-sm transition-colors"
+              >
+                Já é assinante? Fazer login
+              </button>
+            </div>
           </div>
         </div>
       </div>
